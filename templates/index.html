@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recovery Hub — Render Style</title>
+<style>
+    /* Глубокий фон в стиле Render */
+    body { background: #08090D; color: #E5E7EB; font-family: system-ui, sans-serif; margin: 0; padding: 20px 10px; }
+    .container { max-width: 800px; margin: 0 auto; background: #0F1117; padding: 30px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); border: 1px solid #1F2937; }
+    
+    /* Заголовок с электрическим синим свечением */
+    h1 { color: #60A5FA; font-size: 2.2em; margin-top: 0; text-shadow: 0 0 15px rgba(96,165,250,0.4); font-weight: 800; }
+    h2 { color: #93C5FD; border-bottom: 1px solid #1F2937; padding-bottom: 8px; font-size: 1.3em; }
+    
+    .card { background: #13161F; padding: 20px; border-radius: 8px; margin: 15px 0; border: 1px solid #1F2937; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
+    
+    /* Карточка статуса с синим электрическим акцентом */
+    .card-cyber {
+        background: linear-gradient(135deg, #13161F 0%, #0B0D13 100%);
+        border: 1px solid rgba(59,130,246,0.3);
+        position: relative;
+        overflow: hidden;
+    }
+    .card-cyber::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; width: 4px; height: 100%;
+        background: #3B82F6;
+        box-shadow: 0 0 12px #3B82F6;
+    }
+
+    input[type="text"], input[type="number"], select, textarea { 
+        width: 100%; padding: 12px; margin: 8px 0 15px 0; background: #08090D; border: 1px solid #2D3748; color: #E5E7EB; border-radius: 6px; box-sizing: border-box; font-family: inherit;
+    }
+    input:focus, select:focus, textarea:focus { border-color: #3B82F6; outline: none; box-shadow: 0 0 8px rgba(59,130,246,0.4); }
+    
+    /* Основные кнопки — электрический синий */
+    button { background: #3B82F6; color: #FFF; font-weight: bold; padding: 12px 20px; border: none; border-radius: 6px; cursor: pointer; width: 100%; margin-top: 5px; transition: all 0.2s; font-size: 1em; box-shadow: 0 0 10px rgba(59,130,246,0.3); }
+    button:hover { background: #2563EB; box-shadow: 0 0 15px rgba(37,99,235,0.6); }
+    
+    /* Пульсирующая кнопка SOS */
+    @keyframes pulse-red {
+        0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+        70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+    .sos-btn { 
+        background: #EF4444 !important; color: #FFF !important; font-size: 1.1em;
+        animation: pulse-red 2s infinite; transition: transform 0.2s; box-shadow: 0 0 15px rgba(239,68,68,0.5);
+    }
+    .sos-btn:hover { background: #DC2626 !important; transform: scale(1.01); }
+
+    .status-box { background: #08090D; border-left: 4px solid #60A5FA; padding: 15px; border-radius: 4px; margin-top: 15px; border: 1px solid #1F2937; }
+    .status { color: #60A5FA; font-weight: bold; font-size: 1.2em; text-shadow: 0 0 8px rgba(96,165,250,0.4); }
+    
+    .cbt-item { background: #08090D; padding: 15px; border-radius: 6px; margin-top: 12px; border-left: 3px solid #6366F1; border: 1px solid #1F2937; }
+    .danger-zone { margin-top: 30px; border-top: 1px solid #1F2937; padding-top: 20px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>⚡ Recovery Hub</h1>
+    <p style="color: #9CA3AF;">Интерфейс контроля ресурса в стиле Render</p>
+
+    {% if not profile %}
+        <div class="card">
+            <h2>Начать путь</h2>
+            <form action="/create" method="POST">
+                <label>Имя или позывной:</label>
+                <input type="text" name="name" required placeholder="Братан">
+
+                <label>Дней без слива энергии (старт):</label>
+                <input type="number" name="days" min="0" value="0" required>
+
+                <button type="submit">Запустить систему</button>
+            </form>
+        </div>
+    {% else %}
+        <!-- ЦИТАТЫ -->
+        <div class="card" style="background: #08090D; border: 1px dashed #2D3748; text-align: center;">
+            <p id="quote-box" style="font-style: italic; color: #9CA3AF; margin: 0; min-height: 40px; display: flex; align-items: center; justify-content: center;">«Загружаем порцию мотивации...»</p>
+            <button onclick="changeQuote()" style="background: transparent; border: 1px solid #3B82F6; color: #60A5FA; width: auto; padding: 6px 15px; margin-top: 12px; font-size: 0.85em; cursor: pointer; box-shadow: none;">🎲 Сменить настрой</button>
+        </div>
+
+        <!-- КНОПКА SOS -->
+        <div class="card" style="border: 2px solid rgba(239,68,68,0.4);">
+            <h2 style="color: #EF4444; border-color: #7F1D1D; margin-top: 0;">🚨 Зона экстренного контроля</h2>
+            <p>Накрывает тяга или штормит? Не делай глупостей, жми сюда:</p>
+            <form action="/sos" method="GET">
+                <button type="submit" class="sos-btn">🚨 НАКРЫВАЕТ! (Кнопка SOS)</button>
+            </form>
+            <p style="font-size: 0.9em; color: #9CA3AF; margin-top: 12px; text-align: center;">Успешно отбитых атак: <strong>{{ profile.slips_avoided | default(0) }}</strong></p>
+        </div>
+
+        <!-- СТАТУС -->
+        <div class="card card-cyber">
+            <h2>Твой статус</h2>
+            <p><strong>Позывной:</strong> {{ profile.name }}</p>
+            <p><strong>Дней в строю:</strong> {{ profile.days }}</p>
+            
+            <div class="status-box">
+                <span class="status">{{ status.name }}</span>
+                <p style="margin: 8px 0 0 0; color: #9CA3AF; line-height: 1.4;">{{ status.desc }}</p>
+            </div>
+        </div>
+
+        <!-- ДОБАВИТЬ ДЕНЬ -->
+        <div class="card">
+            <h2>Прогресс</h2>
+            <form action="/update" method="POST">
+                <input type="hidden" name="add_days" value="1">
+                <button type="submit" style="background: #2563EB;">⚡ Засчитать +1 день победы</button>
+            </form>
+        </div>
+
+        <!-- КПТ РАЗБОРЫ -->
+        <div class="card" style="border: 1px solid rgba(99,102,241,0.4);">
+            <h2 style="color: #818CF8; border-color: #312E81;">🧠 КПТ: Разбор автоматических мыслей</h2>
+            <p style="font-size: 0.9em; color: #9CA3AF;">По книге Дэвида Бёрнса: поймай деструктивную мысль, выпиши ее и дай ей жесткий рациональный отпор.</p>
+            
+            <form action="/add_cbt" method="POST">
+                <label>Категория (Тема):</label>
+                <input type="text" name="category" required placeholder="Напр. Мысли о спорте, Тяга, Тревога, Самокритика">
+
+                <label>🧠 Автоматическая мысль (что крутится в башке):</label>
+                <textarea name="automatic_thought" rows="2" required placeholder="Напр. Я сегодня слишком устал, тренировка не имеет смысла, лучше полежать..."></textarea>
+
+                <label>💡 Рациональный ответ (опровержение / факты):</label>
+                <textarea name="rational_response" rows="2" required placeholder="Напр. Усталость часто мнимая. После разминки энергия прибудет, а пропуск тренировки только усилит апатию."></textarea>
+
+                <button type="submit" style="background: #6366F1;">🛡️ Сохранить разбор</button>
+            </form>
+
+            {% if cbt_records %}
+                <div style="margin-top: 25px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1F2937; padding-bottom: 8px;">
+                        <h3 style="color: #9CA3AF; font-size: 1em; margin: 0;">Архив разборов ({{ cbt_records|length }}):</h3>
+                        <a href="/export_cbt" style="background: #1F2937; color: #E5E7EB; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 0.85em; font-weight: bold; border: 1px solid #2D3748;">📥 Скачать в TXT</a>
+                    </div>
+
+                    {% for r in cbt_records %}
+                        <div class="cbt-item">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.85em; color: #818CF8; margin-bottom: 6px;">
+                                <span><strong>🏷️ {{ r.category }}</strong></span>
+                                <span style="color: #6B7280;">{{ r.date }}</span>
+                            </div>
+                            <p style="margin: 4px 0; color: #F87171; font-size: 0.95em;"><strong>Мысль:</strong> {{ r.automatic_thought }}</p>
+                            <p style="margin: 4px 0 0 0; color: #34D399; font-size: 0.95em;"><strong>Ответ:</strong> {{ r.rational_response }}</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- СБРОС -->
+        <div class="danger-zone">
+            <form action="/reset" method="POST" onsubmit="return confirm('Точно сбросить весь прогресс и архив разборов?');">
+                <button type="submit" style="background: #1F2937; color: #9CA3AF; width: auto; padding: 10px 20px; border: 1px solid #2D3748; box-shadow: none;">Сбросить профиль</button>
+            </form>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+    const quotes = [
+        "«Энергия течет туда, куда ты направляешь фокус. Не сливай ее в трубу.»",
+        "«Легкий дофамин — это ловушка для слабых. Ты здесь не для этого.»",
+        "«Каждый раз, когда устоял — твой внутренний стержень становится толще стального каната.»",
+        "«Скука и тревога — это просто топливо. Направь его в созидание, а не разрушение.»",
+        "«Дисциплина — это выбор между тем, чего ты хочешь сейчас, и тем, чего ты хочешь больше всего.»",
+        "«Мозг сейчас пытается тебя обмануть. Перетерпи 15 минут — отпустит.»"
+    ];
+
+    function changeQuote() {
+        const randomIndex = Math.floor(Math.random() * quotes.length);
+        const quoteBox = document.getElementById("quote-box");
+        quoteBox.style.opacity = 0;
+        setTimeout(() => {
+            quoteBox.innerText = quotes[randomIndex];
+            quoteBox.style.opacity = 1;
+        }, 150);
+    }
+    document.getElementById("quote-box").style.transition = "opacity 0.2s ease-in-out";
+</script>
+</body>
+</html>
