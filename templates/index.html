@@ -3,160 +3,174 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Recovery Hub — Render Style</title>
+<title>Recovery Hub — Production Grade</title>
+<!-- Подключаем Tailwind CSS через CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    darkBg: '#08090D',
+                    cardBg: '#0F1117',
+                    cardInner: '#13161F',
+                    borderCol: '#1F2937',
+                    accentBlue: '#3B82F6',
+                    accentGlow: '#60A5FA',
+                }
+            }
+        }
+    }
+</script>
 <style>
-    /* Глубокий фон в стиле Render */
-    body { background: #08090D; color: #E5E7EB; font-family: system-ui, sans-serif; margin: 0; padding: 20px 10px; }
-    .container { max-width: 800px; margin: 0 auto; background: #0F1117; padding: 30px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); border: 1px solid #1F2937; }
-    
-    /* Заголовок с электрическим синим свечением */
-    h1 { color: #60A5FA; font-size: 2.2em; margin-top: 0; text-shadow: 0 0 15px rgba(96,165,250,0.4); font-weight: 800; }
-    h2 { color: #93C5FD; border-bottom: 1px solid #1F2937; padding-bottom: 8px; font-size: 1.3em; }
-    
-    .card { background: #13161F; padding: 20px; border-radius: 8px; margin: 15px 0; border: 1px solid #1F2937; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
-    
-    /* Карточка статуса с синим электрическим акцентом */
-    .card-cyber {
-        background: linear-gradient(135deg, #13161F 0%, #0B0D13 100%);
-        border: 1px solid rgba(59,130,246,0.3);
-        position: relative;
-        overflow: hidden;
-    }
-    .card-cyber::before {
-        content: '';
-        position: absolute;
-        top: 0; left: 0; width: 4px; height: 100%;
-        background: #3B82F6;
-        box-shadow: 0 0 12px #3B82F6;
-    }
-
-    input[type="text"], input[type="number"], select, textarea { 
-        width: 100%; padding: 12px; margin: 8px 0 15px 0; background: #08090D; border: 1px solid #2D3748; color: #E5E7EB; border-radius: 6px; box-sizing: border-box; font-family: inherit;
-    }
-    input:focus, select:focus, textarea:focus { border-color: #3B82F6; outline: none; box-shadow: 0 0 8px rgba(59,130,246,0.4); }
-    
-    /* Основные кнопки — электрический синий */
-    button { background: #3B82F6; color: #FFF; font-weight: bold; padding: 12px 20px; border: none; border-radius: 6px; cursor: pointer; width: 100%; margin-top: 5px; transition: all 0.2s; font-size: 1em; box-shadow: 0 0 10px rgba(59,130,246,0.3); }
-    button:hover { background: #2563EB; box-shadow: 0 0 15px rgba(37,99,235,0.6); }
-    
-    /* Пульсирующая кнопка SOS */
     @keyframes pulse-red {
         0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
         70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
         100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-    }
-    .sos-btn { 
-        background: #EF4444 !important; color: #FFF !important; font-size: 1.1em;
-        animation: pulse-red 2s infinite; transition: transform 0.2s; box-shadow: 0 0 15px rgba(239,68,68,0.5);
-    }
-    .sos-btn:hover { background: #DC2626 !important; transform: scale(1.01); }
-
-    .status-box { background: #08090D; border-left: 4px solid #60A5FA; padding: 15px; border-radius: 4px; margin-top: 15px; border: 1px solid #1F2937; }
-    .status { color: #60A5FA; font-weight: bold; font-size: 1.2em; text-shadow: 0 0 8px rgba(96,165,250,0.4); }
-    
-    .cbt-item { background: #08090D; padding: 15px; border-radius: 6px; margin-top: 12px; border-left: 3px solid #6366F1; border: 1px solid #1F2937; }
-    .danger-zone { margin-top: 30px; border-top: 1px solid #1F2937; padding-top: 20px; text-align: center; }
+    .sos-pulse { animation: pulse-red 2s infinite; }
+}
 </style>
 </head>
-<body>
-<div class="container">
-    <h1>⚡ Recovery Hub</h1>
-    <p style="color: #9CA3AF;">Интерфейс контроля ресурса в стиле Render</p>
+<body class="bg-darkBg text-gray-100 font-sans min-h-screen py-8 px-4">
+
+<div class="max-w-2xl mx-auto bg-cardBg p-6 sm:p-8 rounded-2xl shadow-2xl border border-borderCol">
+    
+    <!-- Шапка -->
+    <div class="mb-6 border-b border-borderCol pb-4">
+        <h1 class="text-3xl font-extrabold text-accentGlow tracking-wide drop-shadow-[0_0_15px_rgba(96,165,250,0.3)]">⚡ Recovery Hub</h1>
+        <p class="text-gray-400 text-sm mt-1">Система персонального контроля и КПТ-стабилизации</p>
+    </div>
 
     {% if not profile %}
-        <div class="card">
-            <h2>Начать путь</h2>
-            <form action="/create" method="POST">
-                <label>Имя или позывной:</label>
-                <input type="text" name="name" required placeholder="Братан">
+        <div class="bg-cardInner p-6 rounded-xl border border-borderCol shadow-lg">
+            <h2 class="text-xl font-bold text-accentGlow mb-4">Инициализация профиля</h2>
+            <form action="/create" method="POST" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-1">Имя или позывной:</label>
+                    <input type="text" name="name" required placeholder="Братан" 
+                           class="w-full px-4 py-3 bg-darkBg border border-borderCol rounded-lg text-gray-100 focus:outline-none focus:border-accentBlue focus:ring-1 focus:ring-accentBlue">
+                </div>
 
-                <label>Дней без слива энергии (старт):</label>
-                <input type="number" name="days" min="0" value="0" required>
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-1">Дней без слива энергии (старт):</label>
+                    <input type="number" name="days" min="0" value="0" required 
+                           class="w-full px-4 py-3 bg-darkBg border border-borderCol rounded-lg text-gray-100 focus:outline-none focus:border-accentBlue focus:ring-1 focus:ring-accentBlue">
+                </div>
 
-                <button type="submit">Запустить систему</button>
+                <button type="submit" class="w-full py-3 bg-accentBlue hover:bg-blue-600 font-bold rounded-lg shadow-lg shadow-blue-500/30 transition-all">
+                    Запустить систему 🚀
+                </button>
             </form>
         </div>
     {% else %}
+        
         <!-- ЦИТАТЫ -->
-        <div class="card" style="background: #08090D; border: 1px dashed #2D3748; text-align: center;">
-            <p id="quote-box" style="font-style: italic; color: #9CA3AF; margin: 0; min-height: 40px; display: flex; align-items: center; justify-content: center;">«Загружаем порцию мотивации...»</p>
-            <button onclick="changeQuote()" style="background: transparent; border: 1px solid #3B82F6; color: #60A5FA; width: auto; padding: 6px 15px; margin-top: 12px; font-size: 0.85em; cursor: pointer; box-shadow: none;">🎲 Сменить настрой</button>
+        <div class="bg-darkBg p-4 rounded-xl border border-dashed border-borderCol text-center mb-6">
+            <p id="quote-box" class="italic text-gray-400 text-sm min-h-[40px] flex items-center justify-center transition-opacity duration-200">
+                «Загружаем порцию мотивации...»
+            </p>
+            <button onclick="changeQuote()" class="mt-2 px-4 py-1.5 text-xs font-semibold text-accentGlow border border-accentBlue/40 rounded-lg hover:bg-accentBlue/10 transition-all">
+                🎲 Сменить настрой
+            </button>
         </div>
 
         <!-- КНОПКА SOS -->
-        <div class="card" style="border: 2px solid rgba(239,68,68,0.4);">
-            <h2 style="color: #EF4444; border-color: #7F1D1D; margin-top: 0;">🚨 Зона экстренного контроля</h2>
-            <p>Накрывает тяга или штормит? Не делай глупостей, жми сюда:</p>
+        <div class="bg-cardInner p-6 rounded-xl border-2 border-red-500/40 shadow-xl mb-6">
+            <h2 class="text-lg font-bold text-red-400 mb-2">🚨 Зона экстренного контроля</h2>
+            <p class="text-sm text-gray-300 mb-4">Накрывает тяга или штормит? Не делай глупостей, жми сюда:</p>
             <form action="/sos" method="GET">
-                <button type="submit" class="sos-btn">🚨 НАКРЫВАЕТ! (Кнопка SOS)</button>
+                <button type="submit" class="w-full py-3.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg sos-pulse transition-all shadow-lg shadow-red-500/40">
+                    🚨 НАКРЫВАЕТ! (Кнопка SOS)
+                </button>
             </form>
-            <p style="font-size: 0.9em; color: #9CA3AF; margin-top: 12px; text-align: center;">Успешно отбитых атак: <strong>{{ profile.slips_avoided | default(0) }}</strong></p>
+            <p class="text-xs text-gray-400 text-center mt-3">Успешно отбитых атак: <strong class="text-red-400 font-bold">{{ profile.slips_avoided | default(0) }}</strong></p>
         </div>
 
         <!-- СТАТУС -->
-        <div class="card card-cyber">
-            <h2>Твой статус</h2>
-            <p><strong>Позывной:</strong> {{ profile.name }}</p>
-            <p><strong>Дней в строю:</strong> {{ profile.days }}</p>
+        <div class="bg-gradient-to-br from-cardInner to-darkBg p-6 rounded-xl border-l-4 border-accentBlue border-t border-r border-b border-borderCol shadow-lg mb-6 relative overflow-hidden">
+            <h2 class="text-lg font-bold text-accentGlow mb-3">Твой статус</h2>
+            <div class="space-y-1 text-sm text-gray-300">
+                <p><strong>Позывной:</strong> <span class="text-white">{{ profile.name }}</span></p>
+                <p><strong>Дней в строю:</strong> <span class="text-accentGlow font-bold text-lg">{{ profile.days }}</span></p>
+            </div>
             
-            <div class="status-box">
-                <span class="status">{{ status.name }}</span>
-                <p style="margin: 8px 0 0 0; color: #9CA3AF; line-height: 1.4;">{{ status.desc }}</p>
+            <div class="mt-4 p-4 bg-darkBg rounded-lg border border-borderCol">
+                <span class="text-accentGlow font-bold text-base">{{ status.name }}</span>
+                <p class="text-xs text-gray-400 mt-1 leading-relaxed">{{ status.desc }}</p>
             </div>
         </div>
 
         <!-- ДОБАВИТЬ ДЕНЬ -->
-        <div class="card">
-            <h2>Прогресс</h2>
+        <div class="bg-cardInner p-6 rounded-xl border border-borderCol shadow-lg mb-6">
+            <h2 class="text-lg font-bold text-accentGlow mb-3">Прогресс</h2>
             <form action="/update" method="POST">
                 <input type="hidden" name="add_days" value="1">
-                <button type="submit" style="background: #2563EB;">⚡ Засчитать +1 день победы</button>
+                <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 font-bold rounded-lg shadow-md transition-all">
+                    ⚡ Засчитать +1 день победы
+                </button>
             </form>
         </div>
 
         <!-- КПТ РАЗБОРЫ -->
-        <div class="card" style="border: 1px solid rgba(99,102,241,0.4);">
-            <h2 style="color: #818CF8; border-color: #312E81;">🧠 КПТ: Разбор автоматических мыслей</h2>
-            <p style="font-size: 0.9em; color: #9CA3AF;">По книге Дэвида Бёрнса: поймай деструктивную мысль, выпиши ее и дай ей жесткий рациональный отпор.</p>
+        <div class="bg-cardInner p-6 rounded-xl border border-indigo-500/30 shadow-lg mb-6">
+            <h2 class="text-lg font-bold text-indigo-400 mb-1">🧠 КПТ: Разбор автоматических мыслей</h2>
+            <p class="text-xs text-gray-400 mb-4">Поймай деструктивную мысль, выпиши ее и дай жесткий рациональный отпор.</p>
             
-            <form action="/add_cbt" method="POST">
-                <label>Категория (Тема):</label>
-                <input type="text" name="category" required placeholder="Напр. Мысли о спорте, Тяга, Тревога, Самокритика">
+            <form action="/add_cbt" method="POST" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-medium text-gray-300 mb-1">Категория (Тема):</label>
+                    <input type="text" name="category" required placeholder="Напр. Тяга, Тревога, Лень" 
+                           class="w-full px-3 py-2 bg-darkBg border border-borderCol rounded-lg text-sm text-gray-100 focus:outline-none focus:border-indigo-500">
+                </div>
 
-                <label>🧠 Автоматическая мысль (что крутится в башке):</label>
-                <textarea name="automatic_thought" rows="2" required placeholder="Напр. Я сегодня слишком устал, тренировка не имеет смысла, лучше полежать..."></textarea>
+                <div>
+                    <label class="block text-xs font-medium text-gray-300 mb-1">🧠 Автоматическая мысль:</label>
+                    <textarea name="automatic_thought" rows="2" required placeholder="Что крутится в башке..." 
+                              class="w-full px-3 py-2 bg-darkBg border border-borderCol rounded-lg text-sm text-gray-100 focus:outline-none focus:border-indigo-500"></textarea>
+                </div>
 
-                <label>💡 Рациональный ответ (опровержение / факты):</label>
-                <textarea name="rational_response" rows="2" required placeholder="Напр. Усталость часто мнимая. После разминки энергия прибудет, а пропуск тренировки только усилит апатию."></textarea>
+                <div>
+                    <label class="block text-xs font-medium text-gray-300 mb-1">💡 Рациональный ответ:</label>
+                    <textarea name="rational_response" rows="2" required placeholder="Факты и опровержение..." 
+                              class="w-full px-3 py-2 bg-darkBg border border-borderCol rounded-lg text-sm text-gray-100 focus:outline-none focus:border-indigo-500"></textarea>
+                </div>
 
-                <button type="submit" style="background: #6366F1;">🛡️ Сохранить разбор</button>
+                <button type="submit" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 font-bold text-sm rounded-lg shadow-md transition-all">
+                    🛡️ Сохранить разбор
+                </button>
             </form>
 
             {% if cbt_records %}
-                <div style="margin-top: 25px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1F2937; padding-bottom: 8px;">
-                        <h3 style="color: #9CA3AF; font-size: 1em; margin: 0;">Архив разборов ({{ cbt_records|length }}):</h3>
-                        <a href="/export_cbt" style="background: #1F2937; color: #E5E7EB; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 0.85em; font-weight: bold; border: 1px solid #2D3748;">📥 Скачать в TXT</a>
+                <div class="mt-6">
+                    <div class="flex justify-between items-center border-b border-borderCol pb-2 mb-3">
+                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Архив разборов ({{ cbt_records|length }}):</h3>
+                        <a href="/export_cbt" class="px-3 py-1 bg-darkBg hover:bg-borderCol text-gray-200 rounded-md text-xs font-semibold border border-borderCol transition-all">
+                            📥 Скачать TXT
+                        </a>
                     </div>
 
-                    {% for r in cbt_records %}
-                        <div class="cbt-item">
-                            <div style="display: flex; justify-content: space-between; font-size: 0.85em; color: #818CF8; margin-bottom: 6px;">
-                                <span><strong>🏷️ {{ r.category }}</strong></span>
-                                <span style="color: #6B7280;">{{ r.date }}</span>
+                    <div class="space-y-3 max-h-80 overflow-y-auto pr-1">
+                        {% for r in cbt_records %}
+                            <div class="bg-darkBg p-3 rounded-lg border-l-2 border-indigo-500 border-t border-r border-b border-borderCol text-xs">
+                                <div class="flex justify-between text-indigo-400 mb-1 font-medium">
+                                    <span>🏷️ {{ r.category }}</span>
+                                    <span class="text-gray-500">{{ r.date }}</span>
+                                </div>
+                                <p class="text-red-400 mt-1"><strong>Мысль:</strong> {{ r.automatic_thought }}</p>
+                                <p class="text-emerald-400 mt-1"><strong>Ответ:</strong> {{ r.rational_response }}</p>
                             </div>
-                            <p style="margin: 4px 0; color: #F87171; font-size: 0.95em;"><strong>Мысль:</strong> {{ r.automatic_thought }}</p>
-                            <p style="margin: 4px 0 0 0; color: #34D399; font-size: 0.95em;"><strong>Ответ:</strong> {{ r.rational_response }}</p>
-                        </div>
-                    {% endfor %}
+                        {% endfor %}
+                    </div>
                 </div>
             {% endif %}
         </div>
         
         <!-- СБРОС -->
-        <div class="danger-zone">
+        <div class="text-center pt-4 border-t border-borderCol">
             <form action="/reset" method="POST" onsubmit="return confirm('Точно сбросить весь прогресс и архив разборов?');">
-                <button type="submit" style="background: #1F2937; color: #9CA3AF; width: auto; padding: 10px 20px; border: 1px solid #2D3748; box-shadow: none;">Сбросить профиль</button>
+                <button type="submit" class="px-4 py-2 bg-darkBg hover:bg-red-950/30 text-gray-400 hover:text-red-400 border border-borderCol hover:border-red-900/50 rounded-lg text-xs font-semibold transition-all">
+                    Сбросить профиль
+                </button>
             </form>
         </div>
     {% endif %}
@@ -181,7 +195,6 @@
             quoteBox.style.opacity = 1;
         }, 150);
     }
-    document.getElementById("quote-box").style.transition = "opacity 0.2s ease-in-out";
 </script>
 </body>
 </html>
