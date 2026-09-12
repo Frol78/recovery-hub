@@ -1,5 +1,5 @@
 import random
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import Flask, render_template, request, redirect, url_for, Response
 from flask_sqlalchemy import SQLAlchemy
 
@@ -16,14 +16,15 @@ class Profile(db.Model):
     name = db.Column(db.String(100), nullable=False)
     days = db.Column(db.Integer, default=0)
     slips_avoided = db.Column(db.Integer, default=0)
+    start_time = db.Column(db.String(100), nullable=True) # Точное время старта в ISO формате
 
-# Модель для КПТ-дневника (Автоматические мысли -> Рациональный ответ)
+# Модель для КПТ-дневника
 class CbtRecord(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    category = db.Column(db.String(100), nullable=False)  # Категория (напр. "Спорт", "Тяга", "Тревога")
-    automatic_thought = db.Column(db.Text, nullable=False) # Что крутится в башке
-    rational_response = db.Column(db.Text, nullable=False) # Рациональный ответ (опровержение)
-    date = db.Column(db.String(50), nullable=False)       # Дата записи
+    category = db.Column(db.String(100), nullable=False)
+    automatic_thought = db.Column(db.Text, nullable=False)
+    rational_response = db.Column(db.Text, nullable=False)
+    date = db.Column(db.String(50), nullable=False)
 
 with app.app_context():
     db.create_all()
@@ -43,7 +44,7 @@ def get_status(days):
     elif days <= 30:
         return {"name": "🛡️ Первые победы", "desc": "Нервная система начинает оживать. Энергия возвращается в тело."}
     elif days <= 90:
-        return {"name": "⚡ Набор массы", "desc": "Тяга отступает. Появляется фокус, ресурс и драйв жить."}
+        return {"name": "⚡ Набор массы", "desc": "Tяга отступает. Появляется фокус, ресурс и драйв жить."}
     else:
         return {"name": "👑 Альфа-состояние", "desc": "Легендарный уровень. Либидо, энергия и контроль над своей жизнью полностью твои."}
 
@@ -54,7 +55,6 @@ def index():
     cbt_records = []
     if profile:
         status = get_status(profile.days)
-        # Получаем записи КПТ (от новых к старым)
         cbt_records = CbtRecord.query.order_by(CbtRecord.id.desc()).all()
         
     return render_template("index.html", profile=profile, status=status, cbt_records=cbt_records)
@@ -67,7 +67,15 @@ def create():
     Profile.query.delete()
     CbtRecord.query.delete()
     
-    new_profile = Profile(name=name, days=days, slips_avoided=0)
+    # Вычисляем примерное время старта с учетом уже введенных дней, чтобы таймер шел правильно
+    start_dt = datetime.now() - timedelta(days=days)
+    
+    new_profile = Profile(
+        name=name, 
+        days=days, 
+        slips_avoided=0,
+        start_time=start_dt.isoformat() # Сохраняем точный ISO timestamp
+    )
     db.session.add(new_profile)
     db.session.commit()
     
@@ -84,7 +92,6 @@ def update():
 
 @app.route("/add_cbt", methods=["POST"])
 def add_cbt():
-    """Добавление записи КПТ (Автоматическая мысль + Рациональный ответ)."""
     category = request.form.get("category", "Общее")
     automatic_thought = request.form.get("automatic_thought", "")
     rational_response = request.form.get("rational_response", "")
@@ -104,9 +111,7 @@ def add_cbt():
 
 @app.route("/export_cbt")
 def export_cbt():
-    """Экспорт всех КПТ-записей в текстовый файл (.txt)."""
     records = CbtRecord.query.order_by(CbtRecord.id.desc()).all()
-    
     text_data = "=== RECOVERY HUB: АРХИВ КПТ-РАЗБОРОВ (АНТИ-ТРЕВОГА) ===\n\n"
     for r in records:
         text_data += f"📅 Дата: {r.date}\n"
@@ -115,7 +120,6 @@ def export_cbt():
         text_data += f"💡 Рациональный ответ: {r.rational_response}\n"
         text_data += "-" * 50 + "\n\n"
         
-    # Отдаем файл пользователю на скачивание
     return Response(
         text_data,
         mimetype="text/plain",
