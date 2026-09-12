@@ -64,21 +64,26 @@ def create():
     name = request.form.get("name", "Боец")
     days = int(request.form.get("days", 0))
     
-    Profile.query.delete()
-    CbtRecord.query.delete()
-    
-    # Вычисляем примерное время старта с учетом уже введенных дней, чтобы таймер шел правильно
+    # ИСПРАВЛЕНИЕ: Больше не удаляем базу! Проверяем, есть ли уже профиль.
+    profile = Profile.query.first()
     start_dt = datetime.now() - timedelta(days=days)
     
-    new_profile = Profile(
-        name=name, 
-        days=days, 
-        slips_avoided=0,
-        start_time=start_dt.isoformat() # Сохраняем точный ISO timestamp
-    )
-    db.session.add(new_profile)
+    if profile:
+        # Если профиль уже есть — просто обновляем данные, не трогая историю КПТ
+        profile.name = name
+        profile.days = days
+        profile.start_time = start_dt.isoformat()
+    else:
+        # Если профиля не было — создаем новый
+        new_profile = Profile(
+            name=name, 
+            days=days, 
+            slips_avoided=0,
+            start_time=start_dt.isoformat()
+        )
+        db.session.add(new_profile)
+        
     db.session.commit()
-    
     return redirect(url_for("index"))
 
 @app.route("/update", methods=["POST"])
@@ -138,6 +143,7 @@ def sos():
 
 @app.route("/reset", methods=["POST"])
 def reset():
+    # Полный сброс теперь доступен ТОЛЬКО через специальную кнопку сброса кластера внизу страницы
     Profile.query.delete()
     CbtRecord.query.delete()
     db.session.commit()
