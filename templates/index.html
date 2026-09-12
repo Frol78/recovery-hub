@@ -3,156 +3,190 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Recovery Hub — Production Grade</title>
-<!-- Подключаем Tailwind CSS через CDN -->
+<title>Recovery Hub — Cloud Infrastructure Style</title>
+<!-- Подключаем Tailwind CSS -->
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
     tailwind.config = {
         theme: {
             extend: {
                 colors: {
-                    darkBg: '#08090D',
-                    cardBg: '#0F1117',
-                    cardInner: '#13161F',
-                    borderCol: '#1F2937',
-                    accentBlue: '#3B82F6',
-                    accentGlow: '#60A5FA',
+                    renderBg: '#08090D',
+                    renderCard: '#0F1117',
+                    renderInner: '#13161F',
+                    renderBorder: '#1F2937',
+                    electricBlue: '#3B82F6',
+                    electricGlow: '#60A5FA',
                 }
             }
         }
     }
 </script>
 <style>
+    /* Тонкий паттерн сетки на фоне, как у Render */
+    body {
+        background-color: #08090D;
+        background-image: 
+            linear-gradient(to right, rgba(31, 41, 55, 0.15) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(31, 41, 55, 0.15) 1px, transparent 1px);
+        background-size: 32px 32px;
+    }
+
     @keyframes pulse-red {
         0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
         70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
         100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
     .sos-pulse { animation: pulse-red 2s infinite; }
-}
+
+    /* Градиентный текст в стиле Render (белый -> электрик-синий) */
+    .render-gradient-text {
+        background: linear-gradient(135deg, #FFFFFF 30%, #60A5FA 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
 </style>
 </head>
-<body class="bg-darkBg text-gray-100 font-sans min-h-screen py-8 px-4">
+<body class="text-gray-100 font-sans min-h-screen py-10 px-4">
 
-<div class="max-w-2xl mx-auto bg-cardBg p-6 sm:p-8 rounded-2xl shadow-2xl border border-borderCol">
+<div class="max-w-2xl mx-auto bg-renderCard p-6 sm:p-10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] border border-renderBorder relative overflow-hidden">
     
-    <!-- Шапка -->
-    <div class="mb-6 border-b border-borderCol pb-4">
-        <h1 class="text-3xl font-extrabold text-accentGlow tracking-wide drop-shadow-[0_0_15px_rgba(96,165,250,0.3)]">⚡ Recovery Hub</h1>
-        <p class="text-gray-400 text-sm mt-1">Система персонального контроля и КПТ-стабилизации</p>
+    <!-- Декоративное свечение сверху в стиле Render -->
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-1 bg-gradient-to-r from-transparent via-electricBlue to-transparent opacity-75"></div>
+
+    <!-- Шапка в стиле Render -->
+    <div class="mb-8 pb-6 border-b border-renderBorder flex justify-between items-center">
+        <div>
+            <h1 class="text-3xl sm:text-4xl font-extrabold render-gradient-text tracking-tight">
+                ⚡ Recovery Hub
+            </h1>
+            <p class="text-gray-400 text-xs sm:text-sm mt-1 font-mono tracking-wide">DEPLOYMENT STATUS: <span class="text-emerald-400">● LIVE & STABLE</span></p>
+        </div>
+        <div class="hidden sm:block px-3 py-1 bg-renderInner border border-renderBorder rounded-md font-mono text-xs text-gray-400">
+            $ git push --prod
+        </div>
     </div>
 
     {% if not profile %}
-        <div class="bg-cardInner p-6 rounded-xl border border-borderCol shadow-lg">
-            <h2 class="text-xl font-bold text-accentGlow mb-4">Инициализация профиля</h2>
+        <div class="bg-renderInner p-6 sm:p-8 rounded-xl border border-renderBorder shadow-xl">
+            <h2 class="text-xl font-bold text-gray-100 mb-2">Инициализация окружения</h2>
+            <p class="text-xs text-gray-400 mb-6">Задай параметры для развертывания персональной системы контроля.</p>
+            
             <form action="/create" method="POST" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-300 mb-1">Имя или позывной:</label>
-                    <input type="text" name="name" required placeholder="Братан" 
-                           class="w-full px-4 py-3 bg-darkBg border border-borderCol rounded-lg text-gray-100 focus:outline-none focus:border-accentBlue focus:ring-1 focus:ring-accentBlue">
+                    <label class="block text-xs font-mono text-gray-400 uppercase mb-1">Позывной / Имя:</label>
+                    <input type="text" name="name" required placeholder="Оператор" 
+                           class="w-full px-4 py-3 bg-renderBg border border-renderBorder rounded-lg text-gray-100 focus:outline-none focus:border-electricBlue focus:ring-1 focus:ring-electricBlue text-sm">
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-300 mb-1">Дней без слива энергии (старт):</label>
+                    <label class="block text-xs font-mono text-gray-400 uppercase mb-1">Дней без срывов (Старт):</label>
                     <input type="number" name="days" min="0" value="0" required 
-                           class="w-full px-4 py-3 bg-darkBg border border-borderCol rounded-lg text-gray-100 focus:outline-none focus:border-accentBlue focus:ring-1 focus:ring-accentBlue">
+                           class="w-full px-4 py-3 bg-renderBg border border-renderBorder rounded-lg text-gray-100 focus:outline-none focus:border-electricBlue focus:ring-1 focus:ring-electricBlue text-sm">
                 </div>
 
-                <button type="submit" class="w-full py-3 bg-accentBlue hover:bg-blue-600 font-bold rounded-lg shadow-lg shadow-blue-500/30 transition-all">
-                    Запустить систему 🚀
+                <button type="submit" class="w-full py-3.5 bg-white hover:bg-gray-200 text-gray-900 font-bold rounded-lg shadow-lg transition-all text-sm tracking-wide">
+                    Развернуть систему 🚀
                 </button>
             </form>
         </div>
     {% else %}
         
-        <!-- ЦИТАТЫ -->
-        <div class="bg-darkBg p-4 rounded-xl border border-dashed border-borderCol text-center mb-6">
-            <p id="quote-box" class="italic text-gray-400 text-sm min-h-[40px] flex items-center justify-center transition-opacity duration-200">
+        <!-- МОТИВАЦИЯ (В стиле облачного терминала) -->
+        <div class="bg-renderBg p-5 rounded-xl border border-dashed border-renderBorder text-center mb-6 relative">
+            <div class="absolute -top-3 left-4 px-2 bg-renderCard text-[10px] font-mono text-gray-400 uppercase tracking-wider border border-renderBorder rounded">
+                SYSTEM_LOGS / MOTIVATION
+            </div>
+            <p id="quote-box" class="italic text-gray-300 text-sm min-h-[44px] flex items-center justify-center transition-opacity duration-200 mt-1">
                 «Загружаем порцию мотивации...»
             </p>
-            <button onclick="changeQuote()" class="mt-2 px-4 py-1.5 text-xs font-semibold text-accentGlow border border-accentBlue/40 rounded-lg hover:bg-accentBlue/10 transition-all">
-                🎲 Сменить настрой
+            <button onclick="changeQuote()" class="mt-3 px-4 py-1.5 text-xs font-mono font-semibold text-electricGlow border border-electricBlue/40 rounded-lg hover:bg-electricBlue/10 transition-all">
+                ⚡ Сменить настрой
             </button>
         </div>
 
-        <!-- КНОПКА SOS -->
-        <div class="bg-cardInner p-6 rounded-xl border-2 border-red-500/40 shadow-xl mb-6">
-            <h2 class="text-lg font-bold text-red-400 mb-2">🚨 Зона экстренного контроля</h2>
-            <p class="text-sm text-gray-300 mb-4">Накрывает тяга или штормит? Не делай глупостей, жми сюда:</p>
+        <!-- КНОПКА SOS (Экстренный контроль) -->
+        <div class="bg-renderInner p-6 rounded-xl border-2 border-red-500/40 shadow-2xl mb-6 relative">
+            <div class="absolute top-3 right-3 text-red-500 font-mono text-xs uppercase tracking-widest bg-red-950/40 px-2 py-0.5 rounded border border-red-900/50">
+                CRITICAL_ALERT
+            </div>
+            <h2 class="text-base font-bold text-red-400 mb-2 font-mono">🚨 Зона экстренного контроля</h2>
+            <p class="text-xs text-gray-300 mb-4">Штормит, тяга или пробивает на срыв? Не делай глупостей, аварийный протокол:</p>
             <form action="/sos" method="GET">
-                <button type="submit" class="w-full py-3.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg sos-pulse transition-all shadow-lg shadow-red-500/40">
-                    🚨 НАКРЫВАЕТ! (Кнопка SOS)
+                <button type="submit" class="w-full py-3.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg sos-pulse transition-all shadow-lg shadow-red-500/40 text-sm tracking-wide">
+                    🚨 АВАРИЙНЫЙ ВЫХОД (Кнопка SOS)
                 </button>
             </form>
-            <p class="text-xs text-gray-400 text-center mt-3">Успешно отбитых атак: <strong class="text-red-400 font-bold">{{ profile.slips_avoided | default(0) }}</strong></p>
+            <p class="text-xs font-mono text-gray-400 text-center mt-3">Успешно отбитых атак: <strong class="text-red-400 font-bold">{{ profile.slips_avoided | default(0) }}</strong></p>
         </div>
 
-        <!-- СТАТУС -->
-        <div class="bg-gradient-to-br from-cardInner to-darkBg p-6 rounded-xl border-l-4 border-accentBlue border-t border-r border-b border-borderCol shadow-lg mb-6 relative overflow-hidden">
-            <h2 class="text-lg font-bold text-accentGlow mb-3">Твой статус</h2>
-            <div class="space-y-1 text-sm text-gray-300">
+        <!-- СТАТУС ПРОФИЛЯ -->
+        <div class="bg-gradient-to-br from-renderInner to-renderBg p-6 rounded-xl border-l-4 border-electricBlue border-t border-r border-b border-renderBorder shadow-lg mb-6 relative">
+            <h2 class="text-sm font-mono text-electricGlow uppercase tracking-wider mb-3">Состояние кластера</h2>
+            <div class="space-y-1 text-sm text-gray-300 font-mono">
                 <p><strong>Позывной:</strong> <span class="text-white">{{ profile.name }}</span></p>
-                <p><strong>Дней в строю:</strong> <span class="text-accentGlow font-bold text-lg">{{ profile.days }}</span></p>
+                <p><strong>Дней стабильности:</strong> <span class="text-electricGlow font-bold text-lg">{{ profile.days }}</span></p>
             </div>
             
-            <div class="mt-4 p-4 bg-darkBg rounded-lg border border-borderCol">
-                <span class="text-accentGlow font-bold text-base">{{ status.name }}</span>
-                <p class="text-xs text-gray-400 mt-1 leading-relaxed">{{ status.desc }}</p>
+            <div class="mt-4 p-4 bg-renderBg rounded-lg border border-renderBorder">
+                <span class="text-electricGlow font-bold text-base font-mono block mb-1">{{ status.name }}</span>
+                <p class="text-xs text-gray-400 leading-relaxed">{{ status.desc }}</p>
             </div>
         </div>
 
-        <!-- ДОБАВИТЬ ДЕНЬ -->
-        <div class="bg-cardInner p-6 rounded-xl border border-borderCol shadow-lg mb-6">
-            <h2 class="text-lg font-bold text-accentGlow mb-3">Прогресс</h2>
+        <!-- ПРОГРЕСС (+1 день) -->
+        <div class="bg-renderInner p-6 rounded-xl border border-renderBorder shadow-lg mb-6">
+            <h2 class="text-sm font-mono text-gray-300 uppercase tracking-wider mb-3">Метрика прогресса</h2>
             <form action="/update" method="POST">
                 <input type="hidden" name="add_days" value="1">
-                <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 font-bold rounded-lg shadow-md transition-all">
+                <button type="submit" class="w-full py-3 bg-electricBlue hover:bg-blue-600 text-white font-bold rounded-lg shadow-lg shadow-blue-500/30 transition-all text-sm tracking-wide">
                     ⚡ Засчитать +1 день победы
                 </button>
             </form>
         </div>
 
         <!-- КПТ РАЗБОРЫ -->
-        <div class="bg-cardInner p-6 rounded-xl border border-indigo-500/30 shadow-lg mb-6">
-            <h2 class="text-lg font-bold text-indigo-400 mb-1">🧠 КПТ: Разбор автоматических мыслей</h2>
-            <p class="text-xs text-gray-400 mb-4">Поймай деструктивную мысль, выпиши ее и дай жесткий рациональный отпор.</p>
+        <div class="bg-renderInner p-6 rounded-xl border border-indigo-500/30 shadow-lg mb-6">
+            <h2 class="text-base font-bold text-indigo-400 mb-1 font-mono">🧠 КПТ: Разбор автоматических мыслей</h2>
+            <p class="text-xs text-gray-400 mb-4">Поймай деструктивную мысль, зафиксируй лог и дай жесткий рациональный отпор.</p>
             
             <form action="/add_cbt" method="POST" class="space-y-3">
                 <div>
-                    <label class="block text-xs font-medium text-gray-300 mb-1">Категория (Тема):</label>
-                    <input type="text" name="category" required placeholder="Напр. Тяга, Тревога, Лень" 
-                           class="w-full px-3 py-2 bg-darkBg border border-borderCol rounded-lg text-sm text-gray-100 focus:outline-none focus:border-indigo-500">
+                    <label class="block text-xs font-mono text-gray-400 uppercase mb-1">Категория / Вектор:</label>
+                    <input type="text" name="category" required placeholder="Напр. Тяга, Тревога, Ложные убеждения" 
+                           class="w-full px-3 py-2 bg-renderBg border border-renderBorder rounded-lg text-sm text-gray-100 focus:outline-none focus:border-indigo-500">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-medium text-gray-300 mb-1">🧠 Автоматическая мысль:</label>
-                    <textarea name="automatic_thought" rows="2" required placeholder="Что крутится в башке..." 
-                              class="w-full px-3 py-2 bg-darkBg border border-borderCol rounded-lg text-sm text-gray-100 focus:outline-none focus:border-indigo-500"></textarea>
+                    <label class="block text-xs font-mono text-gray-400 uppercase mb-1">🧠 Автоматическая мысль:</label>
+                    <textarea name="automatic_thought" rows="2" required placeholder="Что за скрипт крутится в башке..." 
+                              class="w-full px-3 py-2 bg-renderBg border border-renderBorder rounded-lg text-sm text-gray-100 focus:outline-none focus:border-indigo-500"></textarea>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-medium text-gray-300 mb-1">💡 Рациональный ответ:</label>
-                    <textarea name="rational_response" rows="2" required placeholder="Факты и опровержение..." 
-                              class="w-full px-3 py-2 bg-darkBg border border-borderCol rounded-lg text-sm text-gray-100 focus:outline-none focus:border-indigo-500"></textarea>
+                    <label class="block text-xs font-mono text-gray-400 uppercase mb-1">💡 Рациональный ответ / Опровержение:</label>
+                    <textarea name="rational_response" rows="2" required placeholder="Факты, логика, трезвый расчет..." 
+                              class="w-full px-3 py-2 bg-renderBg border border-renderBorder rounded-lg text-sm text-gray-100 focus:outline-none focus:border-indigo-500"></textarea>
                 </div>
 
                 <button type="submit" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 font-bold text-sm rounded-lg shadow-md transition-all">
-                    🛡️ Сохранить разбор
+                    🛡️ Сохранить лог в базу
                 </button>
             </form>
 
             {% if cbt_records %}
                 <div class="mt-6">
-                    <div class="flex justify-between items-center border-b border-borderCol pb-2 mb-3">
-                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Архив разборов ({{ cbt_records|length }}):</h3>
-                        <a href="/export_cbt" class="px-3 py-1 bg-darkBg hover:bg-borderCol text-gray-200 rounded-md text-xs font-semibold border border-borderCol transition-all">
+                    <div class="flex justify-between items-center border-b border-renderBorder pb-2 mb-3">
+                        <h3 class="text-xs font-mono text-gray-400 uppercase tracking-wider">Архив разборов ({{ cbt_records|length }}):</h3>
+                        <a href="/export_cbt" class="px-3 py-1 bg-renderBg hover:bg-renderBorder text-gray-200 rounded-md text-xs font-mono font-semibold border border-renderBorder transition-all">
                             📥 Скачать TXT
                         </a>
                     </div>
 
                     <div class="space-y-3 max-h-80 overflow-y-auto pr-1">
                         {% for r in cbt_records %}
-                            <div class="bg-darkBg p-3 rounded-lg border-l-2 border-indigo-500 border-t border-r border-b border-borderCol text-xs">
-                                <div class="flex justify-between text-indigo-400 mb-1 font-medium">
+                            <div class="bg-renderBg p-3 rounded-lg border-l-2 border-indigo-500 border-t border-r border-b border-renderBorder text-xs">
+                                <div class="flex justify-between text-indigo-400 mb-1 font-mono">
                                     <span>🏷️ {{ r.category }}</span>
                                     <span class="text-gray-500">{{ r.date }}</span>
                                 </div>
@@ -166,10 +200,10 @@
         </div>
         
         <!-- СБРОС -->
-        <div class="text-center pt-4 border-t border-borderCol">
+        <div class="text-center pt-4 border-t border-renderBorder">
             <form action="/reset" method="POST" onsubmit="return confirm('Точно сбросить весь прогресс и архив разборов?');">
-                <button type="submit" class="px-4 py-2 bg-darkBg hover:bg-red-950/30 text-gray-400 hover:text-red-400 border border-borderCol hover:border-red-900/50 rounded-lg text-xs font-semibold transition-all">
-                    Сбросить профиль
+                <button type="submit" class="px-4 py-2 bg-renderBg hover:bg-red-950/30 text-gray-400 hover:text-red-400 border border-renderBorder hover:border-red-900/50 rounded-lg text-xs font-mono transition-all">
+                    ⚠️ Сбросить кластер (удалить данные)
                 </button>
             </form>
         </div>
