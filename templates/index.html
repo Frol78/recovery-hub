@@ -3,218 +3,607 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Recovery Hub</title>
-<!-- Подключаем Tailwind CSS -->
+<title>Выздоровление</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     tailwind.config = {
         theme: {
             extend: {
                 colors: {
-                    renderBg: '#08090D',
-                    renderCard: '#0E1017',
-                    renderInner: '#131620',
-                    renderBorder: '#1E2330',
-                    electricBlue: '#3B82F6',
-                    electricGlow: '#60A5FA',
+                    bmwDeep: '#050505',
+                    bmwDark: '#0A0A0C',
+                    bmwCard: '#111115',
+                    bmwBorder: '#22222A',
+                    bmwAccent: '#3B82F6',
                 }
             }
         }
     }
 </script>
 <style>
-    /* Глубокий премиальный фон с тончайшей сеткой в стиле Render */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+    
     body {
-        background-color: #08090D;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+        background-color: #050505;
         background-image: 
-            linear-gradient(to right, rgba(30, 35, 48, 0.12) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(30, 35, 48, 0.12) 1px, transparent 1px);
+            linear-gradient(to right, rgba(34, 34, 42, 0.15) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(34, 34, 42, 0.15) 1px, transparent 1px);
         background-size: 40px 40px;
     }
 
+    .bmw-btn {
+        background: linear-gradient(135deg, #1c1c24 0%, #0d0d12 100%);
+        border: 1px solid #2e2e3a;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+        transition: all 0.3s ease;
+    }
+    
+    .bmw-btn:hover {
+        border-color: #3b82f6;
+        box-shadow: 0 6px 25px rgba(59, 130, 246, 0.25);
+        transform: translateY(-1px);
+    }
+
     @keyframes pulse-red {
-        0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-        70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7), 0 4px 20px rgba(239, 68, 68, 0.5); }
+        50% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0), 0 8px 30px rgba(239, 68, 68, 0.8); }
     }
     .sos-pulse { animation: pulse-red 2s infinite; }
 
-    /* Премиальный градиент текста */
-    .render-gradient-text {
-        background: linear-gradient(135deg, #FFFFFF 20%, #60A5FA 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+    .bmw-border-glow {
+        border: 1px solid #22222A;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     }
+
+    .bmw-checkbox {
+        appearance: none;
+        background-color: #050505;
+        border: 1px solid #22222A;
+        width: 20px;
+        height: 20px;
+        border-radius: 6px;
+        display: inline-grid;
+        place-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .bmw-checkbox:checked {
+        background-color: #3B82F6;
+        border-color: #3B82F6;
+        box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+    }
+    .bmw-checkbox:checked::before {
+        content: "✓";
+        font-size: 12px;
+        font-weight: bold;
+        color: white;
+    }
+
+    .bmw-checkbox-red:checked {
+        background-color: #EF4444;
+        border-color: #EF4444;
+        box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+    }
+
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #0A0A0C; }
+    ::-webkit-scrollbar-thumb { background: #22222A; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3B82F6; }
 </style>
 </head>
-<body class="text-gray-100 font-sans min-h-screen py-12 px-4 flex items-center justify-center">
+<body class="text-gray-100 min-h-screen py-8 sm:py-16 px-4 flex items-center justify-center">
 
-<div class="max-w-2xl w-full bg-renderCard p-8 sm:p-12 rounded-3xl shadow-[0_25px_60px_rgba(0,0,0,0.9)] border border-renderBorder relative overflow-hidden">
+<div class="max-w-3xl w-full bg-bmwCard/90 backdrop-blur-xl p-8 sm:p-14 rounded-3xl shadow-[0_30px_90px_rgba(0,0,0,0.95)] border border-bmwBorder relative overflow-hidden">
     
-    <!-- Синяя переливающаяся линия сверху в стиле Render -->
-    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-4/5 h-1 bg-gradient-to-r from-transparent via-electricBlue to-transparent shadow-[0_0_15px_#3B82F6]"></div>
+    <!-- Верхняя неоновая полоса -->
+    <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-blue-500 to-transparent shadow-[0_0_20px_#3B82F6]"></div>
 
-    <!-- Шапка -->
-    <div class="mb-10 pb-6 border-b border-renderBorder flex justify-between items-center">
+    <!-- Header -->
+    <div class="mb-12 pb-8 border-b border-bmwBorder flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-            <h1 class="text-3xl sm:text-4xl font-extrabold render-gradient-text tracking-tight">
-                ⚡ RECOVERY HUB
+            <h1 class="text-4xl sm:text-5xl font-semibold text-white tracking-tight mb-2 drop-shadow-[0_2px_10px_rgba(255,255,255,0.15)]">
+                ⚡ ВЫЗДОРОВЛЕНИЕ
             </h1>
-            <p class="text-gray-400 text-xs sm:text-sm mt-1 tracking-wider uppercase">Интерфейс контроля: <span class="text-electricGlow font-semibold">● Активен</span></p>
-        </div>
-        <div class="hidden sm:block">
-            <span class="px-3 py-1 bg-renderInner border border-renderBorder rounded-full text-xs font-mono text-electricGlow">v2.5 render-edition</span>
+            <p class="text-gray-400 text-sm font-medium tracking-wide">
+                Система контроля: <span class="text-blue-400 font-bold">● Активна</span>
+            </p>
         </div>
     </div>
 
-    {% if not profile %}
-        <div class="bg-renderInner p-8 rounded-2xl border border-renderBorder shadow-2xl">
-            <h2 class="text-xl font-bold text-gray-100 mb-2 tracking-tight">Инициализация профиля</h2>
-            <p class="text-xs text-gray-400 mb-6 leading-relaxed">Задай параметры для своей личной защищенной системы восстановления.</p>
-            
-            <form action="/create" method="POST" class="space-y-5">
-                <div>
-                    <label class="block text-xs font-mono text-gray-400 uppercase mb-2">Позывной / Имя:</label>
-                    <input type="text" name="name" required placeholder="Оператор" 
-                           class="w-full px-4 py-3.5 bg-renderBg border border-renderBorder rounded-xl text-gray-100 focus:outline-none focus:border-electricBlue focus:ring-1 focus:ring-electricBlue text-sm transition-all">
-                </div>
-
-                <div>
-                    <label class="block text-xs font-mono text-gray-400 uppercase mb-2">Дней без срывов (Старт):</label>
-                    <input type="number" name="days" min="0" value="0" required 
-                           class="w-full px-4 py-3.5 bg-renderBg border border-renderBorder rounded-xl text-gray-100 focus:outline-none focus:border-electricBlue focus:ring-1 focus:ring-electricBlue text-sm transition-all">
-                </div>
-
-                <!-- Черная кнопка с белым шрифтом -->
-                <button type="submit" class="w-full py-4 bg-black hover:bg-gray-900 text-white font-bold rounded-xl border border-renderBorder shadow-xl transition-all text-sm tracking-wide">
-                    Запустить систему 🚀
-                </button>
-            </form>
-        </div>
-    {% else %}
+    <!-- Profile Creation Form -->
+    <div id="setup-section" class="hidden bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow mb-8">
+        <h2 class="text-2xl font-bold text-white mb-3">Инициализация профиля</h2>
+        <p class="text-sm text-gray-300 mb-8 leading-relaxed">Создай свою защищенную систему восстановления с премиальной аналитикой.</p>
         
-        <!-- МОТИВАЦИЯ -->
-        <div class="bg-renderBg p-6 rounded-2xl border border-dashed border-renderBorder text-center mb-8">
-            <p id="quote-box" class="italic text-gray-300 text-sm min-h-[48px] flex items-center justify-center transition-opacity duration-200">
+        <form id="profile-form" onsubmit="createProfile(event)" class="space-y-6">
+            <div>
+                <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-3">Позывной / Имя:</label>
+                <input type="text" id="input-name" required placeholder="Введи свой позывной" 
+                       class="w-full px-5 py-4 bg-bmwDeep border border-bmwBorder rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-3">Дней без срывов (Старт):</label>
+                <input type="number" id="input-days" min="0" value="0" required 
+                       class="w-full px-5 py-4 bg-bmwDeep border border-bmwBorder rounded-xl text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
+            </div>
+
+            <button type="submit" class="w-full py-5 bmw-btn text-white font-bold rounded-xl text-base tracking-wide">
+                Запустить систему 🚀
+            </button>
+        </form>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div id="dashboard-section" class="hidden space-y-8">
+        
+        <!-- Motivation Block -->
+        <div class="bg-bmwDark p-8 rounded-2xl border border-dashed border-bmwBorder text-center bmw-border-glow">
+            <p id="quote-box" class="italic text-gray-200 text-base sm:text-lg min-h-[60px] flex items-center justify-center transition-opacity duration-300 leading-relaxed">
                 «Загружаем порцию мотивации...»
             </p>
-            <button onclick="changeQuote()" class="mt-4 px-4 py-2 text-xs font-mono font-semibold text-electricGlow bg-renderInner border border-renderBorder rounded-xl hover:border-electricBlue transition-all">
+            <button onclick="changeQuote()" class="mt-6 px-6 py-3 text-sm font-bold text-white bmw-btn rounded-xl transition-all">
                 ⚡ Сменить настрой
             </button>
         </div>
 
-        <!-- КНОПКА SOS (Экстренный контроль) -->
-        <div class="bg-renderInner p-6 sm:p-8 rounded-2xl border-2 border-red-500/40 shadow-2xl mb-8">
-            <h2 class="text-base font-bold text-red-400 mb-2 flex items-center gap-2">🚨 Зона экстренного контроля</h2>
-            <p class="text-xs text-gray-300 mb-5 leading-relaxed">Штормит, тяга или пробивает на срыв? Не делай глупостей, аварийный протокол:</p>
-            <form action="/sos" method="GET">
-                <button type="submit" class="w-full py-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl sos-pulse transition-all shadow-lg shadow-red-500/30 text-sm tracking-wide">
-                    🚨 АВАРИЙНЫЙ ВЫХОД (Кнопка SOS)
-                </button>
-            </form>
-            <p class="text-xs text-gray-400 text-center mt-4">Успешно отбитых атак: <strong class="text-red-400 font-bold">{{ profile.slips_avoided | default(0) }}</strong></p>
+        <!-- SOS Button -->
+        <div class="bg-bmwDark p-8 sm:p-10 rounded-2xl border-2 border-red-500/50 shadow-[0_0_40px_rgba(239,68,68,0.2)]">
+            <h2 class="text-lg font-bold text-red-400 mb-3 flex items-center gap-3">
+                <span class="text-2xl">🚨</span> Зона экстренного контроля
+            </h2>
+            <p class="text-sm text-gray-200 mb-6 leading-relaxed">
+                Штормит, тяга или пробивает на срыв? Не делай глупостей — аварийный протокол к твоим услугам.
+            </p>
+            <button onclick="triggerSOS()" class="w-full py-5 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-bold rounded-xl sos-pulse transition-all text-base tracking-wide">
+                🚨 АВАРИЙНЫЙ ВЫХОД (Кнопка SOS)
+            </button>
+            <p class="text-sm text-gray-300 text-center mt-5">
+                Успешно отбитых атак: <strong id="sos-count" class="text-red-400 font-bold text-lg">0</strong>
+            </p>
         </div>
 
-        <!-- СТАТУС ПРОФИЛЯ + ЖИВОЙ ТАЙМЕР -->
-        <div class="bg-gradient-to-br from-renderInner to-renderBg p-6 sm:p-8 rounded-2xl border-l-4 border-electricBlue border-t border-r border-b border-renderBorder shadow-xl mb-8">
-            <h2 class="text-xs font-mono text-electricGlow uppercase tracking-widest mb-3">Состояние профиля</h2>
-            <div class="space-y-2 text-sm text-gray-300 mb-4">
-                <p><strong>Позывной:</strong> <span class="text-white font-medium">{{ profile.name }}</span></p>
-                <p><strong>Дней стабильности:</strong> <span class="text-electricGlow font-bold text-lg">{{ profile.days }}</span></p>
+        <!-- Profile Status + Live Timer -->
+        <div class="bg-gradient-to-br from-bmwDark to-bmwDeep p-8 sm:p-10 rounded-2xl border-l-4 border-blue-500 shadow-[0_0_30px_rgba(0,0,0,0.5)] border border-bmwBorder">
+            <h2 class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-5">Состояние профиля</h2>
+            <div class="space-y-3 text-base text-gray-200 mb-6">
+                <p><strong class="text-white">Позывной:</strong> <span id="profile-name-display" class="text-blue-400 font-bold"></span></p>
+                <p><strong class="text-white">Дней стабильности:</strong> <span id="profile-days-display" class="text-white font-black text-2xl">0</span></p>
             </div>
 
-            <!-- Блок живого таймера -->
-            <div class="pt-4 border-t border-renderBorder font-mono">
-                <span class="text-xs text-gray-400 uppercase tracking-wider block mb-2">⏱️ Точное время без срывов:</span>
-                <div id="live-timer" class="text-base sm:text-lg font-bold text-electricGlow tracking-wider">
+            <!-- Live Timer -->
+            <div class="pt-6 border-t border-bmwBorder font-mono">
+                <span class="text-xs font-bold text-gray-300 uppercase tracking-wider block mb-3">⏱️ Точное время без срывов:</span>
+                <div id="live-timer" class="text-xl sm:text-2xl font-black text-blue-400 tracking-wide">
                     00 дн : 00 ч : 00 мин : 00 сек
                 </div>
             </div>
             
-            <div class="mt-5 p-4 bg-renderBg rounded-xl border border-renderBorder">
-                <span class="text-electricGlow font-bold text-sm block mb-1">{{ status.name }}</span>
-                <p class="text-xs text-gray-400 leading-relaxed">{{ status.desc }}</p>
+            <div class="mt-6 p-5 bg-bmwDeep rounded-xl border border-bmwBorder">
+                <span id="status-name" class="text-blue-400 font-bold text-base block mb-2">Инициализация стабильности</span>
+                <p id="status-desc" class="text-sm text-gray-300 leading-relaxed">Система запущена. Начало отсчета нового уровня жизни.</p>
             </div>
         </div>
 
-        <!-- ПРОГРЕСС (+1 день) - Черная кнопка -->
-        <div class="bg-renderInner p-6 rounded-2xl border border-renderBorder shadow-xl mb-8">
-            <h2 class="text-xs font-mono text-gray-400 uppercase tracking-widest mb-3">Метрика прогресса</h2>
-            <form action="/update" method="POST">
-                <input type="hidden" name="add_days" value="1">
-                <button type="submit" class="w-full py-3.5 bg-black hover:bg-gray-900 text-white font-bold rounded-xl border border-renderBorder shadow-lg transition-all text-sm tracking-wide">
-                    ⚡ Засчитать +1 день победы
-                </button>
-            </form>
+        <!-- Progress Button -->
+        <div class="bg-bmwDark p-8 rounded-2xl bmw-border-glow">
+            <h2 class="text-xs font-bold text-gray-300 uppercase tracking-widest mb-5">Метрика прогресса</h2>
+            <button onclick="addDay()" class="w-full py-5 bmw-btn text-white font-bold rounded-xl text-base tracking-wide">
+                ⚡ Засчитать +1 день победы
+            </button>
         </div>
 
-        <!-- КПТ РАЗБОРЫ -->
-        <div class="bg-renderInner p-6 sm:p-8 rounded-2xl border border-renderBorder shadow-xl mb-8">
-            <h2 class="text-base font-bold text-indigo-400 mb-1">🧠 КПТ: Разбор автоматических мыслей</h2>
-            <p class="text-xs text-gray-400 mb-6">Поймай деструктивную мысль, зафиксируй лог и дай жесткий рациональный отпор.</p>
+        <!-- Баланс дня и График -->
+        <div class="bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow space-y-8">
+            <div>
+                <h2 class="text-xl font-bold text-white mb-2">⚖️ Ежедневный баланс дофамина</h2>
+                <p class="text-sm text-gray-400 mb-6 leading-relaxed">
+                    Отметь факторы текущего дня: бустеры заряжают твой прогресс, ловушки тянут вниз.
+                </p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <!-- Бустеры -->
+                    <div class="bg-bmwDeep p-6 rounded-xl border border-blue-500/30">
+                        <h3 class="text-xs font-bold text-blue-400 uppercase tracking-wider mb-4">🟢 Бустеры (Заряд)</h3>
+                        <div class="space-y-3">
+                            <label class="flex items-center gap-3 cursor-pointer text-sm text-gray-200">
+                                <input type="checkbox" id="b-coding" class="bmw-checkbox"> Кодинг (созидание)
+                            </label>
+                            <label class="flex items-center gap-3 cursor-pointer text-sm text-gray-200">
+                                <input type="checkbox" id="b-body" class="bmw-checkbox"> Тело (спорт, йога, прогулка)
+                            </label>
+                            <label class="flex items-center gap-3 cursor-pointer text-sm text-gray-200">
+                                <input type="checkbox" id="b-mind" class="bmw-checkbox"> Разум (чтение)
+                            </label>
+                            <label class="flex items-center gap-3 cursor-pointer text-sm text-gray-200">
+                                <input type="checkbox" id="b-spirit" class="bmw-checkbox"> Дух (философия, смыслы)
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Ловушки -->
+                    <div class="bg-bmwDeep p-6 rounded-xl border border-red-500/30">
+                        <h3 class="text-xs font-bold text-red-400 uppercase tracking-wider mb-4">🔴 Ловушки (Утечки)</h3>
+                        <div class="space-y-3">
+                            <label class="flex items-center gap-3 cursor-pointer text-sm text-gray-200">
+                                <input type="checkbox" id="t-pity" class="bmw-checkbox bmw-checkbox-red"> Мнительность / Саможалость
+                            </label>
+                            <label class="flex items-center gap-3 cursor-pointer text-sm text-gray-200">
+                                <input type="checkbox" id="t-procr" class="bmw-checkbox bmw-checkbox-red"> Прокрастинация
+                            </label>
+                            <label class="flex items-center gap-3 cursor-pointer text-sm text-gray-200">
+                                <input type="checkbox" id="t-lust" class="bmw-checkbox bmw-checkbox-red"> Похоть / Слив энергии
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="saveDailyBalance()" class="w-full py-5 bmw-btn text-white font-bold rounded-xl text-base tracking-wide">
+                    🛡️ Зафиксировать баланс дня
+                </button>
+            </div>
+
+            <!-- ПРЕМИАЛЬНЫЙ НЕОНОВЫЙ ГРАФИК (Godly Design Style) -->
+            <div class="pt-6 border-t border-bmwBorder">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xs font-bold text-blue-400 uppercase tracking-widest">📈 Индекс стабильности (Волна)</h3>
+                    <span class="text-[10px] font-mono text-gray-500 uppercase tracking-wider">Live Telemetry</span>
+                </div>
+                <div class="bg-bmwDeep p-4 sm:p-6 rounded-xl border border-bmwBorder relative h-64 sm:h-80 shadow-[inset_0_0_20px_rgba(0,0,0,0.8)]">
+                    <canvas id="stabilityChart"></canvas>
+                </div>
+            </div>
+
+            <!-- История логов -->
+            <div id="balance-history-container" class="hidden">
+                <h3 class="text-sm font-bold text-gray-300 uppercase tracking-wider mb-4">Архив индексов дня:</h3>
+                <div id="balance-logs-list" class="space-y-3 max-h-48 overflow-y-auto pr-2"></div>
+            </div>
+        </div>
+
+        <!-- CBT Section -->
+        <div class="bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow">
+            <h2 class="text-xl font-bold text-white mb-2">🧠 КПТ: Разбор автоматических мыслей</h2>
+            <p class="text-sm text-gray-400 mb-8 leading-relaxed">
+                Поймай деструктивную мысль, зафиксируй лог и дай жесткий рациональный отпор.
+            </p>
             
-            <form action="/add_cbt" method="POST" class="space-y-4">
+            <form onsubmit="addCbtRecord(event)" class="space-y-5">
                 <div>
-                    <label class="block text-xs font-mono text-gray-400 uppercase mb-2">Категория / Вектор:</label>
-                    <input type="text" name="category" required placeholder="Напр. Тяга, Тревога, Ложные убеждения" 
-                           class="w-full px-4 py-3 bg-renderBg border border-renderBorder rounded-xl text-sm text-gray-100 focus:outline-none focus:border-indigo-500 transition-all">
+                    <label class="block text-xs font-bold text-gray-200 uppercase tracking-wider mb-3">Категория / Вектор:</label>
+                    <input type="text" id="cbt-cat" required placeholder="Напр. Тяга, Тревога, Ложные убеждения" 
+                           class="w-full px-5 py-4 bg-bmwDeep border border-bmwBorder rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-mono text-gray-400 uppercase mb-2">🧠 Автоматическая мысль:</label>
-                    <textarea name="automatic_thought" rows="2" required placeholder="Что за скрипт крутится в башке..." 
-                              class="w-full px-4 py-3 bg-renderBg border border-renderBorder rounded-xl text-sm text-gray-100 focus:outline-none focus:border-indigo-500 transition-all"></textarea>
+                    <label class="block text-xs font-bold text-gray-200 uppercase tracking-wider mb-3">🧠 Автоматическая мысль:</label>
+                    <textarea id="cbt-thought" rows="3" required placeholder="Что за скрипт крутится в башке..." 
+                              class="w-full px-5 py-4 bg-bmwDeep border border-bmwBorder rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all resize-none"></textarea>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-mono text-gray-400 uppercase mb-2">💡 Рациональный ответ / Опровержение:</label>
-                    <textarea name="rational_response" rows="2" required placeholder="Факты, логика, трезвый расчет..." 
-                              class="w-full px-4 py-3 bg-renderBg border border-renderBorder rounded-xl text-sm text-gray-100 focus:outline-none focus:border-indigo-500 transition-all"></textarea>
+                    <label class="block text-xs font-bold text-gray-200 uppercase tracking-wider mb-3">💡 Рациональный ответ / Опровержение:</label>
+                    <textarea id="cbt-resp" rows="3" required placeholder="Факты, логика, трезвый расчет..." 
+                              class="w-full px-5 py-4 bg-bmwDeep border border-bmwBorder rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all resize-none"></textarea>
                 </div>
 
-                <!-- Черная кнопка для сохранения разбора -->
-                <button type="submit" class="w-full py-3.5 bg-black hover:bg-gray-900 text-white font-bold text-sm rounded-xl border border-renderBorder shadow-lg transition-all">
+                <button type="submit" class="w-full py-5 bmw-btn text-white font-bold rounded-xl text-base tracking-wide">
                     🛡️ Сохранить лог в базу
                 </button>
             </form>
 
-            {% if cbt_records %}
-                <div class="mt-8">
-                    <div class="flex justify-between items-center border-b border-renderBorder pb-3 mb-4">
-                        <h3 class="text-xs font-mono text-gray-400 uppercase tracking-wider">Архив разборов ({{ cbt_records|length }}):</h3>
-                        <a href="/export_cbt" class="px-3 py-1.5 bg-renderBg hover:bg-renderBorder text-gray-200 rounded-lg text-xs font-semibold border border-renderBorder transition-all">
-                            📥 Скачать TXT
-                        </a>
-                    </div>
-
-                    <div class="space-y-3 max-h-80 overflow-y-auto pr-1">
-                        {% for r in cbt_records %}
-                            <div class="bg-renderBg p-4 rounded-xl border-l-2 border-indigo-500 border-t border-r border-b border-renderBorder text-xs">
-                                <div class="flex justify-between text-indigo-400 mb-2 font-medium">
-                                    <span>🏷️ {{ r.category }}</span>
-                                    <span class="text-gray-500 font-mono">{{ r.date }}</span>
-                                </div>
-                                <p class="text-red-400 mt-1"><strong>Мысль:</strong> {{ r.automatic_thought }}</p>
-                                <p class="text-emerald-400 mt-1"><strong>Ответ:</strong> {{ r.rational_response }}</p>
-                            </div>
-                        {% endfor %}
-                    </div>
+            <div id="cbt-records-container" class="mt-10 hidden">
+                <div class="flex justify-between items-center border-b border-bmwBorder pb-4 mb-6">
+                    <h3 class="text-sm font-bold text-gray-200 uppercase tracking-wider">
+                        Архив разборов <span id="cbt-count" class="text-blue-400">(0)</span>
+                    </h3>
+                    <button onclick="exportCbtTxt()" class="px-4 py-2.5 bg-bmwDeep hover:bg-bmwBorder text-gray-200 rounded-lg text-xs font-bold border border-bmwBorder hover:border-blue-500 transition-all">
+                        📥 Скачать TXT
+                    </button>
                 </div>
-            {% endif %}
+
+                <div id="cbt-list" class="space-y-4 max-h-96 overflow-y-auto pr-2"></div>
+            </div>
         </div>
         
-        <!-- СБРОС -->
-        <div class="text-center pt-4 border-t border-renderBorder">
-            <form action="/reset" method="POST" onsubmit="return confirm('Точно сбросить весь прогресс и архив разборов?');">
-                <button type="submit" class="px-4 py-2 bg-renderBg hover:bg-red-950/30 text-gray-400 hover:text-red-400 border border-renderBorder hover:border-red-900/50 rounded-xl text-xs transition-all">
-                    ⚠️ Сбросить кластер (удалить данные)
-                </button>
-            </form>
+        <!-- Reset -->
+        <div class="text-center pt-6 border-t border-bmwBorder">
+            <button onclick="resetCluster()" class="px-6 py-3 bg-bmwDeep hover:bg-red-950/40 text-gray-400 hover:text-red-400 border border-bmwBorder hover:border-red-900/50 rounded-xl text-sm font-semibold transition-all">
+                ⚠️ Сбросить кластер (удалить данные)
+            </button>
         </div>
-    {% endif %}
+    </div>
 </div>
 
 <script>
+    let chartInstance = null;
+
+    function getAppData() {
+        const data = localStorage.getItem('recovery_hub_data');
+        if (!data) return null;
+        return JSON.parse(data);
+    }
+
+    function saveAppData(data) {
+        localStorage.setItem('recovery_hub_data', JSON.stringify(data));
+        renderApp();
+    }
+
+    function createProfile(e) {
+        e.preventDefault();
+        const name = document.getElementById('input-name').value;
+        const days = parseInt(document.getElementById('input-days').value) || 0;
+        const startTime = new Date(new Date().getTime() - (days * 24 * 60 * 60 * 1000)).toISOString();
+
+        const newData = {
+            profile: { name: name, days: days, start_time: startTime, slips_avoided: 0 },
+            cbt_records: [],
+            balance_logs: [
+                { date: "Вчера", index: 2, boosters: 3, traps: 1 },
+                { date: "Сегодня", index: 6, boosters: 4, traps: 0 }
+            ]
+        };
+        saveAppData(newData);
+    }
+
+    function addDay() {
+        let data = getAppData();
+        if (data && data.profile) {
+            data.profile.days += 1;
+            saveAppData(data);
+        }
+    }
+
+    function triggerSOS() {
+        let data = getAppData();
+        if (data && data.profile) {
+            data.profile.slips_avoided = (data.profile.slips_avoided || 0) + 1;
+            saveAppData(data);
+            alert("🚨 Аварийный протокол активирован! Ты справился с тягой. Держи фокус!");
+        }
+    }
+
+    function addCbtRecord(e) {
+        e.preventDefault();
+        const cat = document.getElementById('cbt-cat').value;
+        const thought = document.getElementById('cbt-thought').value;
+        const resp = document.getElementById('cbt-resp').value;
+        const date = new Date().toLocaleDateString('ru-RU') + ' ' + new Date().toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'});
+
+        let data = getAppData();
+        if (data) {
+            if (!data.cbt_records) data.cbt_records = [];
+            data.cbt_records.unshift({ category: cat, automatic_thought: thought, rational_response: resp, date: date });
+            saveAppData(data);
+            
+            document.getElementById('cbt-cat').value = '';
+            document.getElementById('cbt-thought').value = '';
+            document.getElementById('cbt-resp').value = '';
+        }
+    }
+
+    function exportCbtTxt() {
+        let data = getAppData();
+        if (!data || !data.cbt_records || data.cbt_records.length === 0) return;
+        
+        let text = "=== ВЫЗДОРОВЛЕНИЕ: АРХИВ КПТ РАЗБОРОВ ===\r\n\r\n";
+        data.cbt_records.forEach((r, idx) => {
+            text += `[${idx + 1}] Категория: ${r.category} (${r.date})\r\n`;
+            text += `Мысль: ${r.automatic_thought}\r\n`;
+            text += `Ответ: ${r.rational_response}\r\n`;
+            text += "----------------------------------------\r\n\r\n";
+        });
+
+        const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'cbt_recovery_archive.txt';
+        a.click();
+    }
+
+    function saveDailyBalance() {
+        const bCoding = document.getElementById('b-coding').checked;
+        const bBody = document.getElementById('b-body').checked;
+        const bMind = document.getElementById('b-mind').checked;
+        const bSpirit = document.getElementById('b-spirit').checked;
+
+        const tPity = document.getElementById('t-pity').checked;
+        const tProcr = document.getElementById('t-procr').checked;
+        const tLust = document.getElementById('t-lust').checked;
+
+        let boostersCount = (bCoding ? 1 : 0) + (bBody ? 1 : 0) + (bMind ? 1 : 0) + (bSpirit ? 1 : 0);
+        let trapsCount = (tPity ? 1 : 0) + (tProcr ? 1 : 0) + (tLust ? 1 : 0);
+        
+        let index = (boostersCount * 2) - (trapsCount * 2);
+        const dateStr = new Date().toLocaleDateString('ru-RU', {day: 'numeric', month: 'short'});
+
+        let data = getAppData();
+        if (data) {
+            if (!data.balance_logs) data.balance_logs = [];
+            let existing = data.balance_logs.find(l => l.date === dateStr);
+            if (existing) {
+                existing.index = index;
+                existing.boosters = boostersCount;
+                existing.traps = trapsCount;
+            } else {
+                data.balance_logs.push({ date: dateStr, index: index, boosters: boostersCount, traps: trapsCount });
+            }
+            saveAppData(data);
+            alert(`✅ Баланс дня зафиксирован! Индекс стабильности: ${index > 0 ? '+' + index : index}`);
+        }
+    }
+
+    function resetCluster() {
+        if (confirm('Точно сбросить весь прогресс и архив разборов?')) {
+            localStorage.removeItem('recovery_hub_data');
+            renderApp();
+        }
+    }
+
+    // Ультрастильный неоновый график (Godly Style)
+    function renderStabilityChart(logs) {
+        const ctx = document.getElementById('stabilityChart').getContext('2d');
+        
+        const chartData = logs ? [...logs].reverse() : [];
+        const labels = chartData.map(l => l.date);
+        const values = chartData.map(l => l.index);
+
+        if (chartInstance) {
+            chartInstance.destroy();
+        }
+
+        // Киберпанк-градиент с глубоким свечением
+        const gradient = ctx.createLinearGradient(0, 0, 0, 320);
+        gradient.addColorStop(0, 'rgba(59, 130, 246, 0.55)');
+        gradient.addColorStop(0.5, 'rgba(59, 130, 246, 0.15)');
+        gradient.addColorStop(1, 'rgba(5, 5, 5, 0.0)');
+
+        chartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Индекс стабильности',
+                    data: values,
+                    borderColor: '#3B82F6',
+                    borderWidth: 3.5,
+                    backgroundColor: gradient,
+                    fill: true,
+                    tension: 0.45, // Плавная жидкая волна
+                    pointBackgroundColor: '#111115',
+                    pointBorderColor: '#3B82F6',
+                    pointBorderWidth: 3,
+                    pointRadius: 6,
+                    pointHoverRadius: 9,
+                    pointHoverBackgroundColor: '#3B82F6',
+                    pointHoverBorderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: {
+                    duration: 1200,
+                    easing: 'easeOutQuart'
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(17, 17, 21, 0.95)',
+                        titleColor: '#3B82F6',
+                        bodyColor: '#ffffff',
+                        borderColor: '#2e2e3a',
+                        borderWidth: 1,
+                        padding: 14,
+                        displayColors: false,
+                        cornerRadius: 10,
+                        titleFont: { family: 'Inter', weight: 'bold', size: 13 },
+                        bodyFont: { family: 'Inter', size: 12 },
+                        callbacks: {
+                            label: function(context) {
+                                let val = context.raw;
+                                return ' Индекс стабильности: ' + (val > 0 ? '+' + val : val);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(34, 34, 42, 0.3)', drawBorder: false },
+                        ticks: { color: '#6B7280', font: { family: 'Inter', size: 11, weight: '500' } }
+                    },
+                    y: {
+                        grid: { color: 'rgba(34, 34, 42, 0.3)', drawBorder: false },
+                        ticks: { color: '#6B7280', font: { family: 'Inter', size: 11, weight: '500' } },
+                        suggestedMin: -6,
+                        suggestedMax: 8
+                    }
+                }
+            }
+        });
+    }
+
+    function renderApp() {
+        const data = getAppData();
+        const setupSection = document.getElementById('setup-section');
+        const dashboardSection = document.getElementById('dashboard-section');
+
+        if (!data || !data.profile) {
+            setupSection.classList.remove('hidden');
+            dashboardSection.classList.add('hidden');
+            return;
+        }
+
+        setupSection.classList.add('hidden');
+        dashboardSection.classList.remove('hidden');
+
+        document.getElementById('profile-name-display').innerText = data.profile.name;
+        document.getElementById('profile-days-display').innerText = data.profile.days;
+        document.getElementById('sos-count').innerText = data.profile.slips_avoided || 0;
+
+        const days = data.profile.days;
+        let statusName = "Базовый уровень";
+        let statusDesc = "Система запущена. Начало отсчета нового уровня жизни.";
+        if (days >= 3) { statusName = "⚡ Инициализация стержня"; statusDesc = "Первые дни позади. Дофаминовый шторм начинает утихать."; }
+        if (days >= 7) { statusName = "🔥 Уверенный контроль"; statusDesc = "Неделя чистой дисциплины. Нейронные связи начинают перестраиваться."; }
+        if (days >= 21) { statusName = "🛡️ Стальной контур"; statusDesc = "Три недели. Привычка разрушать заменяется привычкой созидать."; }
+        if (days >= 90) { statusName = "👑 Элитный уровень (Mastery)"; statusDesc = "Глубинная трансформация сознания. Ты полностью владеешь своими состояниями."; }
+
+        document.getElementById('status-name').innerText = statusName;
+        document.getElementById('status-desc').innerText = statusDesc;
+
+        // КПТ архив
+        const cbtList = document.getElementById('cbt-list');
+        const cbtContainer = document.getElementById('cbt-records-container');
+        const cbtCount = document.getElementById('cbt-count');
+        
+        if (data.cbt_records && data.cbt_records.length > 0) {
+            cbtContainer.classList.remove('hidden');
+            cbtCount.innerText = `(${data.cbt_records.length})`;
+            cbtList.innerHTML = data.cbt_records.map(r => `
+                <div class="bg-bmwDeep p-5 rounded-xl border-l-4 border-blue-500 border-t border-r border-b border-bmwBorder text-sm">
+                    <div class="flex justify-between items-center text-blue-400 mb-3 font-semibold">
+                        <span>🏷️ ${r.category}</span>
+                        <span class="text-gray-400 font-mono text-xs">${r.date}</span>
+                    </div>
+                    <p class="text-red-400 mb-2 leading-relaxed"><strong>Мысль:</strong> ${r.automatic_thought}</p>
+                    <p class="text-emerald-400 leading-relaxed"><strong>Ответ:</strong> ${r.rational_response}</p>
+                </div>
+            `).join('');
+        } else {
+            cbtContainer.classList.add('hidden');
+        }
+
+        // История баланса и График
+        const balanceContainer = document.getElementById('balance-history-container');
+        const balanceLogsList = document.getElementById('balance-logs-list');
+        if (data.balance_logs && data.balance_logs.length > 0) {
+            balanceContainer.classList.remove('hidden');
+            balanceLogsList.innerHTML = data.balance_logs.map(l => `
+                <div class="flex justify-between items-center bg-bmwDeep p-3 rounded-xl border border-bmwBorder text-sm">
+                    <span class="text-gray-300 font-mono text-xs">${l.date}</span>
+                    <div class="flex gap-4 text-xs font-bold">
+                        <span class="text-blue-400">🟢 Бустеров: ${l.boosters}</span>
+                        <span class="text-red-400">🔴 Ловушек: ${l.traps}</span>
+                        <span class="${l.index >= 0 ? 'text-emerald-400' : 'text-red-400'}">Индекс: ${l.index > 0 ? '+' + l.index : l.index}</span>
+                    </div>
+                </div>
+            `).join('');
+
+            renderStabilityChart(data.balance_logs);
+        } else {
+            balanceContainer.classList.add('hidden');
+        }
+
+        if (data.profile.start_time) {
+            initLiveTimer(data.profile.start_time);
+        }
+    }
+
     const quotes = [
         "«Энергия течет туда, куда ты направляешь фокус. Не сливай ее в трубу.»",
         "«Легкий дофамин — это ловушка для слабых. Ты здесь не для этого.»",
@@ -231,16 +620,12 @@
         setTimeout(() => {
             quoteBox.innerText = quotes[randomIndex];
             quoteBox.style.opacity = 1;
-        }, 150);
+        }, 200);
     }
     
-    // Запускаем первую цитату при загрузке
-    changeQuote();
-
-    // Живой таймер
-    const startTimeStr = "{{ profile.start_time if profile and profile.start_time else '' }}";
-    
-    if (startTimeStr) {
+    let timerInterval = null;
+    function initLiveTimer(startTimeStr) {
+        if (timerInterval) clearInterval(timerInterval);
         const startTime = new Date(startTimeStr).getTime();
 
         function updateTimer() {
@@ -253,17 +638,25 @@
                 const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-                document.getElementById("live-timer").innerText = 
-                    String(days).padStart(2, '0') + " дн : " + 
-                    String(hours).padStart(2, '0') + " ч : " + 
-                    String(minutes).padStart(2, '0') + " мин : " + 
-                    String(seconds).padStart(2, '0') + " сек";
+                const timerEl = document.getElementById("live-timer");
+                if (timerEl) {
+                    timerEl.innerText = 
+                        String(days).padStart(2, '0') + " дн : " + 
+                        String(hours).padStart(2, '0') + " ч : " + 
+                        String(minutes).padStart(2, '0') + " мин : " + 
+                        String(seconds).padStart(2, '0') + " сек";
+                }
             }
         }
 
-        setInterval(updateTimer, 1000);
+        timerInterval = setInterval(updateTimer, 1000);
         updateTimer();
     }
+
+    window.onload = function() {
+        renderApp();
+        changeQuote();
+    };
 </script>
 </body>
 </html>

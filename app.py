@@ -1,3 +1,4 @@
+import os
 import random
 from datetime import datetime, timedelta
 from flask import Flask, render_template, request, redirect, url_for, Response
@@ -5,7 +6,9 @@ from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///recovery.db'
+
+basedir = os.path.abspath(os.path.dirname(__file__))
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'recovery.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -28,7 +31,9 @@ class CbtRecord(db.Model):
 
 with app.app_context():
     db.create_all()
-
+print("✅ База данных создана!")
+print("Путь к базе:", os.path.join(basedir, 'recovery.db'))
+print("Файл существует:", os.path.exists(os.path.join(basedir, 'recovery.db')))
 SOS_TIPS = [
     {"title": "🚨 Тревога!", "text": "Братан, стоп! Руки убрали от клавиатуры. Это просто ловушка дофамина. Иди сделай 20 отжиманий или холодный душ."},
     {"title": "🧠 Режим зомби", "text": "Мозг сейчас пытается тебя обмануть ради легкого дофамина. Не ведись на этот развод, ты сильнее."},
