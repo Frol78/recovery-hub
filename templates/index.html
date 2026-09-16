@@ -35,54 +35,6 @@
         overflow-x: hidden;
     }
 
-    /* ── Живой Mesh-градиент на фон ── */
-    .mesh-bg {
-        position: fixed;
-        inset: 0;
-        z-index: -1;
-        overflow: hidden;
-        background-color: #050505;
-        pointer-events: none;
-    }
-    .mesh-blob {
-        position: absolute;
-        filter: blur(120px);
-        opacity: 0.22;
-        border-radius: 50%;
-        animation: mesh-float 20s ease infinite alternate;
-        pointer-events: none;
-    }
-    .mesh-blob-1 {
-        top: -10%;
-        left: -10%;
-        width: 55vw;
-        height: 55vw;
-        background: #3B82F6;
-    }
-    .mesh-blob-2 {
-        bottom: -15%;
-        right: -10%;
-        width: 60vw;
-        height: 60vw;
-        background: #6366F1;
-        animation-delay: -7s;
-    }
-    .mesh-blob-3 {
-        top: 40%;
-        left: 30%;
-        width: 40vw;
-        height: 40vw;
-        background: #1D4ED8;
-        animation-delay: -14s;
-        opacity: 0.12;
-    }
-
-    @keyframes mesh-float {
-        0% { transform: translate(0px, 0px) scale(1); }
-        50% { transform: translate(50px, 80px) scale(1.15); }
-        100% { transform: translate(-40px, 50px) scale(0.9); }
-    }
-
     /* ── Интерактивные карточки с динамическим бордером (Spotlight) ── */
     .spotlight-card {
         position: relative;
@@ -324,13 +276,6 @@
 </style>
 </head>
 <body class="text-gray-100 min-h-screen py-8 sm:py-16 px-4 flex items-center justify-center">
-
-<!-- Живой анимированный фон с Mesh-градиентами -->
-<div class="mesh-bg">
-    <div class="mesh-blob mesh-blob-1"></div>
-    <div class="mesh-blob mesh-blob-2"></div>
-    <div class="mesh-blob mesh-blob-3"></div>
-</div>
 
 <div id="toast-box"></div>
 
