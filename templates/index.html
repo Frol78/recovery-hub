@@ -31,6 +31,82 @@
             linear-gradient(to right, rgba(34, 34, 42, 0.15) 1px, transparent 1px),
             linear-gradient(to bottom, rgba(34, 34, 42, 0.15) 1px, transparent 1px);
         background-size: 40px 40px;
+        position: relative;
+        overflow-x: hidden;
+    }
+
+    /* ── Живой Mesh-градиент на фон ── */
+    .mesh-bg {
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        overflow: hidden;
+        background-color: #050505;
+        pointer-events: none;
+    }
+    .mesh-blob {
+        position: absolute;
+        filter: blur(120px);
+        opacity: 0.22;
+        border-radius: 50%;
+        animation: mesh-float 20s ease infinite alternate;
+        pointer-events: none;
+    }
+    .mesh-blob-1 {
+        top: -10%;
+        left: -10%;
+        width: 55vw;
+        height: 55vw;
+        background: #3B82F6;
+    }
+    .mesh-blob-2 {
+        bottom: -15%;
+        right: -10%;
+        width: 60vw;
+        height: 60vw;
+        background: #6366F1;
+        animation-delay: -7s;
+    }
+    .mesh-blob-3 {
+        top: 40%;
+        left: 30%;
+        width: 40vw;
+        height: 40vw;
+        background: #1D4ED8;
+        animation-delay: -14s;
+        opacity: 0.12;
+    }
+
+    @keyframes mesh-float {
+        0% { transform: translate(0px, 0px) scale(1); }
+        50% { transform: translate(50px, 80px) scale(1.15); }
+        100% { transform: translate(-40px, 50px) scale(0.9); }
+    }
+
+    /* ── Интерактивные карточки с динамическим бордером (Spotlight) ── */
+    .spotlight-card {
+        position: relative;
+        overflow: hidden;
+        background: #111115;
+        border: 1px solid #22222A;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    .spotlight-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: radial-gradient(
+            500px circle at var(--mouse-x, 0) var(--mouse-y, 0),
+            rgba(59, 130, 246, 0.16),
+            transparent 45%
+        );
+        z-index: 1;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    .spotlight-card:hover::before {
+        opacity: 1;
     }
 
     .bmw-btn {
@@ -249,9 +325,16 @@
 </head>
 <body class="text-gray-100 min-h-screen py-8 sm:py-16 px-4 flex items-center justify-center">
 
+<!-- Живой анимированный фон с Mesh-градиентами -->
+<div class="mesh-bg">
+    <div class="mesh-blob mesh-blob-1"></div>
+    <div class="mesh-blob mesh-blob-2"></div>
+    <div class="mesh-blob mesh-blob-3"></div>
+</div>
+
 <div id="toast-box"></div>
 
-<div class="max-w-3xl w-full bg-bmwCard/90 backdrop-blur-xl p-8 sm:p-14 rounded-3xl shadow-[0_30px_90px_rgba(0,0,0,0.95)] border border-bmwBorder relative overflow-hidden">
+<div class="max-w-3xl w-full spotlight-card bg-bmwCard/90 backdrop-blur-xl p-8 sm:p-14 rounded-3xl shadow-[0_30px_90px_rgba(0,0,0,0.95)] border border-bmwBorder relative overflow-hidden">
 
     <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-blue-500 to-transparent shadow-[0_0_20px_#3B82F6]"></div>
 
@@ -290,7 +373,7 @@
     </div>
 
     <!-- Profile Creation Form -->
-    <div id="setup-section" class="hidden bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow mb-8">
+    <div id="setup-section" class="hidden spotlight-card bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow mb-8">
         <h2 class="text-2xl font-bold text-white mb-3">Инициализация профиля</h2>
         <p class="text-sm text-gray-300 mb-8 leading-relaxed">Создай свою защищенную систему восстановления с премиальной аналитикой.</p>
 
@@ -323,7 +406,7 @@
 
         <!-- 🚀 ГЛАВНЫЙ ВИДЖЕТ: Eura-style точечный таймер вверху -->
         <div class="flex justify-center">
-            <div class="eura-timer-card">
+            <div class="eura-timer-card spotlight-card">
                 <div class="eura-timer-label">⏱️ Чистое время · <span id="profile-name-display" class="text-white">Оператор</span></div>
                 
                 <div class="eura-timer-main">
@@ -360,7 +443,7 @@
         </div>
 
         <!-- Motivation Block -->
-        <div class="bg-bmwDark p-8 rounded-2xl border border-dashed border-bmwBorder text-center bmw-border-glow">
+        <div class="spotlight-card bg-bmwDark p-8 rounded-2xl border border-dashed border-bmwBorder text-center bmw-border-glow">
             <p id="quote-box" class="italic text-gray-200 text-base sm:text-lg min-h-[60px] flex items-center justify-center transition-opacity duration-300 leading-relaxed">
                 «Загружаем порцию мотивации...»
             </p>
@@ -370,7 +453,7 @@
         </div>
 
         <!-- SOS Button -->
-        <div class="bg-bmwDark p-8 sm:p-10 rounded-2xl border-2 border-red-500/50 shadow-[0_0_40px_rgba(239,68,68,0.2)]">
+        <div class="spotlight-card bg-bmwDark p-8 sm:p-10 rounded-2xl border-2 border-red-500/50 shadow-[0_0_40px_rgba(239,68,68,0.2)]">
             <h2 class="text-lg font-bold text-red-400 mb-3 flex items-center gap-3">
                 <span class="text-2xl">🚨</span> Зона экстренного контроля
             </h2>
@@ -386,7 +469,7 @@
         </div>
 
         <!-- Progress Button -->
-        <div class="bg-bmwDark p-8 rounded-2xl bmw-border-glow">
+        <div class="spotlight-card bg-bmwDark p-8 rounded-2xl bmw-border-glow">
             <h2 class="text-xs font-bold text-gray-300 uppercase tracking-widest mb-5">Метрика прогресса</h2>
             <button onclick="addDay()" class="w-full py-5 bmw-btn text-white font-bold rounded-xl text-base tracking-wide">
                 ⚡ Засчитать +1 день победы
@@ -394,7 +477,7 @@
         </div>
 
         <!-- ══════════ ИНТЕРАКТИВНЫЙ КАЛЕНДАРЬ «КАРТА ЧИСТОТЫ» ══════════ -->
-        <div class="bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow">
+        <div class="spotlight-card bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow">
 
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                 <div>
@@ -474,7 +557,7 @@
         </div>
 
         <!-- Баланс дня и График -->
-        <div class="bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow space-y-8">
+        <div class="spotlight-card bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow space-y-8">
             <div>
                 <h2 class="text-xl font-bold text-white mb-2">⚖️ Ежедневный баланс дофамина</h2>
                 <p class="text-sm text-gray-400 mb-6 leading-relaxed">
@@ -538,7 +621,7 @@
         </div>
 
         <!-- CBT Section -->
-        <div class="bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow">
+        <div class="spotlight-card bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow">
             <h2 class="text-xl font-bold text-white mb-2">🧠 КПТ: Разбор автоматических мыслей</h2>
             <p class="text-sm text-gray-400 mb-8 leading-relaxed">
                 Поймай деструктивную мысль, зафиксируй лог и дай жесткий рациональный отпор.
@@ -611,6 +694,33 @@ let calViewMonth = new Date().getMonth();
 let calSelectedKey = null;
 let calModalStatus = null;
 let calModalOpen = false;
+
+/* ── Скрипт для интерактивного свечения карточек за курсором/пальцем ── */
+document.addEventListener('mousemove', e => {
+    for (const card of document.getElementsByClassName('spotlight-card')) {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        card.style.setProperty('--mouse-x', `${x}px`);
+        card.style.setProperty('--mouse-y', `${y}px`);
+    }
+});
+
+document.addEventListener('touchmove', e => {
+    if (!e.touches[0]) return;
+    const clientX = e.touches[0].clientX;
+    const clientY = e.touches[0].clientY;
+    
+    for (const card of document.getElementsByClassName('spotlight-card')) {
+        const rect = card.getBoundingClientRect();
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
+
+        card.style.setProperty('--mouse-x', `${x}px`);
+        card.style.setProperty('--mouse-y', `${y}px`);
+    }
+}, { passive: true });
 
 async function api(path, body) {
     const opts = (body === undefined)
