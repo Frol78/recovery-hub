@@ -124,7 +124,7 @@
     <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-blue-500 to-transparent shadow-[0_0_20px_#3B82F6]"></div>
 
     <!-- Header -->
-    <div class="mb-12 pb-8 border-b border-bmwBorder flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div class="mb-8 pb-6 border-b border-bmwBorder flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div class="flex items-center gap-4">
             <!-- Футуристичный неоновый логотип -->
             <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600/20 to-bmwDeep border border-blue-500/40 flex items-center justify-center shadow-[0_0_25px_rgba(59,130,246,0.25)] shrink-0">
@@ -189,6 +189,43 @@
     <!-- Main Dashboard -->
     <div id="dashboard-section" class="hidden space-y-8">
 
+        <!-- 🚀 ГЛАВНЫЙ ВИДЖЕТ ТРЕКЕРА (Стиль Eura Health / Premium Tracker) -->
+        <div class="relative bg-gradient-to-br from-bmwDark via-bmwDeep to-bmwDark p-8 sm:p-10 rounded-3xl border border-blue-500/40 shadow-[0_0_50px_rgba(59,130,246,0.15)] overflow-hidden">
+            <div class="absolute -right-20 -top-20 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -left-20 -bottom-20 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+                <!-- Левая часть: Цифра и ранг -->
+                <div class="text-center md:text-left">
+                    <div class="flex items-center justify-center md:justify-start gap-2 mb-2">
+                        <span class="w-2 h-2 rounded-full bg-blue-400 animate-ping"></span>
+                        <span class="text-xs font-bold text-blue-400 uppercase tracking-widest">Оператор: <span id="profile-name-display" class="text-white"></span></span>
+                    </div>
+                    
+                    <div class="flex items-baseline justify-center md:justify-start gap-3 my-3">
+                        <span id="profile-days-display" class="text-6xl sm:text-7xl font-black text-white tracking-tight drop-shadow-[0_0_20px_rgba(59,130,246,0.4)]">0</span>
+                        <span class="text-lg font-bold text-gray-400 uppercase tracking-wider">дней победы</span>
+                    </div>
+
+                    <div id="status-badge-box" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-500/10 border border-blue-500/30 rounded-xl">
+                        <span class="text-sm">⚡</span>
+                        <span id="status-name" class="text-blue-300 font-bold text-xs sm:text-sm">Инициализация стабильности</span>
+                    </div>
+                </div>
+
+                <!-- Правая часть: Точный живой таймер в стиле кибер-панели -->
+                <div class="w-full md:w-auto bg-bmwCard/90 backdrop-blur-md p-6 rounded-2xl border border-bmwBorder text-center shadow-2xl">
+                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">⏱️ Живой отсчет времени</span>
+                    <div id="live-timer" class="text-base sm:text-lg font-black text-blue-400 font-mono tracking-wider">
+                        00 дн : 00 ч : 00 мин : 00 сек
+                    </div>
+                    <p id="status-desc" class="text-xs text-gray-400 mt-3 max-w-[280px] leading-relaxed mx-auto">
+                        Система запущена. Начало отсчета нового уровня жизни.
+                    </p>
+                </div>
+            </div>
+        </div>
+
         <!-- Motivation Block -->
         <div class="bg-bmwDark p-8 rounded-2xl border border-dashed border-bmwBorder text-center bmw-border-glow">
             <p id="quote-box" class="italic text-gray-200 text-base sm:text-lg min-h-[60px] flex items-center justify-center transition-opacity duration-300 leading-relaxed">
@@ -213,27 +250,6 @@
             <p class="text-sm text-gray-300 text-center mt-5">
                 Успешно отбитых атак: <strong id="sos-count" class="text-red-400 font-bold text-lg">0</strong>
             </p>
-        </div>
-
-        <!-- Profile Status + Live Timer -->
-        <div class="bg-gradient-to-br from-bmwDark to-bmwDeep p-8 sm:p-10 rounded-2xl border-l-4 border-blue-500 shadow-[0_0_30px_rgba(0,0,0,0.5)] border border-bmwBorder">
-            <h2 class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-5">Состояние профиля</h2>
-            <div class="space-y-3 text-base text-gray-200 mb-6">
-                <p><strong class="text-white">Позывной:</strong> <span id="profile-name-display" class="text-blue-400 font-bold"></span></p>
-                <p><strong class="text-white">Дней стабильности:</strong> <span id="profile-days-display" class="text-white font-black text-2xl">0</span></p>
-            </div>
-
-            <div class="pt-6 border-t border-bmwBorder font-mono">
-                <span class="text-xs font-bold text-gray-300 uppercase tracking-wider block mb-3">⏱️ Точное время без срывов:</span>
-                <div id="live-timer" class="text-xl sm:text-2xl font-black text-blue-400 tracking-wide">
-                    00 дн : 00 ч : 00 мин : 00 сек
-                </div>
-            </div>
-
-            <div class="mt-6 p-5 bg-bmwDeep rounded-xl border border-bmwBorder">
-                <span id="status-name" class="text-blue-400 font-bold text-base block mb-2">Инициализация стабильности</span>
-                <p id="status-desc" class="text-sm text-gray-300 leading-relaxed">Система запущена. Начало отсчета нового уровня жизни.</p>
-            </div>
         </div>
 
         <!-- Progress Button -->
