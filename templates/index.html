@@ -1,1148 +1,161 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Выздоровление</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    tailwind.config = {
-        theme: {
-            extend: {
-                colors: {
-                    bmwDeep: '#050505',
-                    bmwDark: '#0A0A0C',
-                    bmwCard: '#111115',
-                    bmwBorder: '#22222A',
-                    bmwAccent: '#3B82F6',
-                }
-            }
-        }
-    }
-</script>
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+/* ─────────────────────────────
+   Eura-style точечный таймер
+───────────────────────────── */
 
-    body {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-        background-color: #050505;
-        background-image:
-            linear-gradient(to right, rgba(34, 34, 42, 0.15) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(34, 34, 42, 0.15) 1px, transparent 1px);
-        background-size: 40px 40px;
-    }
-
-    .bmw-btn {
-        background: linear-gradient(135deg, #1c1c24 0%, #0d0d12 100%);
-        border: 1px solid #2e2e3a;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
-        transition: all 0.3s ease;
-    }
-    .bmw-btn:hover {
-        border-color: #3b82f6;
-        box-shadow: 0 6px 25px rgba(59, 130, 246, 0.25);
-        transform: translateY(-1px);
-    }
-    .bmw-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
-
-    @keyframes pulse-red {
-        0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7), 0 4px 20px rgba(239, 68, 68, 0.5); }
-        50% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0), 0 8px 30px rgba(239, 68, 68, 0.8); }
-    }
-    .sos-pulse { animation: pulse-red 2s infinite; }
-
-    .bmw-border-glow {
-        border: 1px solid #22222A;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    }
-
-    .bmw-checkbox {
-        appearance: none;
-        background-color: #050505;
-        border: 1px solid #22222A;
-        width: 20px;
-        height: 20px;
-        border-radius: 6px;
-        display: inline-grid;
-        place-content: center;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        flex-shrink: 0;
-    }
-    .bmw-checkbox:checked {
-        background-color: #3B82F6;
-        border-color: #3B82F6;
-        box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
-    }
-    .bmw-checkbox:checked::before {
-        content: "✓";
-        font-size: 12px;
-        font-weight: bold;
-        color: white;
-    }
-    .bmw-checkbox-red:checked {
-        background-color: #EF4444;
-        border-color: #EF4444;
-        box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
-    }
-
-    ::-webkit-scrollbar { width: 8px; }
-    ::-webkit-scrollbar-track { background: #0A0A0C; }
-    ::-webkit-scrollbar-thumb { background: #22222A; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #3B82F6; }
-
-    /* ── Интерактивный календарь «Карта чистоты» ── */
-    @keyframes cal-pulse {
-        0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.55), 0 0 12px rgba(59, 130, 246, 0.25); }
-        50%      { box-shadow: 0 0 0 7px rgba(59, 130, 246, 0), 0 0 24px rgba(59, 130, 246, 0.7); }
-    }
-    .cal-today { animation: cal-pulse 2.6s infinite; }
-
-    .cal-cell { transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background-color .18s ease; }
-    .cal-cell:hover { transform: translateY(-2px); }
-    .cal-heat-cell { transition: transform .15s ease; }
-    .cal-heat-cell:hover { transform: scale(1.35); }
-
-    @keyframes cal-fade { from { opacity: 0; transform: scale(.95); } to { opacity: 1; transform: scale(1); } }
-    .cal-modal-anim { animation: cal-fade .18s ease-out; }
-
-    /* ── Уведомления ── */
-    #toast-box { position: fixed; top: 18px; left: 50%; transform: translateX(-50%); z-index: 100; display: flex; flex-direction: column; gap: 10px; width: min(92vw, 460px); }
-    @keyframes toast-in { from { opacity: 0; transform: translateY(-14px); } to { opacity: 1; transform: translateY(0); } }
-    .toast { animation: toast-in .22s ease-out; }
-
-    .saving { opacity: .6; pointer-events: none; }
-</style>
-</head>
-<body class="text-gray-100 min-h-screen py-8 sm:py-16 px-4 flex items-center justify-center">
-
-<div id="toast-box"></div>
-
-<div class="max-w-3xl w-full bg-bmwCard/90 backdrop-blur-xl p-8 sm:p-14 rounded-3xl shadow-[0_30px_90px_rgba(0,0,0,0.95)] border border-bmwBorder relative overflow-hidden">
-
-    <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-blue-500 to-transparent shadow-[0_0_20px_#3B82F6]"></div>
-
-    <!-- Header -->
-    <div class="mb-8 pb-6 border-b border-bmwBorder flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div class="flex items-center gap-4">
-            <!-- Футуристичный неоновый логотип -->
-            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600/20 to-bmwDeep border border-blue-500/40 flex items-center justify-center shadow-[0_0_25px_rgba(59,130,246,0.25)] shrink-0">
-                <svg class="w-7 h-7 text-blue-400 animate-pulse" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
-                </svg>
-            </div>
-            <div>
-                <h1 class="text-4xl sm:text-5xl font-semibold text-white tracking-tight mb-2 drop-shadow-[0_2px_10px_rgba(255,255,255,0.15)]">
-                    ⚡ Трезвость
-                </h1>
-                <p class="text-gray-400 text-sm font-medium tracking-wide">
-                    Пробуждение: <span class="text-blue-400 font-bold">● Активна</span>
-                </p>
-            </div>
-        </div>
-        <div class="text-right shrink-0">
-            <span class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Хранилище</span>
-            <span id="storage-badge" class="text-xs font-bold text-gray-400">проверка...</span>
-        </div>
-    </div>
-
-    <!-- Предупреждение: база не на постоянном диске -->
-    <div id="storage-warning" class="hidden mb-8 p-6 bg-red-950/30 border border-red-500/40 rounded-2xl">
-        <h3 class="text-sm font-bold text-red-400 mb-2">⚠️ Данные не защищены от пересборки</h3>
-        <p class="text-xs text-gray-300 leading-relaxed">
-            База лежит внутри контейнера (<span class="font-mono text-red-300" id="storage-warning-path">—</span>) и обнулится при следующем деплое.
-            Подключи постоянный диск (том <span class="font-mono">/data</span>) — после этого прогресс будет жить годами.
-            Подробности в инструкции.
-        </p>
-    </div>
-
-    <!-- Profile Creation Form -->
-    <div id="setup-section" class="hidden bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow mb-8">
-        <h2 class="text-2xl font-bold text-white mb-3">Инициализация профиля</h2>
-        <p class="text-sm text-gray-300 mb-8 leading-relaxed">Создай свою защищенную систему восстановления с премиальной аналитикой.</p>
-
-        <form id="profile-form" onsubmit="createProfile(event)" class="space-y-6">
-            <div>
-                <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-3">Позывной / Имя:</label>
-                <input type="text" id="input-name" required placeholder="Введи свой позывной"
-                       class="w-full px-5 py-4 bg-bmwDeep border border-bmwBorder rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
-            </div>
-
-            <div>
-                <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-3">Дней без срывов (Старт):</label>
-                <input type="number" id="input-days" min="0" value="0" required
-                       class="w-full px-5 py-4 bg-bmwDeep border border-bmwBorder rounded-xl text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
-            </div>
-
-            <button type="submit" class="w-full py-5 bmw-btn text-white font-bold rounded-xl text-base tracking-wide">
-                Запустить систему 🚀
-            </button>
-        </form>
-    </div>
-
-    <!-- Loading -->
-    <div id="loading-section" class="text-center py-16">
-        <p class="text-gray-400 text-sm font-mono tracking-wider">Инициализация...</p>
-    </div>
-
-    <!-- Main Dashboard -->
-    <div id="dashboard-section" class="hidden space-y-8">
-
-        <!-- 🚀 ГЛАВНЫЙ ВИДЖЕТ ТРЕКЕРА (Стиль Eura Health / Premium Tracker) -->
-        <div class="relative bg-gradient-to-br from-bmwDark via-bmwDeep to-bmwDark p-8 sm:p-10 rounded-3xl border border-blue-500/40 shadow-[0_0_50px_rgba(59,130,246,0.15)] overflow-hidden">
-            <div class="absolute -right-20 -top-20 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
-            <div class="absolute -left-20 -bottom-20 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
-
-            <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
-                <!-- Левая часть: Цифра и ранг -->
-                <div class="text-center md:text-left">
-                    <div class="flex items-center justify-center md:justify-start gap-2 mb-2">
-                        <span class="w-2 h-2 rounded-full bg-blue-400 animate-ping"></span>
-                        <span class="text-xs font-bold text-blue-400 uppercase tracking-widest">Оператор: <span id="profile-name-display" class="text-white"></span></span>
-                    </div>
-                    
-                    <div class="flex items-baseline justify-center md:justify-start gap-3 my-3">
-                        <span id="profile-days-display" class="text-6xl sm:text-7xl font-black text-white tracking-tight drop-shadow-[0_0_20px_rgba(59,130,246,0.4)]">0</span>
-                        <span class="text-lg font-bold text-gray-400 uppercase tracking-wider">дней победы</span>
-                    </div>
-
-                    <div id="status-badge-box" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-500/10 border border-blue-500/30 rounded-xl">
-                        <span class="text-sm">⚡</span>
-                        <span id="status-name" class="text-blue-300 font-bold text-xs sm:text-sm">Инициализация стабильности</span>
-                    </div>
-                </div>
-
-                <!-- Правая часть: Точный живой таймер в стиле кибер-панели -->
-                <div class="w-full md:w-auto bg-bmwCard/90 backdrop-blur-md p-6 rounded-2xl border border-bmwBorder text-center shadow-2xl">
-                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">⏱️ Живой отсчет времени</span>
-                    <div id="live-timer" class="text-base sm:text-lg font-black text-blue-400 font-mono tracking-wider">
-                        00 дн : 00 ч : 00 мин : 00 сек
-                    </div>
-                    <p id="status-desc" class="text-xs text-gray-400 mt-3 max-w-[280px] leading-relaxed mx-auto">
-                        Система запущена. Начало отсчета нового уровня жизни.
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Motivation Block -->
-        <div class="bg-bmwDark p-8 rounded-2xl border border-dashed border-bmwBorder text-center bmw-border-glow">
-            <p id="quote-box" class="italic text-gray-200 text-base sm:text-lg min-h-[60px] flex items-center justify-center transition-opacity duration-300 leading-relaxed">
-                «Загружаем порцию мотивации...»
-            </p>
-            <button onclick="changeQuote()" class="mt-6 px-6 py-3 text-sm font-bold text-white bmw-btn rounded-xl transition-all">
-                ⚡ Сменить настрой
-            </button>
-        </div>
-
-        <!-- SOS Button -->
-        <div class="bg-bmwDark p-8 sm:p-10 rounded-2xl border-2 border-red-500/50 shadow-[0_0_40px_rgba(239,68,68,0.2)]">
-            <h2 class="text-lg font-bold text-red-400 mb-3 flex items-center gap-3">
-                <span class="text-2xl">🚨</span> Зона экстренного контроля
-            </h2>
-            <p class="text-sm text-gray-200 mb-6 leading-relaxed">
-                Штормит, тяга или пробивает на срыв? Не делай глупостей — аварийный протокол к твоим услугам.
-            </p>
-            <button onclick="triggerSOS()" class="w-full py-5 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-bold rounded-xl sos-pulse transition-all text-base tracking-wide">
-                🚨 АВАРИЙНЫЙ ВЫХОД (Кнопка SOS)
-            </button>
-            <p class="text-sm text-gray-300 text-center mt-5">
-                Успешно отбитых атак: <strong id="sos-count" class="text-red-400 font-bold text-lg">0</strong>
-            </p>
-        </div>
-
-        <!-- Progress Button -->
-        <div class="bg-bmwDark p-8 rounded-2xl bmw-border-glow">
-            <h2 class="text-xs font-bold text-gray-300 uppercase tracking-widest mb-5">Метрика прогресса</h2>
-            <button onclick="addDay()" class="w-full py-5 bmw-btn text-white font-bold rounded-xl text-base tracking-wide">
-                ⚡ Засчитать +1 день победы
-            </button>
-        </div>
-
-        <!-- ══════════ ИНТЕРАКТИВНЫЙ КАЛЕНДАРЬ «КАРТА ЧИСТОТЫ» ══════════ -->
-        <div class="bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow">
-
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-                <div>
-                    <h2 class="text-xl font-bold text-white mb-2">🗓️ Карта чистоты (Интерактивный календарь)</h2>
-                    <p class="text-sm text-gray-400 leading-relaxed">
-                        Клик по дню — отметить победу, срыв или оставить заметку. Данные хранятся на сервере.
-                    </p>
-                </div>
-                <div class="flex items-center gap-2 shrink-0">
-                    <button onclick="calShiftMonth(-1)" class="w-11 h-11 rounded-xl bg-bmwDeep border border-bmwBorder text-gray-300 hover:text-white hover:border-blue-500 transition-all font-bold">‹</button>
-                    <button onclick="calGoToday()" class="px-4 h-11 rounded-xl bg-bmwDeep border border-bmwBorder text-[11px] font-bold text-gray-300 hover:text-white hover:border-blue-500 transition-all uppercase tracking-wider">Сегодня</button>
-                    <button onclick="calShiftMonth(1)" class="w-11 h-11 rounded-xl bg-bmwDeep border border-bmwBorder text-gray-300 hover:text-white hover:border-blue-500 transition-all font-bold">›</button>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
-                <div class="bg-bmwDeep p-4 rounded-xl border border-bmwBorder">
-                    <span class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Текущая серия</span>
-                    <span id="cal-stat-streak" class="text-xl font-black text-blue-400">0</span>
-                </div>
-                <div class="bg-bmwDeep p-4 rounded-xl border border-bmwBorder">
-                    <span class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Лучшая серия</span>
-                    <span id="cal-stat-best" class="text-xl font-black text-white">0</span>
-                </div>
-                <div class="bg-bmwDeep p-4 rounded-xl border border-bmwBorder">
-                    <span class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Чистых дней</span>
-                    <span id="cal-stat-wins" class="text-xl font-black text-emerald-400">0</span>
-                </div>
-                <div class="bg-bmwDeep p-4 rounded-xl border border-bmwBorder">
-                    <span class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">% чистоты</span>
-                    <span id="cal-stat-pct" class="text-xl font-black text-blue-400">0%</span>
-                </div>
-            </div>
-
-            <div class="flex items-center justify-between mb-5">
-                <span id="cal-month-label" class="text-base font-bold text-white tracking-wide">—</span>
-                <span class="text-[10px] font-mono text-gray-500 uppercase tracking-widest">Activity Grid</span>
-            </div>
-
-            <div class="grid grid-cols-7 gap-2 mb-2" id="cal-weekdays"></div>
-            <div id="cal-grid" class="grid grid-cols-7 gap-2"></div>
-
-            <div class="flex flex-wrap gap-5 mt-7 pt-6 border-t border-bmwBorder text-[11px] text-gray-400 font-medium">
-                <span class="flex items-center gap-2">
-                    <span class="w-3.5 h-3.5 rounded-md bg-bmwDeep border border-bmwBorder inline-block"></span> Нет отметки
-                </span>
-                <span class="flex items-center gap-2">
-                    <span class="w-3.5 h-3.5 rounded-md inline-block" style="background:#3B82F6;box-shadow:0 0 8px rgba(59,130,246,.6)"></span> Победа
-                </span>
-                <span class="flex items-center gap-2">
-                    <span class="w-3.5 h-3.5 rounded-md inline-block" style="background:#7F1D1D;border:1px solid #EF4444"></span> Срыв
-                </span>
-                <span class="flex items-center gap-2">
-                    <span class="w-3.5 h-3.5 rounded-md inline-block border border-blue-500"></span> Сегодня
-                </span>
-                <span class="flex items-center gap-2"><span class="text-blue-300">•</span> есть заметка</span>
-            </div>
-
-            <div class="pt-8 mt-8 border-t border-bmwBorder">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-xs font-bold text-blue-400 uppercase tracking-widest">🌊 Год чистоты · Heatmap</h3>
-                    <span class="text-[10px] font-mono text-gray-500 uppercase tracking-wider">365 дней</span>
-                </div>
-                <div class="bg-bmwDeep p-4 rounded-xl border border-bmwBorder overflow-x-auto">
-                    <div id="cal-heatmap" class="flex gap-[3px] min-w-[680px]"></div>
-                    <div class="flex items-center gap-2 mt-4 text-[10px] text-gray-500 font-mono uppercase tracking-wider">
-                        <span>меньше</span>
-                        <span class="w-3 h-3 rounded-sm inline-block" style="background:#0F0F13;border:1px solid #22222A"></span>
-                        <span class="w-3 h-3 rounded-sm inline-block" style="background:#7F1D1D;border:1px solid #EF4444"></span>
-                        <span class="w-3 h-3 rounded-sm inline-block" style="background:rgba(59,130,246,.45)"></span>
-                        <span class="w-3 h-3 rounded-sm inline-block" style="background:rgba(59,130,246,.75)"></span>
-                        <span class="w-3 h-3 rounded-sm inline-block" style="background:#3B82F6;box-shadow:0 0 8px rgba(59,130,246,.7)"></span>
-                        <span>больше</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Баланс дня и График -->
-        <div class="bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow space-y-8">
-            <div>
-                <h2 class="text-xl font-bold text-white mb-2">⚖️ Ежедневный баланс дофамина</h2>
-                <p class="text-sm text-gray-400 mb-6 leading-relaxed">
-                    Отметь факторы текущего дня: бустеры заряжают твой прогресс, ловушки тянут вниз.
-                </p>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <div class="bg-bmwDeep p-6 rounded-xl border border-blue-500/30">
-                        <h3 class="text-xs font-bold text-blue-400 uppercase tracking-wider mb-4">🟢 Бустеры (Заряд)</h3>
-                        <div class="space-y-3">
-                            <label class="flex items-center gap-3 cursor-pointer text-sm text-gray-200">
-                                <input type="checkbox" data-booster="coding" class="bmw-checkbox"> Кодинг (созидание)
-                            </label>
-                            <label class="flex items-center gap-3 cursor-pointer text-sm text-gray-200">
-                                <input type="checkbox" data-booster="body" class="bmw-checkbox"> Тело (спорт, йога, прогулка)
-                            </label>
-                            <label class="flex items-center gap-3 cursor-pointer text-sm text-gray-200">
-                                <input type="checkbox" data-booster="mind" class="bmw-checkbox"> Разум (чтение)
-                            </label>
-                            <label class="flex items-center gap-3 cursor-pointer text-sm text-gray-200">
-                                <input type="checkbox" data-booster="spirit" class="bmw-checkbox"> Дух (философия, смыслы)
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="bg-bmwDeep p-6 rounded-xl border border-red-500/30">
-                        <h3 class="text-xs font-bold text-red-400 uppercase tracking-wider mb-4">🔴 Ловушки (Утечки)</h3>
-                        <div class="space-y-3">
-                            <label class="flex items-center gap-3 cursor-pointer text-sm text-gray-200">
-                                <input type="checkbox" data-trap="pity" class="bmw-checkbox bmw-checkbox-red"> Мнительность / Саможалость
-                            </label>
-                            <label class="flex items-center gap-3 cursor-pointer text-sm text-gray-200">
-                                <input type="checkbox" data-trap="procr" class="bmw-checkbox bmw-checkbox-red"> Прокрастинация
-                            </label>
-                            <label class="flex items-center gap-3 cursor-pointer text-sm text-gray-200">
-                                <input type="checkbox" data-trap="lust" class="bmw-checkbox bmw-checkbox-red"> Похоть / Слив энергии
-                            </label>
-                        </div>
-                    </div>
-                </div>
-
-                <button onclick="saveDailyBalance()" class="w-full py-5 bmw-btn text-white font-bold rounded-xl text-base tracking-wide">
-                    🛡️ Зафиксировать баланс дня
-                </button>
-            </div>
-
-            <div class="pt-6 border-t border-bmwBorder">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-xs font-bold text-blue-400 uppercase tracking-widest">📈 Индекс стабильности (Волна)</h3>
-                    <span class="text-[10px] font-mono text-gray-500 uppercase tracking-wider">Live Telemetry</span>
-                </div>
-                <div class="bg-bmwDeep p-4 sm:p-6 rounded-xl border border-bmwBorder relative h-64 sm:h-80 shadow-[inset_0_0_20px_rgba(0,0,0,0.8)]">
-                    <canvas id="stabilityChart"></canvas>
-                </div>
-            </div>
-
-            <div id="balance-history-container" class="hidden">
-                <h3 class="text-sm font-bold text-gray-300 uppercase tracking-wider mb-4">Архив индексов дня:</h3>
-                <div id="balance-logs-list" class="space-y-3 max-h-48 overflow-y-auto pr-2"></div>
-            </div>
-        </div>
-
-        <!-- CBT Section -->
-        <div class="bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow">
-            <h2 class="text-xl font-bold text-white mb-2">🧠 КПТ: Разбор автоматических мыслей</h2>
-            <p class="text-sm text-gray-400 mb-8 leading-relaxed">
-                Поймай деструктивную мысль, зафиксируй лог и дай жесткий рациональный отпор.
-            </p>
-
-            <form onsubmit="addCbtRecord(event)" class="space-y-5">
-                <div>
-                    <label class="block text-xs font-bold text-gray-200 uppercase tracking-wider mb-3">Категория / Вектор:</label>
-                    <input type="text" id="cbt-cat" required placeholder="Напр. Тяга, Тревога, Ложные убеждения"
-                           class="w-full px-5 py-4 bg-bmwDeep border border-bmwBorder rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
-                </div>
-
-                <div>
-                    <label class="block text-xs font-bold text-gray-200 uppercase tracking-wider mb-3">🧠 Автоматическая мысль:</label>
-                    <textarea id="cbt-thought" rows="3" required placeholder="Что за скрипт крутится в башке..."
-                              class="w-full px-5 py-4 bg-bmwDeep border border-bmwBorder rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all resize-none"></textarea>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-bold text-gray-200 uppercase tracking-wider mb-3">💡 Рациональный ответ / Опровержение:</label>
-                    <textarea id="cbt-resp" rows="3" required placeholder="Факты, логика, трезвый расчет..."
-                              class="w-full px-5 py-4 bg-bmwDeep border border-bmwBorder rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all resize-none"></textarea>
-                </div>
-
-                <button type="submit" class="w-full py-5 bmw-btn text-white font-bold rounded-xl text-base tracking-wide">
-                    🛡️ Сохранить лог в базу
-                </button>
-            </form>
-
-            <div id="cbt-records-container" class="mt-10 hidden">
-                <div class="flex justify-between items-center border-b border-bmwBorder pb-4 mb-6">
-                    <h3 class="text-sm font-bold text-gray-200 uppercase tracking-wider">
-                        Архив разборов <span id="cbt-count" class="text-blue-400">(0)</span>
-                    </h3>
-                    <a href="/export_cbt" class="px-4 py-2.5 bg-bmwDeep hover:bg-bmwBorder text-gray-200 rounded-lg text-xs font-bold border border-bmwBorder hover:border-blue-500 transition-all">
-                        📥 Скачать TXT
-                    </a>
-                </div>
-
-                <div id="cbt-list" class="space-y-4 max-h-96 overflow-y-auto pr-2"></div>
-            </div>
-        </div>
-
-        <!-- Reset -->
-        <div class="text-center pt-6 border-t border-bmwBorder">
-            <button onclick="resetCluster()" class="px-6 py-3 bg-bmwDeep hover:bg-red-950/40 text-gray-400 hover:text-red-400 border border-bmwBorder hover:border-red-900/50 rounded-xl text-sm font-semibold transition-all">
-                ⚠️ Сбросить кластер (удалить данные)
-            </button>
-        </div>
-    </div>
-</div>
-
-<script>
-/* ═══════════════════════════════════════════════════════════════════
-   СЛОЙ ДАННЫХ — ВСЁ СОСТОЯНИЕ ЖИВЁТ НА СЕРВЕРЕ (recovery.db)
-   ═══════════════════════════════════════════════════════════════════ */
-
-let STATE = {
-    profile: null,
-    marks: {},
-    balance_logs: [],
-    cbt_records: [],
-    storage: { persistent: false, dir: '' }
-};
-
-let chartInstance = null;
-let busy = false;
-let calViewYear = new Date().getFullYear();
-let calViewMonth = new Date().getMonth();
-let calSelectedKey = null;
-let calModalStatus = null;
-let calModalOpen = false;
-
-async function api(path, body) {
-    const opts = (body === undefined)
-        ? { method: 'GET', cache: 'no-store' }
-        : {
-            method: 'POST',
-            cache: 'no-store',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body || {})
-          };
-
-    const res = await fetch(path, opts);
-
-    if (!res.ok) {
-        let msg = 'Ошибка сервера (' + res.status + ')';
-        try {
-            const j = await res.json();
-            if (j && j.error) msg = j.error;
-        } catch (e) { }
-        throw new Error(msg);
-    }
-    return res.json();
+.eura-timer-card {
+    position: relative;
+    width: 100%;
+    max-width: 430px;
+    padding: 24px 18px 20px;
+    border: 1px solid rgba(59, 130, 246, 0.45);
+    border-radius: 22px;
+    background:
+        radial-gradient(
+            circle at 50% 0%,
+            rgba(59, 130, 246, 0.18),
+            transparent 55%
+        ),
+        linear-gradient(145deg, #111115, #07070a);
+    box-shadow:
+        0 0 35px rgba(37, 99, 235, 0.15),
+        inset 0 0 25px rgba(59, 130, 246, 0.04);
+    overflow: hidden;
 }
 
-function applyState(payload) {
-    if (!payload) return;
-    STATE = payload;
-    if (!STATE.marks) STATE.marks = {};
-    if (!STATE.balance_logs) STATE.balance_logs = [];
-    if (!STATE.cbt_records) STATE.cbt_records = [];
-    if (!STATE.storage) STATE.storage = { persistent: false, dir: '' };
+.eura-timer-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.25;
+    background-image:
+        linear-gradient(rgba(59, 130, 246, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59, 130, 246, 0.08) 1px, transparent 1px);
+    background-size: 22px 22px;
+    mask-image: linear-gradient(to bottom, black, transparent);
 }
 
-async function loadState() {
-    try {
-        applyState(await api('/api/state'));
-        renderAll();
-    } catch (e) {
-        document.getElementById('loading-section').classList.add('hidden');
-        toast('Не удалось загрузить данные: ' + e.message, true);
+.eura-timer-label {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 18px;
+    color: #93c5fd;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.eura-timer-main {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.eura-time-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 68px;
+}
+
+.eura-number {
+    color: #eaf3ff;
+    font-family: "Courier New", monospace;
+    font-size: clamp(27px, 5vw, 43px);
+    font-weight: 900;
+    letter-spacing: 3px;
+    line-height: 1;
+    text-shadow:
+        0 0 4px #bfdbfe,
+        0 0 12px rgba(59, 130, 246, 0.95),
+        0 0 28px rgba(37, 99, 235, 0.65);
+}
+
+/* Точечный слой поверх цифр */
+.eura-number::after {
+    content: "";
+    position: absolute;
+}
+
+.eura-unit {
+    margin-top: 10px;
+    color: #64748b;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+
+.eura-separator {
+    align-self: flex-start;
+    margin-top: 4px;
+    color: #3b82f6;
+    font-family: "Courier New", monospace;
+    font-size: 30px;
+    font-weight: 900;
+    text-shadow: 0 0 14px rgba(59, 130, 246, 0.9);
+    animation: eura-blink 1.2s steps(2, start) infinite;
+}
+
+@keyframes eura-blink {
+    50% {
+        opacity: 0.35;
     }
 }
 
-async function send(path, body) {
-    if (busy) return false;
-    busy = true;
-    document.body.classList.add('saving');
-    try {
-        applyState(await api(path, body));
-        renderAll();
-        return true;
-    } catch (e) {
-        toast('Не сохранилось: ' + e.message, true);
-        return false;
-    } finally {
-        busy = false;
-        document.body.classList.remove('saving');
-    }
+.eura-timer-line {
+    position: relative;
+    z-index: 1;
+    height: 1px;
+    margin: 20px 10px 14px;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(59, 130, 246, 0.7),
+        transparent
+    );
 }
 
-function toast(text, isError) {
-    const box = document.getElementById('toast-box');
-    const el = document.createElement('div');
-    el.className = 'toast px-5 py-4 rounded-xl text-sm font-semibold border shadow-[0_20px_50px_rgba(0,0,0,0.8)] ' +
-        (isError
-            ? 'bg-red-950/95 border-red-500/60 text-red-100'
-            : 'bg-bmwCard/95 border-blue-500/50 text-gray-100');
-    el.innerText = text;
-    box.appendChild(el);
-    setTimeout(() => el.remove(), isError ? 5200 : 3000);
+.eura-timer-status {
+    position: relative;
+    z-index: 1;
+    color: #64748b;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-align: center;
+    text-transform: uppercase;
 }
 
-async function createProfile(e) {
-    e.preventDefault();
-    const name = document.getElementById('input-name').value;
-    const days = parseInt(document.getElementById('input-days').value) || 0;
-    const ok = await send('/api/profile', { name: name, days: days });
-    if (ok) toast('Система запущена. Профиль сохранён на сервере.');
-}
-
-async function addDay() {
-    const ok = await send('/api/day/add', { add_days: 1 });
-    if (ok) toast('+1 день победы записан.');
-}
-
-async function triggerSOS() {
-    const ok = await send('/api/sos', {});
-    if (ok) toast('🚨 Аварийный протокол активирован! Ты справился с тягой.');
-}
-
-async function saveDailyBalance() {
-    const boosters = Array.from(document.querySelectorAll('[data-booster]:checked')).map(i => i.dataset.booster);
-    const traps = Array.from(document.querySelectorAll('[data-trap]:checked')).map(i => i.dataset.trap);
-
-    const day = todayKey();
-    const ok = await send('/api/balance', { day: day, boosters: boosters, traps: traps });
-
-    if (ok) {
-        const log = STATE.balance_logs.find(l => l.day === day);
-        const index = log ? log.index : 0;
-        toast('Баланс дня зафиксирован. Индекс: ' + (index > 0 ? '+' + index : index));
-    }
-}
-
-async function addCbtRecord(e) {
-    e.preventDefault();
-    const ok = await send('/api/cbt', {
-        category: document.getElementById('cbt-cat').value,
-        automatic_thought: document.getElementById('cbt-thought').value,
-        rational_response: document.getElementById('cbt-resp').value
-    });
-
-    if (ok) {
-        document.getElementById('cbt-cat').value = '';
-        document.getElementById('cbt-thought').value = '';
-        document.getElementById('cbt-resp').value = '';
-        toast('Лог КПТ сохранён в базу.');
-    }
-}
-
-function resetCluster() {
-    if (!confirm('Точно сбросить весь прогресс? Данные удалятся с сервера для всех устройств.')) return;
-    send('/api/reset', {}).then(ok => { if (ok) toast('Кластер сброшен.'); });
-}
-
-function renderProfile() {
-    const loading = document.getElementById('loading-section');
-    const setup = document.getElementById('setup-section');
-    const dashboard = document.getElementById('dashboard-section');
-
-    loading.classList.add('hidden');
-
-    if (!STATE.profile) {
-        setup.classList.remove('hidden');
-        dashboard.classList.add('hidden');
-        return;
+@media (max-width: 480px) {
+    .eura-timer-card {
+        padding: 20px 8px 16px;
     }
 
-    setup.classList.add('hidden');
-    dashboard.classList.remove('hidden');
-
-    document.getElementById('profile-name-display').innerText = STATE.profile.name;
-    document.getElementById('profile-days-display').innerText = STATE.profile.days;
-    document.getElementById('sos-count').innerText = STATE.profile.slips_avoided || 0;
-
-    const days = STATE.profile.days;
-    let statusName = 'Базовый уровень';
-    let statusDesc = 'Система запущена. Начало отсчета нового уровня жизни.';
-    if (days >= 3) { statusName = '⚡ Инициализация стержня'; statusDesc = 'Первые дни позади. Дофаминовый шторм начинает утихать.'; }
-    if (days >= 7) { statusName = '🔥 Уверенный контроль'; statusDesc = 'Неделя чистой дисциплины. Нейронные связи начинают перестраиваться.'; }
-    if (days >= 21) { statusName = '🛡️ Стальной контур'; statusDesc = 'Три недели. Привычка разрушать заменяется привычкой созидать.'; }
-    if (days >= 90) { statusName = '👑 Элитный уровень (Mastery)'; statusDesc = 'Глубинная трансформация сознания. Ты полностью владеешь своими состояниями.'; }
-
-    document.getElementById('status-name').innerText = statusName;
-    document.getElementById('status-desc').innerText = statusDesc;
-
-    if (STATE.profile.start_time) initLiveTimer(STATE.profile.start_time);
-}
-
-function renderStorageBadge() {
-    const badge = document.getElementById('storage-badge');
-    const warn = document.getElementById('storage-warning');
-
-    if (STATE.storage && STATE.storage.persistent) {
-        badge.innerText = '● защищено';
-        badge.className = 'text-xs font-bold text-emerald-400';
-        warn.classList.add('hidden');
-    } else {
-        badge.innerText = '● не защищено';
-        badge.className = 'text-xs font-bold text-red-400';
-        warn.classList.remove('hidden');
-        const path = document.getElementById('storage-warning-path');
-        if (path) path.innerText = (STATE.storage && STATE.storage.dir) || '—';
-    }
-}
-
-function renderCbt() {
-    const container = document.getElementById('cbt-records-container');
-    const list = document.getElementById('cbt-list');
-    const count = document.getElementById('cbt-count');
-
-    if (!STATE.cbt_records || STATE.cbt_records.length === 0) {
-        container.classList.add('hidden');
-        return;
+    .eura-timer-main {
+        gap: 3px;
     }
 
-    container.classList.remove('hidden');
-    count.innerText = '(' + STATE.cbt_records.length + ')';
-
-    list.innerHTML = STATE.cbt_records.map(r => `
-        <div class="bg-bmwDeep p-5 rounded-xl border-l-4 border-blue-500 border-t border-r border-b border-bmwBorder text-sm">
-            <div class="flex justify-between items-center text-blue-400 mb-3 font-semibold">
-                <span>🏷️ ${escapeHtml(r.category)}</span>
-                <span class="text-gray-400 font-mono text-xs">${escapeHtml(r.date)}</span>
-            </div>
-            <p class="text-red-400 mb-2 leading-relaxed"><strong>Мысль:</strong> ${escapeHtml(r.automatic_thought)}</p>
-            <p class="text-emerald-400 leading-relaxed"><strong>Ответ:</strong> ${escapeHtml(r.rational_response)}</p>
-        </div>
-    `).join('');
-}
-
-function escapeHtml(value) {
-    return String(value == null ? '' : value)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-}
-
-function renderBalance() {
-    const container = document.getElementById('balance-history-container');
-    const list = document.getElementById('balance-logs-list');
-    const logs = STATE.balance_logs || [];
-
-    const today = todayKey();
-    const todayLog = logs.find(l => l.day === today);
-    const bSet = new Set(todayLog ? (todayLog.boosters_detail || []) : []);
-    const tSet = new Set(todayLog ? (todayLog.traps_detail || []) : []);
-
-    document.querySelectorAll('[data-booster]').forEach(box => { box.checked = bSet.has(box.dataset.booster); });
-    document.querySelectorAll('[data-trap]').forEach(box => { box.checked = tSet.has(box.dataset.trap); });
-
-    if (logs.length === 0) {
-        container.classList.add('hidden');
-        if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
-        return;
+    .eura-time-group {
+        min-width: 57px;
     }
 
-    container.classList.remove('hidden');
-    list.innerHTML = logs.slice().reverse().map(l => {
-        const d = new Date(l.day + 'T00:00:00');
-        const pretty = d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
-        return `
-        <div class="flex justify-between items-center bg-bmwDeep p-3 rounded-xl border border-bmwBorder text-sm">
-            <span class="text-gray-300 font-mono text-xs">${pretty}</span>
-            <div class="flex gap-4 text-xs font-bold">
-                <span class="text-blue-400">🟢 Бустеров: ${l.boosters}</span>
-                <span class="text-red-400">🔴 Ловушек: ${l.traps}</span>
-                <span class="${l.index >= 0 ? 'text-emerald-400' : 'text-red-400'}">Индекс: ${l.index > 0 ? '+' + l.index : l.index}</span>
-            </div>
-        </div>`;
-    }).join('');
-
-    renderStabilityChart(logs);
-}
-
-function renderStabilityChart(logs) {
-    const canvas = document.getElementById('stabilityChart');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-
-    const chartData = logs.slice(-30);
-    const labels = chartData.map(l => new Date(l.day + 'T00:00:00').toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }));
-    const values = chartData.map(l => l.index);
-
-    if (chartInstance) chartInstance.destroy();
-
-    const gradient = ctx.createLinearGradient(0, 0, 0, 320);
-    gradient.addColorStop(0, 'rgba(59, 130, 246, 0.55)');
-    gradient.addColorStop(0.5, 'rgba(59, 130, 246, 0.15)');
-    gradient.addColorStop(1, 'rgba(5, 5, 5, 0.0)');
-
-    chartInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Индекс стабильности',
-                data: values,
-                borderColor: '#3B82F6',
-                borderWidth: 3.5,
-                backgroundColor: gradient,
-                fill: true,
-                tension: 0.45,
-                pointBackgroundColor: '#111115',
-                pointBorderColor: '#3B82F6',
-                pointBorderWidth: 3,
-                pointRadius: 6,
-                pointHoverRadius: 9,
-                pointHoverBackgroundColor: '#3B82F6',
-                pointHoverBorderColor: '#ffffff'
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: { duration: 900, easing: 'easeOutQuart' },
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    backgroundColor: 'rgba(17, 17, 21, 0.95)',
-                    titleColor: '#3B82F6',
-                    bodyColor: '#ffffff',
-                    borderColor: '#2e2e3a',
-                    borderWidth: 1,
-                    padding: 14,
-                    displayColors: false,
-                    cornerRadius: 10,
-                    titleFont: { family: 'Inter', weight: 'bold', size: 13 },
-                    bodyFont: { family: 'Inter', size: 12 },
-                    callbacks: {
-                        label: function(context) {
-                            let val = context.raw;
-                            return ' Индекс стабильности: ' + (val > 0 ? '+' + val : val);
-                        }
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    grid: { color: 'rgba(34, 34, 42, 0.3)', drawBorder: false },
-                    ticks: { color: '#6B7280', font: { family: 'Inter', size: 11, weight: '500' } }
-                },
-                y: {
-                    grid: { color: 'rgba(34, 34, 42, 0.3)', drawBorder: false },
-                    ticks: { color: '#6B7280', font: { family: 'Inter', size: 11, weight: '500' } },
-                    suggestedMin: -8,
-                    suggestedMax: 8
-                }
-            }
-        }
-    });
-}
-
-const CAL_MONTHS = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
-const CAL_WEEKDAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
-
-function pad2(n) { return String(n).padStart(2, '0'); }
-function keyOf(d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
-function todayKey() { return keyOf(new Date()); }
-function startOfToday() {
-    const t = new Date();
-    t.setHours(0, 0, 0, 0);
-    return t;
-}
-
-function calRenderWeekdays() {
-    const wrap = document.getElementById('cal-weekdays');
-    if (!wrap) return;
-    wrap.innerHTML = CAL_WEEKDAYS.map((w, i) =>
-        '<div class="text-center text-[10px] font-bold uppercase tracking-wider ' +
-        (i >= 5 ? 'text-gray-500' : 'text-gray-400') + ' pb-2">' + w + '</div>'
-    ).join('');
-}
-
-function cellStyle(status) {
-    if (status === 'win') return 'border-blue-400 bg-[#3B82F6] shadow-[0_0_18px_rgba(59,130,246,0.55)]';
-    if (status === 'slip') return 'border-red-500 bg-[#7F1D1D] shadow-[0_0_14px_rgba(239,68,68,0.45)]';
-    return 'border-bmwBorder bg-bmwDeep';
-}
-
-function calRenderGrid() {
-    const grid = document.getElementById('cal-grid');
-    const label = document.getElementById('cal-month-label');
-    if (!grid) return;
-
-    const marks = STATE.marks || {};
-    const tKey = todayKey();
-    const t = startOfToday();
-
-    if (label) label.innerText = CAL_MONTHS[calViewMonth] + ' ' + calViewYear;
-
-    const first = new Date(calViewYear, calViewMonth, 1);
-    const daysInMonth = new Date(calViewYear, calViewMonth + 1, 0).getDate();
-    const offset = first.getDay() === 0 ? 6 : first.getDay() - 1;
-
-    let html = '';
-    for (let i = 0; i < offset; i++) {
-        html += '<div class="aspect-square rounded-xl border border-transparent"></div>';
+    .eura-number {
+        font-size: 25px;
+        letter-spacing: 1px;
     }
 
-    for (let d = 1; d <= daysInMonth; d++) {
-        const cur = new Date(calViewYear, calViewMonth, d);
-        const key = keyOf(cur);
-        const mark = marks[key] || null;
-        const isToday = key === tKey;
-        const isFuture = cur > t;
-        const isSelected = key === calSelectedKey;
-
-        let cls = cellStyle(mark ? mark.status : null);
-        if (isToday) cls += ' cal-today border-blue-500';
-        if (isSelected) cls += ' ring-2 ring-blue-400/70';
-
-        const textCls = (mark && mark.status === 'win')
-            ? 'text-white font-black'
-            : ((mark && mark.status === 'slip') ? 'text-red-200 font-bold' : (isFuture ? 'text-gray-600' : 'text-gray-300 font-semibold'));
-
-        const dot = (mark && mark.note)
-            ? '<span class="absolute bottom-1.5 w-1.5 h-1.5 rounded-full bg-blue-300"></span>'
-            : '';
-
-        html += '<button type="button" onclick="calOpenModal(\'' + key + '\')" ' +
-                'class="cal-cell aspect-square rounded-xl border ' + cls + ' ' + textCls + ' text-sm flex items-center justify-center relative">' +
-                d + dot + '</button>';
+    .eura-separator {
+        font-size: 22px;
     }
 
-    grid.innerHTML = html;
-}
-
-function calRenderStats() {
-    const marks = STATE.marks || {};
-    const keys = Object.keys(marks);
-
-    const wins = keys.filter(k => marks[k].status === 'win').length;
-    const marked = keys.filter(k => marks[k].status).length;
-
-    let streak = 0;
-    const cursor = startOfToday();
-    while (marks[keyOf(cursor)] && marks[keyOf(cursor)].status === 'win') {
-        streak++;
-        cursor.setDate(cursor.getDate() - 1);
-    }
-
-    const winKeys = keys.filter(k => marks[k].status === 'win').sort();
-    let best = 0, run = 0, prev = null;
-    winKeys.forEach(k => {
-        const cur = new Date(k + 'T00:00:00');
-        if (prev && (cur - prev) === 86400000) run++; else run = 1;
-        if (run > best) best = run;
-        prev = cur;
-    });
-    if (streak > best) best = streak;
-
-    const pct = marked > 0 ? Math.round((wins / marked) * 100) : 0;
-
-    const set = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
-    set('cal-stat-streak', streak);
-    set('cal-stat-best', best);
-    set('cal-stat-wins', wins);
-    set('cal-stat-pct', pct + '%');
-}
-
-function calRenderHeatmap() {
-    const wrap = document.getElementById('cal-heatmap');
-    if (!wrap) return;
-
-    const marks = STATE.marks || {};
-    const today = startOfToday();
-
-    const end = new Date(today);
-    end.setDate(end.getDate() + 6);
-
-    const start = new Date(end);
-    start.setDate(start.getDate() - (52 * 7 + 6));
-
-    let html = '';
-    for (let w = 0; w < 53; w++) {
-        html += '<div class="flex flex-col gap-[3px]">';
-        for (let d = 0; d < 7; d++) {
-            const cur = new Date(start);
-            cur.setDate(cur.getDate() + (w * 7 + d));
-
-            const key = keyOf(cur);
-            const mark = marks[key];
-            const isFuture = cur > today;
-            let style = 'background:#0F0F13;border:1px solid #22222A;';
-
-            if (mark && mark.status === 'win') {
-                style = 'background:#3B82F6;border:1px solid #60A5FA;box-shadow:0 0 7px rgba(59,130,246,.7);';
-            } else if (mark && mark.status === 'slip') {
-                style = 'background:#7F1D1D;border:1px solid #EF4444;';
-            } else if (isFuture) {
-                style = 'background:transparent;border:1px solid #16161C;';
-            }
-
-            html += '<div class="cal-heat-cell w-3 h-3 rounded-sm shrink-0" style="' + style + '" title="' + key + '"></div>';
-        }
-        html += '</div>';
-    }
-    wrap.innerHTML = html;
-}
-
-function calRenderAll() {
-    calRenderGrid();
-    calRenderStats();
-    calRenderHeatmap();
-}
-
-function calShiftMonth(delta) {
-    calViewMonth += delta;
-    if (calViewMonth > 11) { calViewMonth = 0; calViewYear++; }
-    if (calViewMonth < 0) { calViewMonth = 11; calViewYear--; }
-    calRenderGrid();
-}
-
-function calGoToday() {
-    const now = new Date();
-    calViewYear = now.getFullYear();
-    calViewMonth = now.getMonth();
-    calRenderGrid();
-}
-
-function calOpenModal(key) {
-    calSelectedKey = key;
-
-    const mark = (STATE.marks && STATE.marks[key]) || { status: null, note: '' };
-    calModalStatus = mark.status || null;
-
-    const d = new Date(key + 'T00:00:00');
-    const pretty = d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
-
-    const old = document.getElementById('cal-modal');
-    if (old) old.remove();
-
-    const modal = document.createElement('div');
-    modal.id = 'cal-modal';
-    modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md';
-    modal.innerHTML = `
-        <div class="cal-modal-anim w-full max-w-md bg-bmwCard rounded-2xl border border-bmwBorder shadow-[0_30px_90px_rgba(0,0,0,0.95)] relative overflow-hidden">
-            <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-blue-500 to-transparent shadow-[0_0_20px_#3B82F6]"></div>
-
-            <div class="p-7">
-                <p class="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-2">Отметка дня</p>
-                <h3 class="text-xl font-bold text-white mb-6">${pretty}</h3>
-
-                <div class="grid grid-cols-3 gap-3 mb-6">
-                    <button type="button" onclick="calModalPick('win')" id="cal-opt-win"
-                            class="py-4 rounded-xl border text-sm font-bold transition-all ${mark.status === 'win' ? 'border-blue-400 bg-[#3B82F6] text-white shadow-[0_0_18px_rgba(59,130,246,0.55)]' : 'border-bmwBorder bg-bmwDeep text-gray-300 hover:border-blue-500'}">
-                        🟢 Победа
-                    </button>
-                    <button type="button" onclick="calModalPick('slip')" id="cal-opt-slip"
-                            class="py-4 rounded-xl border text-sm font-bold transition-all ${mark.status === 'slip' ? 'border-red-500 bg-[#7F1D1D] text-red-100' : 'border-bmwBorder bg-bmwDeep text-gray-300 hover:border-red-500'}">
-                        🔴 Срыв
-                    </button>
-                    <button type="button" onclick="calModalPick(null)" id="cal-opt-clear"
-                            class="py-4 rounded-xl border text-sm font-bold transition-all ${!mark.status ? 'border-gray-500 bg-bmwBorder text-white' : 'border-bmwBorder bg-bmwDeep text-gray-300 hover:border-gray-500'}">
-                        ⚪ Снять
-                    </button>
-                </div>
-
-                <label class="block text-xs font-bold text-gray-200 uppercase tracking-wider mb-3">Заметка дня:</label>
-                <textarea id="cal-note-input" rows="3" placeholder="Что было сегодня, что помогло удержаться..."
-                          class="w-full px-4 py-3 bg-bmwDeep border border-bmwBorder rounded-xl text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all resize-none">${escapeHtml(mark.note || '')}</textarea>
-
-                <div class="flex gap-3 mt-7">
-                    <button type="button" onclick="calCloseModal()"
-                            class="flex-1 py-4 bg-bmwDeep border border-bmwBorder text-gray-300 font-bold rounded-xl hover:border-gray-500 transition-all text-sm">
-                        Отмена
-                    </button>
-                    <button type="button" onclick="calSaveModal()"
-                            class="flex-1 py-4 bmw-btn text-white font-bold rounded-xl text-sm tracking-wide">
-                        🛡️ Сохранить
-                    </button>
-                </div>
-            </div>
-        </div>`;
-
-    calModalOpen = true;
-    modal.addEventListener('click', (e) => { if (e.target === modal) calCloseModal(); });
-    document.body.appendChild(modal);
-
-    const ta = document.getElementById('cal-note-input');
-    if (ta) ta.focus();
-}
-
-function calModalPick(status) {
-    calModalStatus = status;
-    const win = document.getElementById('cal-opt-win');
-    const slip = document.getElementById('cal-opt-slip');
-    const clear = document.getElementById('cal-opt-clear');
-    if (!win) return;
-
-    const base = 'py-4 rounded-xl border text-sm font-bold transition-all ';
-    const off = 'border-bmwBorder bg-bmwDeep text-gray-300 ';
-
-    win.className = base + (status === 'win' ? 'border-blue-400 bg-[#3B82F6] text-white shadow-[0_0_18px_rgba(59,130,246,0.55)]' : off + 'hover:border-blue-500');
-    slip.className = base + (status === 'slip' ? 'border-red-500 bg-[#7F1D1D] text-red-100' : off + 'hover:border-red-500');
-    clear.className = base + (!status ? 'border-gray-500 bg-bmwBorder text-white' : off + 'hover:border-gray-500');
-}
-
-async function calSaveModal() {
-    if (!calSelectedKey) return;
-
-    const key = calSelectedKey;
-    const status = calModalStatus;
-    const ta = document.getElementById('cal-note-input');
-    const note = ta ? ta.value : '';
-
-    calCloseModal();
-
-    const ok = await send('/api/mark', { day: key, status: status, note: note });
-    if (ok) {
-        const d = new Date(key + 'T00:00:00');
-        const pretty = d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
-        if (status === 'win') toast('🟢 ' + pretty + ' — день засчитан чистым.');
-        else if (status === 'slip') toast('🔴 ' + pretty + ' — отмечен срыв.');
-        else toast('Отметка за ' + pretty + ' снята.');
+    .eura-unit {
+        font-size: 8px;
+        letter-spacing: 1px;
     }
 }
-
-function calCloseModal() {
-    const modal = document.getElementById('cal-modal');
-    if (modal) modal.remove();
-    calModalOpen = false;
-    calSelectedKey = null;
-    calModalStatus = null;
-    calRenderGrid();
-}
-
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && calModalOpen) calCloseModal();
-});
-
-const quotes = [
-    "«Энергия течет туда, куда ты направляешь фокус. Не сливай ее в трубу.»",
-    "«Легкий дофамин — это ловушка для слабых. Ты здесь не для этого.»",
-    "«Каждый раз, когда устоял — твой внутренний стержень становится толще стального каната.»",
-    "«Скука и тревога — это просто топливо. Направь его в созидание, а не разрушение.»",
-    "«Дисциплина — это выбор между тем, чего ты хочешь сейчас, и тем, чего ты хочешь больше всего.»",
-    "«Мозг сейчас пытается тебя обмануть. Перетерпи 15 минут — отпустит.»"
-];
-
-function changeQuote() {
-    const quoteBox = document.getElementById('quote-box');
-    if (!quoteBox) return;
-    const randomIndex = Math.floor(Math.random() * quotes.length);
-    quoteBox.style.opacity = 0;
-    setTimeout(() => {
-        quoteBox.innerText = quotes[randomIndex];
-        quoteBox.style.opacity = 1;
-    }, 200);
-}
-
-let timerInterval = null;
-
-function initLiveTimer(startTimeStr) {
-    if (timerInterval) clearInterval(timerInterval);
-
-    const startTime = new Date(startTimeStr).getTime();
-    if (isNaN(startTime)) return;
-
-    function updateTimer() {
-        const diff = Date.now() - startTime;
-        if (diff <= 0) return;
-
-        const days = Math.floor(diff / 86400000);
-        const hours = Math.floor((diff % 86400000) / 3600000);
-        const minutes = Math.floor((diff % 3600000) / 60000);
-        const seconds = Math.floor((diff % 60000) / 1000);
-
-        const el = document.getElementById('live-timer');
-        if (el) {
-            el.innerText = pad2(days) + ' дн : ' + pad2(hours) + ' ч : ' + pad2(minutes) + ' мин : ' + pad2(seconds) + ' сек';
-        }
-    }
-
-    timerInterval = setInterval(updateTimer, 1000);
-    updateTimer();
-}
-
-function renderAll() {
-    renderProfile();
-    renderStorageBadge();
-    renderCbt();
-    renderBalance();
-    calRenderWeekdays();
-    calRenderAll();
-}
-
-window.addEventListener('load', function () {
-    calRenderWeekdays();
-    changeQuote();
-    loadState();
-});
-</script>
-</body>
-</html>
