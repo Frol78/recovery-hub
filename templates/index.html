@@ -119,11 +119,11 @@
 
 <div id="toast-box"></div>
 
-<div class="max-w-3xl w-full bg-bmwCard/90 backdrop-blur-xl p-7 sm:p-14 rounded-2xl sm:rounded-3xl shadow-[0_30px_90px_rgba(0,0,0,0.95)] border border-bmwBorder relative overflow-hidden"></div>
+<div class="max-w-3xl w-full bg-bmwCard/90 backdrop-blur-xl p-8 sm:p-14 rounded-3xl shadow-[0_30px_90px_rgba(0,0,0,0.95)] border border-bmwBorder relative overflow-hidden">
 
     <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-blue-500 to-transparent shadow-[0_0_20px_#3B82F6]"></div>
 
-       <!-- Header -->
+    <!-- Header -->
     <div class="mb-12 pb-8 border-b border-bmwBorder flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div class="flex items-center gap-4">
             <!-- Футуристичный неоновый логотип -->
@@ -445,11 +445,6 @@
 <script>
 /* ═══════════════════════════════════════════════════════════════════
    СЛОЙ ДАННЫХ — ВСЁ СОСТОЯНИЕ ЖИВЁТ НА СЕРВЕРЕ (recovery.db)
-
-   Принцип: браузер не хранит ничего. Каждая запись отправляется на
-   сервер, сервер возвращает полный слепок состояния, клиент его
-   рисует. Поэтому на телефоне, ноутбуке и в любом браузере видно
-   абсолютно одинаковые данные.
    ═══════════════════════════════════════════════════════════════════ */
 
 let STATE = {
@@ -468,8 +463,6 @@ let calSelectedKey = null;
 let calModalStatus = null;
 let calModalOpen = false;
 
-/* ─────────────────────────── СЕТЬ ─────────────────────────── */
-
 async function api(path, body) {
     const opts = (body === undefined)
         ? { method: 'GET', cache: 'no-store' }
@@ -487,7 +480,7 @@ async function api(path, body) {
         try {
             const j = await res.json();
             if (j && j.error) msg = j.error;
-        } catch (e) { /* тело не JSON — оставляем код */ }
+        } catch (e) { }
         throw new Error(msg);
     }
     return res.json();
@@ -512,7 +505,6 @@ async function loadState() {
     }
 }
 
-/* Любая запись: отправляем → получаем свежий слепок → перерисовываем */
 async function send(path, body) {
     if (busy) return false;
     busy = true;
@@ -530,8 +522,6 @@ async function send(path, body) {
     }
 }
 
-/* ─────────────────────── УВЕДОМЛЕНИЯ ─────────────────────── */
-
 function toast(text, isError) {
     const box = document.getElementById('toast-box');
     const el = document.createElement('div');
@@ -543,8 +533,6 @@ function toast(text, isError) {
     box.appendChild(el);
     setTimeout(() => el.remove(), isError ? 5200 : 3000);
 }
-
-/* ─────────────────────── ДЕЙСТВИЯ ─────────────────────── */
 
 async function createProfile(e) {
     e.preventDefault();
@@ -599,8 +587,6 @@ function resetCluster() {
     send('/api/reset', {}).then(ok => { if (ok) toast('Кластер сброшен.'); });
 }
 
-/* ─────────────────── ОТРИСОВКА: ПРОФИЛЬ ─────────────────── */
-
 function renderProfile() {
     const loading = document.getElementById('loading-section');
     const setup = document.getElementById('setup-section');
@@ -652,8 +638,6 @@ function renderStorageBadge() {
     }
 }
 
-/* ──────────────────── ОТРИСОВКА: КПТ ──────────────────── */
-
 function renderCbt() {
     const container = document.getElementById('cbt-records-container');
     const list = document.getElementById('cbt-list');
@@ -688,14 +672,11 @@ function escapeHtml(value) {
         .replace(/'/g, '&#39;');
 }
 
-/* ──────────────── ОТРИСОВКА: БАЛАНС + ГРАФИК ──────────────── */
-
 function renderBalance() {
     const container = document.getElementById('balance-history-container');
     const list = document.getElementById('balance-logs-list');
     const logs = STATE.balance_logs || [];
 
-    // Возвращаем галочки в форму по сегодняшнему дню
     const today = todayKey();
     const todayLog = logs.find(l => l.day === today);
     const bSet = new Set(todayLog ? (todayLog.boosters_detail || []) : []);
@@ -806,19 +787,12 @@ function renderStabilityChart(logs) {
     });
 }
 
-/* ══════════════ КАЛЕНДАРЬ «КАРТА ЧИСТОТЫ» ══════════════ */
-
 const CAL_MONTHS = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
 const CAL_WEEKDAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 
 function pad2(n) { return String(n).padStart(2, '0'); }
-
-function keyOf(d) {
-    return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
-}
-
+function keyOf(d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
 function todayKey() { return keyOf(new Date()); }
-
 function startOfToday() {
     const t = new Date();
     t.setHours(0, 0, 0, 0);
@@ -993,7 +967,6 @@ function calOpenModal(key) {
     const old = document.getElementById('cal-modal');
     if (old) old.remove();
 
-    // Модалка вешается на <body>: backdrop-blur родителя ломает position:fixed
     const modal = document.createElement('div');
     modal.id = 'cal-modal';
     modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md';
@@ -1093,8 +1066,6 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && calModalOpen) calCloseModal();
 });
 
-/* ─────────────────── МОТИВАЦИЯ И ТАЙМЕР ─────────────────── */
-
 const quotes = [
     "«Энергия течет туда, куда ты направляешь фокус. Не сливай ее в трубу.»",
     "«Легкий дофамин — это ловушка для слабых. Ты здесь не для этого.»",
@@ -1141,8 +1112,6 @@ function initLiveTimer(startTimeStr) {
     timerInterval = setInterval(updateTimer, 1000);
     updateTimer();
 }
-
-/* ─────────────────── ГЛАВНАЯ ОТРИСОВКА ─────────────────── */
 
 function renderAll() {
     renderProfile();
