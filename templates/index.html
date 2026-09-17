@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Выздоровление</title>
+<title>New You — Трансформация и контроль</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
@@ -294,10 +294,10 @@
             </div>
             <div>
                 <h1 class="text-4xl sm:text-5xl font-semibold text-white tracking-tight mb-2 drop-shadow-[0_2px_10px_rgba(255,255,255,0.15)]">
-                    ⚡ Трезвость
+                    ⚡ New You
                 </h1>
                 <p class="text-gray-400 text-sm font-medium tracking-wide">
-                    Пробуждение: <span class="text-blue-400 font-bold">● Активна</span>
+                    Система контроля: <span class="text-blue-400 font-bold">● Активна</span>
                 </p>
             </div>
         </div>
@@ -525,7 +525,6 @@
                             <label class="flex items-center gap-3 cursor-pointer text-sm text-gray-200">
                                 <input type="checkbox" data-booster="spirit" class="bmw-checkbox"> Дух (философия, смыслы)
                             </label>
-                            <!-- ✅ НОВЫЙ ХОРОШИЙ ТРИГГЕР -->
                             <label class="flex items-center gap-3 cursor-pointer text-sm text-gray-200">
                                 <input type="checkbox" data-booster="impulse_control" class="bmw-checkbox"> Обуздание импульсов
                             </label>
@@ -544,7 +543,6 @@
                             <label class="flex items-center gap-3 cursor-pointer text-sm text-gray-200">
                                 <input type="checkbox" data-trap="lust" class="bmw-checkbox bmw-checkbox-red"> Похоть / Слив энергии
                             </label>
-                            <!-- 🔴 НОВЫЙ ПЛОХОЙ ТРИГГЕР -->
                             <label class="flex items-center gap-3 cursor-pointer text-sm text-gray-200">
                                 <input type="checkbox" data-trap="impulsive_actions" class="bmw-checkbox bmw-checkbox-red"> Импульсивные действия
                             </label>
@@ -570,6 +568,42 @@
             <div id="balance-history-container" class="hidden">
                 <h3 class="text-sm font-bold text-gray-300 uppercase tracking-wider mb-4">Архив индексов дня:</h3>
                 <div id="balance-logs-list" class="space-y-3 max-h-48 overflow-y-auto pr-2"></div>
+            </div>
+        </div>
+
+        <!-- ✉️ ПИСЬМА СЕБЕ (Капсула трезвости) -->
+        <div class="spotlight-card bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow">
+            <h2 class="text-xl font-bold text-white mb-2">✉️ Письма себе</h2>
+            <p class="text-sm text-gray-400 mb-8 leading-relaxed">
+                Оставь послание самому себе в моменты ясности. Когда снова накроет тяга — открой и прочитай, как побеждал раньше.
+            </p>
+
+            <form onsubmit="addLetter(event)" class="space-y-5">
+                <div>
+                    <label class="block text-xs font-bold text-gray-200 uppercase tracking-wider mb-3">Тема / Ситуация:</label>
+                    <input type="text" id="letter-title" required placeholder="Напр. Когда проснулся с тягой после сна..."
+                           class="w-full px-5 py-4 bg-bmwDeep border border-bmwBorder rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-200 uppercase tracking-wider mb-3">💬 Что сказать себе в трудный момент:</label>
+                    <textarea id="letter-content" rows="4" required placeholder="Братан, держи удар! Вспомни, ради чего мы это делаем..."
+                              class="w-full px-5 py-4 bg-bmwDeep border border-bmwBorder rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all resize-none"></textarea>
+                </div>
+
+                <button type="submit" class="w-full py-5 bmw-btn text-white font-bold rounded-xl text-base tracking-wide">
+                    📬 Запечатать в капсулу памяти
+                </button>
+            </form>
+
+            <div id="letters-container" class="mt-10 hidden">
+                <div class="border-b border-bmwBorder pb-4 mb-6">
+                    <h3 class="text-sm font-bold text-gray-200 uppercase tracking-wider">
+                        Архив писем <span id="letters-count" class="text-blue-400">(0)</span>
+                    </h3>
+                </div>
+
+                <div id="letters-list" class="space-y-4 max-h-96 overflow-y-auto pr-2"></div>
             </div>
         </div>
 
@@ -637,6 +671,7 @@ let STATE = {
     marks: {},
     balance_logs: [],
     cbt_records: [],
+    letters: [],
     storage: { persistent: false, dir: '' }
 };
 
@@ -704,6 +739,7 @@ function applyState(payload) {
     if (!STATE.marks) STATE.marks = {};
     if (!STATE.balance_logs) STATE.balance_logs = [];
     if (!STATE.cbt_records) STATE.cbt_records = [];
+    if (!STATE.letters) STATE.letters = [];
     if (!STATE.storage) STATE.storage = { persistent: false, dir: '' };
 }
 
@@ -794,6 +830,20 @@ async function addCbtRecord(e) {
     }
 }
 
+async function addLetter(e) {
+    e.preventDefault();
+    const ok = await send('/api/letter', {
+        title: document.getElementById('letter-title').value,
+        content: document.getElementById('letter-content').value
+    });
+
+    if (ok) {
+        document.getElementById('letter-title').value = '';
+        document.getElementById('letter-content').value = '';
+        toast('📬 Письмо запечатано в капсулу памяти.');
+    }
+}
+
 function resetCluster() {
     if (!confirm('Точно сбросить весь прогресс? Данные удалятся с сервера для всех устройств.')) return;
     send('/api/reset', {}).then(ok => { if (ok) toast('Кластер сброшен.'); });
@@ -870,6 +920,31 @@ function renderCbt() {
             </div>
             <p class="text-red-400 mb-2 leading-relaxed"><strong>Мысль:</strong> ${escapeHtml(r.automatic_thought)}</p>
             <p class="text-emerald-400 leading-relaxed"><strong>Ответ:</strong> ${escapeHtml(r.rational_response)}</p>
+        </div>
+    `).join('');
+}
+
+function renderLetters() {
+    const container = document.getElementById('letters-container');
+    const list = document.getElementById('letters-list');
+    const count = document.getElementById('letters-count');
+    const letters = STATE.letters || [];
+
+    if (letters.length === 0) {
+        container.classList.add('hidden');
+        return;
+    }
+
+    container.classList.remove('hidden');
+    count.innerText = '(' + letters.length + ')';
+
+    list.innerHTML = letters.map(l => `
+        <div class="bg-bmwDeep p-5 rounded-xl border-l-4 border-blue-500 border border-bmwBorder text-sm">
+            <div class="flex justify-between items-center text-blue-400 mb-3 font-semibold">
+                <span>✉️ ${escapeHtml(l.title)}</span>
+                <span class="text-gray-400 font-mono text-xs">${escapeHtml(l.date)}</span>
+            </div>
+            <p class="text-gray-200 leading-relaxed whitespace-pre-wrap">${escapeHtml(l.content)}</p>
         </div>
     `).join('');
 }
@@ -1333,6 +1408,7 @@ function renderAll() {
     renderProfile();
     renderStorageBadge();
     renderCbt();
+    renderLetters();
     renderBalance();
     calRenderWeekdays();
     calRenderAll();

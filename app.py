@@ -39,7 +39,6 @@ except AttributeError:
 
 db = SQLAlchemy(app)
 
-
 # ─────────────────────────────── МОДЕЛИ ───────────────────────────────
 
 class Profile(db.Model):
@@ -50,7 +49,6 @@ class Profile(db.Model):
     slips_avoided = db.Column(db.Integer, default=0)
     start_time = db.Column(db.String(100), nullable=True)
 
-
 class CbtRecord(db.Model):
     __tablename__ = "cbt_record"
     id = db.Column(db.Integer, primary_key=True)
@@ -59,6 +57,13 @@ class CbtRecord(db.Model):
     rational_response = db.Column(db.Text, nullable=False)
     date = db.Column(db.String(50), nullable=False)
 
+class Letter(db.Model):
+    """Капсула трезвости: письма себе в моменты ясности."""
+    __tablename__ = "letter"
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(150), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    date = db.Column(db.String(50), nullable=False)
 
 class DayMark(db.Model):
     """Отметка одного дня в календаре «Карта чистоты»."""
@@ -67,7 +72,6 @@ class DayMark(db.Model):
     day = db.Column(db.String(10), unique=True, index=True, nullable=False)  # YYYY-MM-DD
     status = db.Column(db.String(10), nullable=True)                          # win | slip
     note = db.Column(db.Text, default="")
-
 
 class BalanceLog(db.Model):
     """Ежедневный баланс дофамина: бустеры, ловушки, индекс."""
@@ -80,14 +84,12 @@ class BalanceLog(db.Model):
     boosters_detail = db.Column(db.String(255), default="")
     traps_detail = db.Column(db.String(255), default="")
 
-
 with app.app_context():
     db.create_all()
 
 print("✅ База данных готова")
 print("Путь к базе:", DB_PATH)
 print("Постоянное хранилище:", os.path.abspath(DATA_DIR) != os.path.abspath(basedir))
-
 
 # ─────────────────────────── ВСПОМОГАТЕЛЬНОЕ ───────────────────────────
 # Единственный формат ответа: полный слепок состояния. Клиент не хранит
@@ -97,16 +99,15 @@ print("Постоянное хранилище:", os.path.abspath(DATA_DIR) != o
 def today_str():
     return datetime.now().strftime("%Y-%m-%d")
 
-
 def get_profile():
     return Profile.query.first()
-
 
 def state_payload():
     profile = get_profile()
     marks = DayMark.query.all()
     logs = BalanceLog.query.order_by(BalanceLog.day.asc()).all()
     cbt = CbtRecord.query.order_by(CbtRecord.id.desc()).all()
+    letters = Letter.query.order_by(Letter.id.desc()).all()
 
     return {
         "ok": True,
@@ -144,8 +145,16 @@ def state_payload():
             }
             for c in cbt
         ],
+        "letters": [
+            {
+                "id": l.id,
+                "title": l.title,
+                "content": l.content,
+                "date": l.date,
+            }
+            for l in letters
+        ],
     }
-
 
 # ─────────────────────────────── СТРАНИЦА ───────────────────────────────
 
@@ -153,12 +162,10 @@ def state_payload():
 def index():
     return render_template("index.html")
 
-
 @app.route("/api/state")
 def api_state():
     """Полный слепок: и при загрузке страницы, и как ответ на любую запись."""
     return jsonify(state_payload())
-
 
 # ─────────────────────────── ЗАПИСЬ СОСТОЯНИЯ ───────────────────────────
 
@@ -190,7 +197,6 @@ def api_profile():
     db.session.commit()
     return jsonify(state_payload())
 
-
 @app.route("/api/day/add", methods=["POST"])
 def api_day_add():
     data = request.get_json(silent=True) or {}
@@ -216,7 +222,6 @@ def api_day_add():
     db.session.commit()
     return jsonify(state_payload())
 
-
 @app.route("/api/sos", methods=["POST"])
 def api_sos():
     profile = get_profile()
@@ -224,7 +229,6 @@ def api_sos():
         profile.slips_avoided = (profile.slips_avoided or 0) + 1
         db.session.commit()
     return jsonify(state_payload())
-
 
 @app.route("/api/mark", methods=["POST"])
 def api_mark():
@@ -255,7 +259,6 @@ def api_mark():
     mark.note = note
     db.session.commit()
     return jsonify(state_payload())
-
 
 @app.route("/api/balance", methods=["POST"])
 def api_balance():
@@ -300,7 +303,6 @@ def api_balance():
     db.session.commit()
     return jsonify(state_payload())
 
-
 @app.route("/api/cbt", methods=["POST"])
 def api_cbt():
     data = request.get_json(silent=True) or {}
@@ -320,16 +322,31 @@ def api_cbt():
 
     return jsonify(state_payload())
 
+@app.route("/api/letter", methods=["POST"])
+def api_letter():
+    data = request.get_json(silent=True) or {}
+    title = (data.get("title") or "").strip()[:150]
+    content = (data.get("content") or "").strip()
+
+    if title and content:
+        db.session.add(Letter(
+            title=title,
+            content=content,
+            date=datetime.now().strftime("%d.%m.%Y %H:%M"),
+        ))
+        db.session.commit()
+
+    return jsonify(state_payload())
 
 @app.route("/api/reset", methods=["POST"])
 def api_reset():
     DayMark.query.delete()
     BalanceLog.query.delete()
     CbtRecord.query.delete()
+    Letter.query.delete()
     Profile.query.delete()
     db.session.commit()
     return jsonify(state_payload())
-
 
 @app.route("/export_cbt")
 def export_cbt():
@@ -348,7 +365,6 @@ def export_cbt():
         mimetype="text/plain; charset=utf-8",
         headers={"Content-disposition": "attachment; filename=cbt_recovery_log.txt"},
     )
-
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
