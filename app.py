@@ -74,6 +74,12 @@ class WorkoutRecord(db.Model):
     reps_data = db.Column(db.String(100), nullable=False)
     date = db.Column(db.String(50), nullable=False)
 
+class StrategyBoard(db.Model):
+    """Доска стратегии и заметок по спорту."""
+    __tablename__ = "strategy_board"
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.Text, default="")
+
 class DayMark(db.Model):
     """Отметка одного дня в календаре «Карта чистоты»."""
     __tablename__ = "day_mark"
@@ -111,8 +117,17 @@ def today_str():
 def get_profile():
     return Profile.query.first()
 
+def get_board():
+    board = StrategyBoard.query.first()
+    if not board:
+        board = StrategyBoard(content="1. Беречь спину, избегать осевых нагрузок\n2. Фокус на глубокие мышцы кора\n3. Регулярная растяжка и разминка")
+        db.session.add(board)
+        db.session.commit()
+    return board
+
 def state_payload():
     profile = get_profile()
+    board = get_board()
     marks = DayMark.query.all()
     logs = BalanceLog.query.order_by(BalanceLog.day.asc()).all()
     cbt = CbtRecord.query.order_by(CbtRecord.id.desc()).all()
@@ -131,6 +146,7 @@ def state_payload():
             "slips_avoided": profile.slips_avoided or 0,
             "start_time": profile.start_time,
         },
+        "board_content": board.content if board else "",
         "marks": {
             m.day: {"status": m.status, "note": m.note or ""} for m in marks
         },
@@ -376,6 +392,26 @@ def api_workout():
 
     return jsonify(state_payload())
 
+@app.route("/api/workout/delete", methods=["POST"])
+def api_workout_delete():
+    data = request.get_json(silent=True) or {}
+    w_id = data.get("id")
+    if w_id:
+        record = WorkoutRecord.query.get(w_id)
+        if record:
+            db.session.delete(record)
+            db.session.commit()
+    return jsonify(state_payload())
+
+@app.route("/api/board", methods=["POST"])
+def api_board():
+    data = request.get_json(silent=True) or {}
+    content = (data.get("content") or "").strip()
+    board = get_board()
+    board.content = content
+    db.session.commit()
+    return jsonify(state_payload())
+
 @app.route("/api/reset", methods=["POST"])
 def api_reset():
     DayMark.query.delete()
@@ -383,9 +419,12 @@ def api_reset():
     CbtRecord.query.delete()
     Letter.query.delete()
     WorkoutRecord.query.delete()
+    StrategyBoard.query.delete()
     Profile.query.delete()
     db.session.commit()
     return jsonify(state_payload())
+
+@app.export_cbt = route = None  # placeholder or keep original export_cbt below
 
 @app.route("/export_cbt")
 def export_cbt():
