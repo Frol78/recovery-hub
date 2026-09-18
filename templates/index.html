@@ -607,46 +607,42 @@
             </div>
         </div>
 
-        <!-- 📋 ДОСКА СТРАТЕГИИ И ПЛАН УПРАЖНЕНИЙ -->
-        <div class="spotlight-card bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow">
-            <h2 class="text-xl font-bold text-white mb-2">📋 Доска стратегии и путям развития (Спорт)</h2>
-            <p class="text-sm text-gray-400 mb-8 leading-relaxed">
-                Твоя личная спортивная доска: записывай сюда ключевые правила (особенно по защите спины) и любимые упражнения для контроля групп мышц.
-            </p>
+        <!-- 📋 ДОСКА СТРАТЕГИИ И ПЛАН УПРАЖНЕНИЙ (Горизонтальное разделение) -->
+        <div class="spotlight-card bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow space-y-8">
+            <div>
+                <h2 class="text-xl font-bold text-white mb-2">📋 Доска стратегии и путям развития (Спорт)</h2>
+                <p class="text-sm text-gray-400 mb-6 leading-relaxed">
+                    Твоя личная спортивная доска: сверху — проверенный пул упражнений по группам мышц, снизу — ключевые правила и акценты.
+                </p>
+            </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <!-- Зона заметок и акцентов -->
-                <div class="bg-bmwDeep p-6 rounded-xl border border-bmwBorder flex flex-col justify-between">
-                    <div>
-                        <h3 class="text-xs font-bold text-blue-400 uppercase tracking-wider mb-4">📌 Акценты и правила (Спина, Режим)</h3>
-                        <div id="board-notes-list" class="space-y-2 mb-4"></div>
-                    </div>
-                    <div class="flex gap-2">
-                        <input type="text" id="new-board-note" placeholder="Напр. Беречь спину, без резких движений"
-                               class="w-full px-4 py-3 bg-bmwCard border border-bmwBorder rounded-xl text-white text-xs placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-all">
-                        <button type="button" onclick="addBoardNote()" class="px-4 py-3 bmw-btn text-white font-bold rounded-xl text-xs shrink-0">Добавить</button>
-                    </div>
+            <!-- Верхняя часть: Пул упражнений -->
+            <div class="bg-bmwDeep p-6 rounded-xl border border-bmwBorder space-y-4">
+                <h3 class="text-xs font-bold text-emerald-400 uppercase tracking-wider">🎯 Пул упражнений по группам</h3>
+                <div id="board-exercises-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-60 overflow-y-auto pr-1"></div>
+                
+                <div class="pt-4 border-t border-bmwBorder grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <select id="exercise-group" class="px-4 py-3 bg-bmwCard border border-bmwBorder rounded-xl text-white text-xs focus:outline-none focus:border-blue-500 transition-all">
+                        <option value="🛡️ Спина / Кор (Реабилитация)">🛡️ Спина / Кор</option>
+                        <option value="💪 Верх (Грудь / Руки / Плечи)">💪 Верх</option>
+                        <option value="🦵 Низ (Ноги / Статика)">🦵 Низ</option>
+                        <option value="🧘 Растяжка / Йога">🧘 Растяжка</option>
+                    </select>
+                    <input type="text" id="new-board-ex" placeholder="Напр. Гиперэкстензия / Планка"
+                           class="px-4 py-3 bg-bmwCard border border-bmwBorder rounded-xl text-white text-xs placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-all">
+                    <button type="button" onclick="addBoardExercise()" class="py-3 bmw-btn text-white font-bold rounded-xl text-xs">Добавить в пул</button>
                 </div>
+            </div>
 
-                <!-- Зона групп мышц / пула упражнений -->
-                <div class="bg-bmwDeep p-6 rounded-xl border border-bmwBorder flex flex-col justify-between">
-                    <div>
-                        <h3 class="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-4">🎯 Пул упражнений по группам</h3>
-                        <div id="board-exercises-list" class="space-y-2 mb-4 max-h-48 overflow-y-auto pr-1"></div>
-                    </div>
-                    <div class="space-y-2">
-                        <select id="exercise-group" class="w-full px-4 py-3 bg-bmwCard border border-bmwBorder rounded-xl text-white text-xs focus:outline-none focus:border-blue-500 transition-all">
-                            <option value="🛡️ Спина / Кор (Реабилитация)">🛡️ Спина / Кор (Реабилитация)</option>
-                            <option value="💪 Верх (Грудь / Руки / Плечи)">💪 Верх (Грудь / Руки / Плечи)</option>
-                            <option value="🦵 Низ (Ноги / Статика)">🦵 Низ (Ноги / Статика)</option>
-                            <option value="🧘 Растяжка / Йога">🧘 Растяжка / Йога</option>
-                        </select>
-                        <div class="flex gap-2">
-                            <input type="text" id="new-board-ex" placeholder="Напр. Планка / Гиперэкстензия"
-                                   class="w-full px-4 py-3 bg-bmwCard border border-bmwBorder rounded-xl text-white text-xs placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-all">
-                            <button type="button" onclick="addBoardExercise()" class="px-4 py-3 bmw-btn text-white font-bold rounded-xl text-xs shrink-0">В пул</button>
-                        </div>
-                    </div>
+            <!-- Нижняя часть: Акценты и заметки -->
+            <div class="bg-bmwDeep p-6 rounded-xl border border-bmwBorder space-y-4">
+                <h3 class="text-xs font-bold text-blue-400 uppercase tracking-wider">📌 Акценты и правила (Спина, Режим)</h3>
+                <div id="board-notes-list" class="space-y-2"></div>
+                
+                <div class="pt-4 border-t border-bmwBorder flex gap-3">
+                    <input type="text" id="new-board-note" placeholder="Напр. Беречь спину, без осевых нагрузок с весом"
+                           class="w-full px-4 py-3 bg-bmwCard border border-bmwBorder rounded-xl text-white text-xs placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-all">
+                    <button type="button" onclick="addBoardNote()" class="px-6 py-3 bmw-btn text-white font-bold rounded-xl text-xs shrink-0">Добавить заметку</button>
                 </div>
             </div>
         </div>
@@ -1048,14 +1044,14 @@ function renderBoard() {
     if (!notesList || !exList) return;
 
     notesList.innerHTML = boardNotes.map((note, idx) => `
-        <div class="flex justify-between items-center bg-bmwCard p-2.5 rounded-lg border border-bmwBorder text-xs">
+        <div class="flex justify-between items-center bg-bmwCard p-3 rounded-lg border border-bmwBorder text-xs">
             <span class="text-gray-200">📌 ${escapeHtml(note)}</span>
             <button type="button" onclick="removeBoardNote(${idx})" class="text-red-400 hover:text-red-300 px-2 font-bold">✕</button>
         </div>
     `).join('') || '<p class="text-gray-500 text-xs italic">Нет заметок</p>';
 
     exList.innerHTML = boardExercises.map((ex, idx) => `
-        <div class="flex justify-between items-center bg-bmwCard p-2.5 rounded-lg border border-bmwBorder text-xs">
+        <div class="flex justify-between items-center bg-bmwCard p-3 rounded-lg border border-bmwBorder text-xs">
             <div>
                 <span class="text-blue-400 font-semibold block text-[10px]">${escapeHtml(ex.group)}</span>
                 <span class="text-white font-bold">${escapeHtml(ex.name)}</span>
