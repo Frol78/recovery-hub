@@ -611,30 +611,23 @@
         <div class="spotlight-card bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow">
             <h2 class="text-xl font-bold text-white mb-2">💪 Дневник тренировок и тела</h2>
             <p class="text-sm text-gray-400 mb-8 leading-relaxed">
-                Добавляй упражнения в список по ходу тренировки, а затем сохрани всю сессию в базу.
+                Добавляй упражнения строкой (например, <span class="text-blue-400 font-mono">Отжимания : 4 по 15</span>), а затем сохрани всю сессию в базу.
             </p>
 
             <div class="space-y-5">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold text-gray-200 uppercase tracking-wider mb-3">Тип тренировки:</label>
-                        <select id="workout-type" class="w-full px-5 py-4 bg-bmwDeep border border-bmwBorder rounded-xl text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
-                            <option value="🏋️ Силовая">🏋️ Силовая</option>
-                            <option value="🧘 Йога / Растяжка">🧘 Йога / Растяжка</option>
-                            <option value="🏃 Кардио / Прогулка">🏃 Кардио / Прогулка</option>
-                            <option value="🛡️ Реабилитация спины">🛡️ Реабилитация спины</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-200 uppercase tracking-wider mb-3">Упражнение:</label>
-                        <input type="text" id="workout-exercise" placeholder="Напр. Подтягивания / Планка"
-                               class="w-full px-5 py-4 bg-bmwDeep border border-bmwBorder rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
-                    </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-200 uppercase tracking-wider mb-3">Тип тренировки:</label>
+                    <select id="workout-type" class="w-full px-5 py-4 bg-bmwDeep border border-bmwBorder rounded-xl text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
+                        <option value="🏋️ Силовая">🏋️ Силовая</option>
+                        <option value="🧘 Йога / Растяжка">🧘 Йога / Растяжка</option>
+                        <option value="🏃 Кардио / Прогулка">🏃 Кардио / Прогулка</option>
+                        <option value="🛡️ Реабилитация спины">🛡️ Реабилитация спины</option>
+                    </select>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-gray-200 uppercase tracking-wider mb-3">Подходы / Повторения / Вес:</label>
-                    <input type="text" id="workout-reps" placeholder="Напр. 4 подхода по 10 раз"
+                    <label class="block text-xs font-bold text-gray-200 uppercase tracking-wider mb-3">Упражнение и повторения:</label>
+                    <input type="text" id="workout-line" placeholder="Напр. Отжимания : 4 по 15 (или Планка : 3 минуты)"
                            class="w-full px-5 py-4 bg-bmwDeep border border-bmwBorder rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
                 </div>
 
@@ -907,17 +900,19 @@ async function addLetter(e) {
 }
 
 function stageWorkoutExercise() {
-    const exercise = document.getElementById('workout-exercise').value.trim();
-    const reps = document.getElementById('workout-reps').value.trim();
-
-    if (!exercise || !reps) {
-        toast('Укажи упражнение и повторения!', true);
+    const line = document.getElementById('workout-line').value.trim();
+    if (!line) {
+        toast('Введи упражнение и повторения!', true);
         return;
     }
 
+    // Автоматически разделяем по двоеточию, если оно есть, иначе делим пополам или держим целиком
+    let parts = line.split(':');
+    let exercise = parts[0].trim();
+    let reps = parts[1] ? parts[1].trim() : 'Подход';
+
     stagedWorkouts.push({ exercise, reps });
-    document.getElementById('workout-exercise').value = '';
-    document.getElementById('workout-reps').value = '';
+    document.getElementById('workout-line').value = '';
     renderStagedWorkouts();
 }
 
@@ -939,7 +934,7 @@ function renderStagedWorkouts() {
     list.innerHTML = stagedWorkouts.map((item, idx) => `
         <div class="flex justify-between items-center bg-bmwCard p-3 rounded-lg border border-bmwBorder text-xs">
             <div>
-                <span class="text-white font-bold">${escapeHtml(item.exercise)}</span> — <span class="text-gray-300">${escapeHtml(item.reps)}</span>
+                <span class="text-white font-bold">${escapeHtml(item.exercise)}</span> <span class="text-blue-400">:</span> <span class="text-gray-300">${escapeHtml(item.reps)}</span>
             </div>
             <button type="button" onclick="removeStagedExercise(${idx})" class="text-red-400 hover:text-red-300 font-bold px-2 py-1">✕</button>
         </div>
