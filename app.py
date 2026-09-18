@@ -65,6 +65,15 @@ class Letter(db.Model):
     content = db.Column(db.Text, nullable=False)
     date = db.Column(db.String(50), nullable=False)
 
+class WorkoutRecord(db.Model):
+    """Дневник тренировок и физической активности."""
+    __tablename__ = "workout_record"
+    id = db.Column(db.Integer, primary_key=True)
+    workout_type = db.Column(db.String(100), nullable=False)
+    exercise_name = db.Column(db.String(150), nullable=False)
+    reps_data = db.Column(db.String(100), nullable=False)
+    date = db.Column(db.String(50), nullable=False)
+
 class DayMark(db.Model):
     """Отметка одного дня в календаре «Карта чистоты»."""
     __tablename__ = "day_mark"
@@ -108,6 +117,7 @@ def state_payload():
     logs = BalanceLog.query.order_by(BalanceLog.day.asc()).all()
     cbt = CbtRecord.query.order_by(CbtRecord.id.desc()).all()
     letters = Letter.query.order_by(Letter.id.desc()).all()
+    workouts = WorkoutRecord.query.order_by(WorkoutRecord.id.desc()).all()
 
     return {
         "ok": True,
@@ -153,6 +163,16 @@ def state_payload():
                 "date": l.date,
             }
             for l in letters
+        ],
+        "workouts": [
+            {
+                "id": w.id,
+                "workout_type": w.workout_type,
+                "exercise_name": w.exercise_name,
+                "reps_data": w.reps_data,
+                "date": w.date,
+            }
+            for w in workouts
         ],
     }
 
@@ -338,12 +358,31 @@ def api_letter():
 
     return jsonify(state_payload())
 
+@app.route("/api/workout", methods=["POST"])
+def api_workout():
+    data = request.get_json(silent=True) or {}
+    w_type = (data.get("workout_type") or "").strip()[:100]
+    ex_name = (data.get("exercise_name") or "").strip()[:150]
+    reps = (data.get("reps_data") or "").strip()[:100]
+
+    if w_type and ex_name and reps:
+        db.session.add(WorkoutRecord(
+            workout_type=w_type,
+            exercise_name=ex_name,
+            reps_data=reps,
+            date=datetime.now().strftime("%d.%m.%Y %H:%M"),
+        ))
+        db.session.commit()
+
+    return jsonify(state_payload())
+
 @app.route("/api/reset", methods=["POST"])
 def api_reset():
     DayMark.query.delete()
     BalanceLog.query.delete()
     CbtRecord.query.delete()
     Letter.query.delete()
+    WorkoutRecord.query.delete()
     Profile.query.delete()
     db.session.commit()
     return jsonify(state_payload())
