@@ -611,10 +611,10 @@
         <div class="spotlight-card bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow">
             <h2 class="text-xl font-bold text-white mb-2">💪 Дневник тренировок и тела</h2>
             <p class="text-sm text-gray-400 mb-8 leading-relaxed">
-                Фиксируй нагрузку, береги спину и следи за прогрессом без лишней воды.
+                Добавляй упражнения в список по ходу тренировки, а затем сохрани всю сессию в базу.
             </p>
 
-            <form onsubmit="addWorkout(event)" class="space-y-5">
+            <div class="space-y-5">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-bold text-gray-200 uppercase tracking-wider mb-3">Тип тренировки:</label>
@@ -627,21 +627,32 @@
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-gray-200 uppercase tracking-wider mb-3">Упражнение:</label>
-                        <input type="text" id="workout-exercise" required placeholder="Напр. Подтягивания / Планка"
+                        <input type="text" id="workout-exercise" placeholder="Напр. Подтягивания / Планка"
                                class="w-full px-5 py-4 bg-bmwDeep border border-bmwBorder rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
                     </div>
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-gray-200 uppercase tracking-wider mb-3">Подходы / Повторения / Вес:</label>
-                    <input type="text" id="workout-reps" required placeholder="Напр. 4 подхода по 10 раз (или без веса для спины)"
+                    <input type="text" id="workout-reps" placeholder="Напр. 4 подхода по 10 раз"
                            class="w-full px-5 py-4 bg-bmwDeep border border-bmwBorder rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
                 </div>
 
-                <button type="submit" class="w-full py-5 bmw-btn text-white font-bold rounded-xl text-base tracking-wide">
-                    🦾 Записать результат в базу
+                <button type="button" onclick="stageWorkoutExercise()" class="w-full py-4 bg-bmwDeep hover:bg-bmwBorder text-blue-400 font-bold rounded-xl text-sm border border-blue-500/40 hover:border-blue-500 transition-all">
+                    ➕ Добавить упражнение в список
                 </button>
-            </form>
+            </div>
+
+            <!-- Список подготовленных к отправке упражнений -->
+            <div id="staged-exercises-container" class="mt-6 hidden">
+                <div class="bg-bmwDeep p-5 rounded-xl border border-blue-500/30 space-y-3">
+                    <h4 class="text-xs font-bold text-blue-400 uppercase tracking-wider">📝 Упражнения на эту тренировку:</h4>
+                    <div id="staged-list" class="space-y-2"></div>
+                    <button type="button" onclick="saveStagedWorkouts()" class="w-full py-4 bmw-btn text-white font-bold rounded-xl text-sm tracking-wide mt-3">
+                        🦾 Сохранить всю тренировку в базу
+                    </button>
+                </div>
+            </div>
 
             <div id="workouts-container" class="mt-10 hidden">
                 <div class="border-b border-bmwBorder pb-4 mb-6">
@@ -722,6 +733,8 @@ let STATE = {
     workouts: [],
     storage: { persistent: false, dir: '' }
 };
+
+let stagedWorkouts = [];
 
 let chartInstance = null;
 let busy = false;
@@ -893,18 +906,65 @@ async function addLetter(e) {
     }
 }
 
-async function addWorkout(e) {
-    e.preventDefault();
-    const ok = await send('/api/workout', {
-        workout_type: document.getElementById('workout-type').value,
-        exercise_name: document.getElementById('workout-exercise').value,
-        reps_data: document.getElementById('workout-reps').value
-    });
+function stageWorkoutExercise() {
+    const exercise = document.getElementById('workout-exercise').value.trim();
+    const reps = document.getElementById('workout-reps').value.trim();
 
-    if (ok) {
-        document.getElementById('workout-exercise').value = '';
-        document.getElementById('workout-reps').value = '';
-        toast('🦾 Тренировка зафиксирована в системе.');
+    if (!exercise || !reps) {
+        toast('Укажи упражнение и повторения!', true);
+        return;
+    }
+
+    stagedWorkouts.push({ exercise, reps });
+    document.getElementById('workout-exercise').value = '';
+    document.getElementById('workout-reps').value = '';
+    renderStagedWorkouts();
+}
+
+function removeStagedExercise(index) {
+    stagedWorkouts.splice(index, 1);
+    renderStagedWorkouts();
+}
+
+function renderStagedWorkouts() {
+    const container = document.getElementById('staged-exercises-container');
+    const list = document.getElementById('staged-list');
+
+    if (stagedWorkouts.length === 0) {
+        container.classList.add('hidden');
+        return;
+    }
+
+    container.classList.remove('hidden');
+    list.innerHTML = stagedWorkouts.map((item, idx) => `
+        <div class="flex justify-between items-center bg-bmwCard p-3 rounded-lg border border-bmwBorder text-xs">
+            <div>
+                <span class="text-white font-bold">${escapeHtml(item.exercise)}</span> — <span class="text-gray-300">${escapeHtml(item.reps)}</span>
+            </div>
+            <button type="button" onclick="removeStagedExercise(${idx})" class="text-red-400 hover:text-red-300 font-bold px-2 py-1">✕</button>
+        </div>
+    `).join('');
+}
+
+async function saveStagedWorkouts() {
+    if (stagedWorkouts.length === 0) return;
+
+    const workoutType = document.getElementById('workout-type').value;
+    let success = true;
+
+    for (const item of stagedWorkouts) {
+        const ok = await send('/api/workout', {
+            workout_type: workoutType,
+            exercise_name: item.exercise,
+            reps_data: item.reps
+        });
+        if (!ok) success = false;
+    }
+
+    if (success) {
+        stagedWorkouts = [];
+        renderStagedWorkouts();
+        toast('🦾 Вся тренировка успешно сохранена в базу!');
     }
 }
 
