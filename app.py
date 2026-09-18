@@ -10,15 +10,6 @@ app = Flask(__name__)
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 # ─────────────────────────── ГДЕ ЛЕЖИТ БАЗА ───────────────────────────
-# Если в Amvera подключён постоянный диск, его путь приходит в DATA_DIR
-# (переменная окружения). Тогда база живёт на диске и переживает
-# пересборку контейнера. Если диска нет — база ложится рядом с app.py,
-# но при каждом деплое она обнуляется. В ответе /api/state поле
-# storage.persistent показывает текущий режим.
-# Порядок приоритетов:
-#   1. DATA_DIR из переменных окружения (задаётся в панели Amvera)
-#   2. /data — путь постоянного диска Amvera (persistenceMount)
-#   3. папка проекта — только локальная разработка, данные не переживут деплой
 if os.environ.get("DATA_DIR"):
     DATA_DIR = os.environ["DATA_DIR"]
 elif os.path.isdir("/data"):
@@ -107,9 +98,6 @@ print("Путь к базе:", DB_PATH)
 print("Постоянное хранилище:", os.path.abspath(DATA_DIR) != os.path.abspath(basedir))
 
 # ─────────────────────────── ВСПОМОГАТЕЛЬНОЕ ───────────────────────────
-# Единственный формат ответа: полный слепок состояния. Клиент не хранит
-# ничего у себя — он всегда получает правду с сервера и перерисовывает UI.
-# Так данные одинаковы на ноутбуке, телефоне и в любом браузере.
 
 def today_str():
     return datetime.now().strftime("%Y-%m-%d")
@@ -200,7 +188,6 @@ def index():
 
 @app.route("/api/state")
 def api_state():
-    """Полный слепок: и при загрузке страницы, и как ответ на любую запись."""
     return jsonify(state_payload())
 
 # ─────────────────────────── ЗАПИСЬ СОСТОЯНИЯ ───────────────────────────
@@ -208,7 +195,6 @@ def api_state():
 @app.route("/api/profile", methods=["POST"])
 def api_profile():
     data = request.get_json(silent=True) or {}
-
     name = (data.get("name") or "").strip()[:100] or "Боец"
     try:
         days = max(0, int(data.get("days") or 0))
@@ -247,7 +233,6 @@ def api_day_add():
 
     profile.days = max(0, (profile.days or 0) + delta)
 
-    # Заодно отмечаем сегодняшний день как чистый
     key = today_str()
     mark = DayMark.query.filter_by(day=key).first()
     if mark is None:
@@ -269,7 +254,6 @@ def api_sos():
 @app.route("/api/mark", methods=["POST"])
 def api_mark():
     data = request.get_json(silent=True) or {}
-
     day = (data.get("day") or "").strip()
     status = (data.get("status") or "").strip() or None
     note = (data.get("note") or "").strip()
@@ -298,13 +282,10 @@ def api_mark():
 
 @app.route("/api/balance", methods=["POST"])
 def api_balance():
-    """Индекс считает сервер — клиент присылает только галочки."""
     data = request.get_json(silent=True) or {}
-
     day = (data.get("day") or today_str()).strip()
 
     def as_keys(value):
-        """Принимает либо список ключей, либо число — и приводит к списку."""
         if isinstance(value, list):
             return [str(v)[:32] for v in value if str(v).strip()]
         try:
@@ -329,7 +310,6 @@ def api_balance():
     log.boosters_detail = ",".join(booster_keys)[:255]
     log.traps_detail = ",".join(trap_keys)[:255]
 
-    # Синхронизация с календарём: индекс >= 0 → день засчитан чистым
     mark = DayMark.query.filter_by(day=day).first()
     if mark is None:
         mark = DayMark(day=day, note="")
@@ -342,7 +322,6 @@ def api_balance():
 @app.route("/api/cbt", methods=["POST"])
 def api_cbt():
     data = request.get_json(silent=True) or {}
-
     category = (data.get("category") or "").strip()[:100] or "Общее"
     thought = (data.get("automatic_thought") or "").strip()
     response = (data.get("rational_response") or "").strip()
@@ -423,8 +402,6 @@ def api_reset():
     Profile.query.delete()
     db.session.commit()
     return jsonify(state_payload())
-
-@app.export_cbt = route = None  # placeholder or keep original export_cbt below
 
 @app.route("/export_cbt")
 def export_cbt():
