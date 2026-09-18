@@ -607,6 +607,50 @@
             </div>
         </div>
 
+        <!-- 📋 ДОСКА СТРАТЕГИИ И ПЛАН УПРАЖНЕНИЙ -->
+        <div class="spotlight-card bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow">
+            <h2 class="text-xl font-bold text-white mb-2">📋 Доска стратегии и путям развития (Спорт)</h2>
+            <p class="text-sm text-gray-400 mb-8 leading-relaxed">
+                Твоя личная спортивная доска: записывай сюда ключевые правила (особенно по защите спины) и любимые упражнения для контроля групп мышц.
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- Зона заметок и акцентов -->
+                <div class="bg-bmwDeep p-6 rounded-xl border border-bmwBorder flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-xs font-bold text-blue-400 uppercase tracking-wider mb-4">📌 Акценты и правила (Спина, Режим)</h3>
+                        <div id="board-notes-list" class="space-y-2 mb-4"></div>
+                    </div>
+                    <div class="flex gap-2">
+                        <input type="text" id="new-board-note" placeholder="Напр. Беречь спину, без резких движений"
+                               class="w-full px-4 py-3 bg-bmwCard border border-bmwBorder rounded-xl text-white text-xs placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-all">
+                        <button type="button" onclick="addBoardNote()" class="px-4 py-3 bmw-btn text-white font-bold rounded-xl text-xs shrink-0">Добавить</button>
+                    </div>
+                </div>
+
+                <!-- Зона групп мышц / пула упражнений -->
+                <div class="bg-bmwDeep p-6 rounded-xl border border-bmwBorder flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-4">🎯 Пул упражнений по группам</h3>
+                        <div id="board-exercises-list" class="space-y-2 mb-4 max-h-48 overflow-y-auto pr-1"></div>
+                    </div>
+                    <div class="space-y-2">
+                        <select id="exercise-group" class="w-full px-4 py-3 bg-bmwCard border border-bmwBorder rounded-xl text-white text-xs focus:outline-none focus:border-blue-500 transition-all">
+                            <option value="🛡️ Спина / Кор (Реабилитация)">🛡️ Спина / Кор (Реабилитация)</option>
+                            <option value="💪 Верх (Грудь / Руки / Плечи)">💪 Верх (Грудь / Руки / Плечи)</option>
+                            <option value="🦵 Низ (Ноги / Статика)">🦵 Низ (Ноги / Статика)</option>
+                            <option value="🧘 Растяжка / Йога">🧘 Растяжка / Йога</option>
+                        </select>
+                        <div class="flex gap-2">
+                            <input type="text" id="new-board-ex" placeholder="Напр. Планка / Гиперэкстензия"
+                                   class="w-full px-4 py-3 bg-bmwCard border border-bmwBorder rounded-xl text-white text-xs placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-all">
+                            <button type="button" onclick="addBoardExercise()" class="px-4 py-3 bmw-btn text-white font-bold rounded-xl text-xs shrink-0">В пул</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- 💪 ДНЕВНИК ТРЕНИРОВОК -->
         <div class="spotlight-card bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow">
             <h2 class="text-xl font-bold text-white mb-2">💪 Дневник тренировок и тела</h2>
@@ -728,6 +772,8 @@ let STATE = {
 };
 
 let stagedWorkouts = [];
+let boardNotes = JSON.parse(localStorage.getItem('board_notes') || '["Беречь спину, избегать осевых нагрузок", "Фокус на глубокие мышцы кора и осанку"]');
+let boardExercises = JSON.parse(localStorage.getItem('board_exercises') || '[{"group": "🛡️ Спина / Кор (Реабилитация)", "name": "Планка"}, {"group": "🛡️ Спина / Кор (Реабилитация)", "name": "Кошка-корова"}, {"group": "🧘 Растяжка / Йога", "name": "Растяжка грудного отдела"}]');
 
 let chartInstance = null;
 let busy = false;
@@ -906,7 +952,6 @@ function stageWorkoutExercise() {
         return;
     }
 
-    // Автоматически разделяем по двоеточию, если оно есть, иначе делим пополам или держим целиком
     let parts = line.split(':');
     let exercise = parts[0].trim();
     let reps = parts[1] ? parts[1].trim() : 'Подход';
@@ -961,6 +1006,63 @@ async function saveStagedWorkouts() {
         renderStagedWorkouts();
         toast('🦾 Вся тренировка успешно сохранена в базу!');
     }
+}
+
+/* ── Логика доски стратегии ── */
+function addBoardNote() {
+    const input = document.getElementById('new-board-note');
+    const val = input.value.trim();
+    if (!val) return;
+    boardNotes.push(val);
+    input.value = '';
+    localStorage.setItem('board_notes', JSON.stringify(boardNotes));
+    renderBoard();
+}
+
+function removeBoardNote(idx) {
+    boardNotes.splice(idx, 1);
+    localStorage.setItem('board_notes', JSON.stringify(boardNotes));
+    renderBoard();
+}
+
+function addBoardExercise() {
+    const input = document.getElementById('new-board-ex');
+    const group = document.getElementById('exercise-group').value;
+    const name = input.value.trim();
+    if (!name) return;
+    boardExercises.push({ group, name });
+    input.value = '';
+    localStorage.setItem('board_exercises', JSON.stringify(boardExercises));
+    renderBoard();
+}
+
+function removeBoardExercise(idx) {
+    boardExercises.splice(idx, 1);
+    localStorage.setItem('board_exercises', JSON.stringify(boardExercises));
+    renderBoard();
+}
+
+function renderBoard() {
+    const notesList = document.getElementById('board-notes-list');
+    const exList = document.getElementById('board-exercises-list');
+    if (!notesList || !exList) return;
+
+    notesList.innerHTML = boardNotes.map((note, idx) => `
+        <div class="flex justify-between items-center bg-bmwCard p-2.5 rounded-lg border border-bmwBorder text-xs">
+            <span class="text-gray-200">📌 ${escapeHtml(note)}</span>
+            <button type="button" onclick="removeBoardNote(${idx})" class="text-red-400 hover:text-red-300 px-2 font-bold">✕</button>
+        </div>
+    `).join('') || '<p class="text-gray-500 text-xs italic">Нет заметок</p>';
+
+    exList.innerHTML = boardExercises.map((ex, idx) => `
+        <div class="flex justify-between items-center bg-bmwCard p-2.5 rounded-lg border border-bmwBorder text-xs">
+            <div>
+                <span class="text-blue-400 font-semibold block text-[10px]">${escapeHtml(ex.group)}</span>
+                <span class="text-white font-bold">${escapeHtml(ex.name)}</span>
+            </div>
+            <button type="button" onclick="removeBoardExercise(${idx})" class="text-red-400 hover:text-red-300 px-2 font-bold">✕</button>
+        </div>
+    `).join('') || '<p class="text-gray-500 text-xs italic">Пусто в пуле</p>';
 }
 
 function resetCluster() {
@@ -1555,6 +1657,7 @@ function renderAll() {
     renderLetters();
     renderWorkouts();
     renderBalance();
+    renderBoard();
     calRenderWeekdays();
     calRenderAll();
 }
