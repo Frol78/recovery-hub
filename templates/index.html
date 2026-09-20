@@ -348,6 +348,17 @@
                 <textarea id="cbt-resp" rows="3" required placeholder="Рациональный ответ..." class="w-full px-5 py-4 bg-bmwDeep border border-bmwBorder rounded-xl text-white resize-none"></textarea>
                 <button type="submit" class="w-full py-5 bmw-btn text-white font-bold rounded-xl">🛡️ Сохранить лог</button>
             </form>
+
+            <!-- 📥 ИМПОРТ МЫСЛЕЙ С УЛИЦЫ / GOOGLE DOCS -->
+            <div class="mt-8 pt-8 border-t border-bmwBorder">
+                <h3 class="text-base font-bold text-blue-400 mb-2">📥 Импорт заметок с улицы (Google Docs)</h3>
+                <p class="text-xs text-gray-400 mb-4">Скопируй свои заметки с телефона, вставь сюда — и они автоматически сохранятся в КПТ-архив с категорией «Улица»!</p>
+                <form onsubmit="importStreetThoughts(event)" class="space-y-4">
+                    <textarea id="street-thoughts-input" rows="5" required placeholder="Вставь сюда текст заметок с телефона..." class="w-full px-5 py-4 bg-bmwDeep border border-bmwBorder rounded-xl text-white resize-y text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500"></textarea>
+                    <button type="submit" class="w-full py-4 bg-bmwDeep hover:bg-bmwBorder text-blue-400 font-bold rounded-xl text-sm border border-blue-500/40">🚀 Загрузить заметки в КПТ-архив</button>
+                </form>
+            </div>
+
             <div id="cbt-records-container" class="mt-10 hidden">
                 <div class="flex justify-between items-center border-b border-bmwBorder pb-4 mb-6">
                     <h3 class="text-sm font-bold text-gray-200 uppercase">Архив <span id="cbt-count" class="text-blue-400">(0)</span></h3>
@@ -464,6 +475,15 @@ async function addCbtRecord(e) {
     await send('/api/cbt', { category: document.getElementById('cbt-cat').value, automatic_thought: document.getElementById('cbt-thought').value, rational_response: document.getElementById('cbt-resp').value });
     document.getElementById('cbt-cat').value = ''; document.getElementById('cbt-thought').value = ''; document.getElementById('cbt-resp').value = '';
     toast('Лог КПТ сохранён.');
+}
+
+async function importStreetThoughts(e) {
+    e.preventDefault();
+    const text = document.getElementById('street-thoughts-input').value.trim();
+    if (!text) return;
+    await send('/api/cbt/import', { text: text });
+    document.getElementById('street-thoughts-input').value = '';
+    toast('🚀 Заметки успешно загружены в КПТ-архив!');
 }
 
 async function addLetter(e) {

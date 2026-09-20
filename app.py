@@ -337,6 +337,24 @@ def api_cbt():
 
     return jsonify(state_payload())
 
+@app.route("/api/cbt/import", methods=["POST"])
+def api_cbt_import():
+    data = request.get_json(silent=True) or {}
+    text = (data.get("text") or "").strip()
+    if text:
+        # Разбиваем по абзацам или пустым строкам, чтобы импортировать пачкой
+        paragraphs = [p.strip() for p in text.split("\n") if p.strip()]
+        date_str = datetime.now().strftime("%d.%m.%Y %H:%M")
+        for p in paragraphs:
+            db.session.add(CbtRecord(
+                category="Улица / Google Docs",
+                automatic_thought=p,
+                rational_response="[Импорт с телефона — ждет анализа и рационализации]",
+                date=date_str,
+            ))
+        db.session.commit()
+    return jsonify(state_payload())
+
 @app.route("/api/letter", methods=["POST"])
 def api_letter():
     data = request.get_json(silent=True) or {}
