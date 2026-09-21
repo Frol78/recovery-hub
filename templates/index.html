@@ -138,12 +138,34 @@
     #toast-box { position: fixed; top: 18px; left: 50%; transform: translateX(-50%); z-index: 100; display: flex; flex-direction: column; gap: 10px; width: min(92vw, 460px); }
     @keyframes toast-in { from { opacity: 0; transform: translateY(-14px); } to { opacity: 1; transform: translateY(0); } }
     .toast { animation: toast-in .22s ease-out; }
-    .saving { opacity: .6; pointer-events: none; }
 </style>
 </head>
 <body class="text-gray-100 min-h-screen py-8 sm:py-16 px-4 flex items-center justify-center">
 
 <div id="toast-box"></div>
+
+<!-- 🚨 МОДАЛКА ЭКСТРЕННОГО РАНДОМАЙЗЕРА (SOS) -->
+<div id="sos-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="spotlight-card bg-bmwCard max-w-lg w-full p-8 rounded-3xl border border-red-500/50 shadow-[0_0_50px_rgba(239,68,68,0.3)] text-center relative">
+        <button onclick="closeSosModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl font-bold w-10 h-10 rounded-xl bg-bmwDeep border border-bmwBorder flex items-center justify-center">✕</button>
+        
+        <div class="w-16 h-16 rounded-2xl bg-red-950/40 border border-red-500/40 flex items-center justify-center mx-auto mb-5 shadow-[0_0_20px_rgba(239,68,68,0.3)]">
+            <span class="text-3xl">⚡</span>
+        </div>
+        
+        <h3 id="sos-action-title" class="text-2xl font-bold text-white mb-3">Загрузка протокола...</h3>
+        <p id="sos-action-desc" class="text-gray-300 text-sm mb-8 leading-relaxed">Мозг пытается тебя обмануть. Давай собьем этот паттерн.</p>
+        
+        <div id="sos-action-widget" class="mb-8 bg-bmwDeep p-6 rounded-2xl border border-bmwBorder">
+            <!-- Сюда динамически вставляется интерактив -->
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <button onclick="spinSosAction()" class="py-4 bg-bmwDeep hover:bg-bmwBorder text-blue-400 font-bold rounded-xl text-sm border border-blue-500/40">🎲 Другой вариант</button>
+            <button onclick="goToCbtFromSos()" class="py-4 bg-gradient-to-r from-red-600 to-red-700 text-white font-bold rounded-xl text-sm shadow-lg">🛡️ Перейти к КПТ</button>
+        </div>
+    </div>
+</div>
 
 <div class="max-w-3xl w-full spotlight-card bg-bmwCard/90 backdrop-blur-xl p-8 sm:p-14 rounded-3xl shadow-[0_30px_90px_rgba(0,0,0,0.95)] border border-bmwBorder relative overflow-hidden">
     <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-blue-500 to-transparent shadow-[0_0_20px_#3B82F6]"></div>
@@ -295,7 +317,7 @@
             <div id="letters-container" class="mt-10 hidden"><div id="letters-list" class="space-y-4"></div></div>
         </div>
 
-        <!-- 📋 ДОСКА СТРАТЕГИИ (Простое текстовое поле) -->
+        <!-- Доска стратегии -->
         <div class="spotlight-card bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow">
             <h2 class="text-xl font-bold text-white mb-2">📋 Доска стратегии и заметок (Спорт)</h2>
             <p class="text-sm text-gray-400 mb-6">Свободное поле для твоих правил, акцентов по спине и планов.</p>
@@ -308,7 +330,7 @@
             </div>
         </div>
 
-        <!-- 💪 ДНЕВНИК ТРЕНИРОВОК -->
+        <!-- Дневник тренировок -->
         <div class="spotlight-card bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow">
             <h2 class="text-xl font-bold text-white mb-2">💪 Дневник тренировок и тела</h2>
             <p class="text-sm text-gray-400 mb-8">Формат ввода: <span class="text-blue-400 font-mono">Отжимания : 4 по 15</span></p>
@@ -349,7 +371,7 @@
                 <button type="submit" class="w-full py-5 bmw-btn text-white font-bold rounded-xl">🛡️ Сохранить лог</button>
             </form>
 
-            <!-- 📥 ИМПОРТ МЫСЛЕЙ С УЛИЦЫ / GOOGLE DOCS -->
+            <!-- Импорт мыслей с улицы -->
             <div class="mt-8 pt-8 border-t border-bmwBorder">
                 <h3 class="text-base font-bold text-blue-400 mb-2">📥 Импорт заметок с улицы (Google Docs)</h3>
                 <p class="text-xs text-gray-400 mb-4">Скопируй свои заметки с телефона, вставь сюда — и они автоматически сохранятся в КПТ-архив с категорией «Улица»!</p>
@@ -381,9 +403,83 @@ let chartInstance = null;
 let busy = false;
 let calViewYear = new Date().getFullYear();
 let calViewMonth = new Date().getMonth();
-let calSelectedKey = null;
-let calModalStatus = null;
-let calModalOpen = false;
+
+// 🎲 Экстренные протоколы для рандомайзера SOS
+const SOS_ACTIONS = [
+    {
+        title: "🫁 Дыхательный цикл (Квадрат)",
+        desc: "Сделай паузу. Дыши глубоко: Вдох на 4 сек, задержка на 4 сек, выдох на 4 сек.",
+        widget: `<div id="breath-timer" class="text-3xl font-mono font-black text-blue-400">Вдох... (4с)</div>`
+    },
+    {
+        title: "🦾 Физический сброс",
+        desc: "Сбрось гормоны стресса прямо сейчас. Сделай 15-20 отжиманий или повиси на турнике.",
+        widget: `<div class="text-sm text-emerald-400 font-bold">⚡ Иди к турнику или падай в упор лежа! 20 повторений.</div>`
+    },
+    {
+        title: "⏳ Психологический предохранитель",
+        desc: "Включи таймер на 20 минут. Скажи себе: «Я не принимаю решений прямо сейчас. Я просто жду»",
+        widget: `<div id="sos-countdown" class="text-3xl font-mono font-black text-amber-400">20:00</div>`
+    },
+    {
+        title: "🚶 Разрыв шаблона",
+        desc: "Встань со стула, выйди из комнаты, умойся холодной водой или выйди на улицу на 5 минут.",
+        widget: `<div class="text-sm text-blue-300 font-bold">💧 Холодная вода на лицо сбивает химию мозга за 30 секунд.</div>`
+    }
+];
+
+let currentSosInterval = null;
+
+async function triggerSOS() {
+    await send('/api/sos', {});
+    toast('🚨 Аварийный протокол активирован!');
+    openSosModal();
+}
+
+function openSosModal() {
+    document.getElementById('sos-modal').classList.remove('hidden');
+    spinSosAction();
+}
+
+function closeSosModal() {
+    document.getElementById('sos-modal').classList.add('hidden');
+    if (currentSosInterval) clearInterval(currentSosInterval);
+}
+
+function spinSosAction() {
+    if (currentSosInterval) clearInterval(currentSosInterval);
+    
+    const action = SOS_ACTIONS[Math.floor(Math.random() * SOS_ACTIONS.length)];
+    
+    document.getElementById('sos-action-title').innerText = action.title;
+    document.getElementById('sos-action-desc').innerText = action.desc;
+    document.getElementById('sos-action-widget').innerHTML = action.widget;
+
+    if (action.title.includes("предохранитель")) {
+        let timeLeft = 20 * 60;
+        const el = document.getElementById('sos-countdown');
+        currentSosInterval = setInterval(() => {
+            timeLeft--;
+            const m = Math.floor(timeLeft / 60);
+            const s = timeLeft % 60;
+            if (el) el.innerText = `${pad2(m)}:${pad2(s)}`;
+            if (timeLeft <= 0) {
+                clearInterval(currentSosInterval);
+                if (el) el.innerText = "Время вышло! Тяга отступила?";
+            }
+        }, 1000);
+    }
+}
+
+function goToCbtFromSos() {
+    closeSosModal();
+    const cbtCard = document.getElementById('cbt-section-card');
+    if (cbtCard) {
+        cbtCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const firstInput = cbtCard.querySelector('input');
+        if (firstInput) setTimeout(() => firstInput.focus(), 500);
+    }
+}
 
 document.addEventListener('mousemove', e => {
     for (const card of document.getElementsByClassName('spotlight-card')) {
@@ -451,17 +547,6 @@ async function createProfile(e) {
 }
 
 async function addDay() { await send('/api/day/add', { add_days: 1 }); toast('+1 день победы.'); }
-
-async function triggerSOS() {
-    await send('/api/sos', {});
-    toast('🚨 Аварийный протокол активирован! Переход к КПТ.');
-    const cbtCard = document.getElementById('cbt-section-card');
-    if (cbtCard) {
-        cbtCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        const firstInput = cbtCard.querySelector('input');
-        if (firstInput) setTimeout(() => firstInput.focus(), 500);
-    }
-}
 
 async function saveDailyBalance() {
     const boosters = Array.from(document.querySelectorAll('[data-booster]:checked')).map(i => i.dataset.booster);

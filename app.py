@@ -1,5 +1,4 @@
 import os
-
 from datetime import datetime, timedelta
 
 from flask import Flask, render_template, request, jsonify, Response
@@ -24,9 +23,9 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + DB_PATH
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 try:
-    app.json.ensure_ascii = False          # Flask 2.3+
+    app.json.ensure_ascii = False
 except AttributeError:
-    app.config["JSON_AS_ASCII"] = False    # Flask 2.2 и старше
+    app.config["JSON_AS_ASCII"] = False
 
 db = SQLAlchemy(app)
 
@@ -49,7 +48,6 @@ class CbtRecord(db.Model):
     date = db.Column(db.String(50), nullable=False)
 
 class Letter(db.Model):
-    """Капсула трезвости: письма себе в моменты ясности."""
     __tablename__ = "letter"
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(150), nullable=False)
@@ -57,7 +55,6 @@ class Letter(db.Model):
     date = db.Column(db.String(50), nullable=False)
 
 class WorkoutRecord(db.Model):
-    """Дневник тренировок и физической активности."""
     __tablename__ = "workout_record"
     id = db.Column(db.Integer, primary_key=True)
     workout_type = db.Column(db.String(100), nullable=False)
@@ -66,24 +63,21 @@ class WorkoutRecord(db.Model):
     date = db.Column(db.String(50), nullable=False)
 
 class StrategyBoard(db.Model):
-    """Доска стратегии и заметок по спорту."""
     __tablename__ = "strategy_board"
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, default="")
 
 class DayMark(db.Model):
-    """Отметка одного дня в календаре «Карта чистоты»."""
     __tablename__ = "day_mark"
     id = db.Column(db.Integer, primary_key=True)
-    day = db.Column(db.String(10), unique=True, index=True, nullable=False)  # YYYY-MM-DD
-    status = db.Column(db.String(10), nullable=True)                          # win | slip
+    day = db.Column(db.String(10), unique=True, index=True, nullable=False)
+    status = db.Column(db.String(10), nullable=True)
     note = db.Column(db.Text, default="")
 
 class BalanceLog(db.Model):
-    """Ежедневный баланс дофамина: бустеры, ловушки, индекс."""
     __tablename__ = "balance_log"
     id = db.Column(db.Integer, primary_key=True)
-    day = db.Column(db.String(10), unique=True, index=True, nullable=False)  # YYYY-MM-DD
+    day = db.Column(db.String(10), unique=True, index=True, nullable=False)
     index = db.Column(db.Integer, default=0)
     boosters = db.Column(db.Integer, default=0)
     traps = db.Column(db.Integer, default=0)
@@ -95,7 +89,6 @@ with app.app_context():
 
 print("✅ База данных готова")
 print("Путь к базе:", DB_PATH)
-print("Постоянное хранилище:", os.path.abspath(DATA_DIR) != os.path.abspath(basedir))
 
 # ─────────────────────────── ВСПОМОГАТЕЛЬНОЕ ───────────────────────────
 
@@ -180,7 +173,7 @@ def state_payload():
         ],
     }
 
-# ─────────────────────────────── СТРАНИЦА ───────────────────────────────
+# ─────────────────────────────── РРОУТЫ ───────────────────────────────
 
 @app.route("/")
 def index():
@@ -189,8 +182,6 @@ def index():
 @app.route("/api/state")
 def api_state():
     return jsonify(state_payload())
-
-# ─────────────────────────── ЗАПИСЬ СОСТОЯНИЯ ───────────────────────────
 
 @app.route("/api/profile", methods=["POST"])
 def api_profile():
@@ -221,18 +212,11 @@ def api_profile():
 
 @app.route("/api/day/add", methods=["POST"])
 def api_day_add():
-    data = request.get_json(silent=True) or {}
-    try:
-        delta = int(data.get("add_days") or 1)
-    except (TypeError, ValueError):
-        delta = 1
-
     profile = get_profile()
     if profile is None:
         return jsonify({"ok": False, "error": "Профиль ещё не создан"}), 400
 
-    profile.days = max(0, (profile.days or 0) + delta)
-
+    profile.days = max(0, (profile.days or 0) + 1)
     key = today_str()
     mark = DayMark.query.filter_by(day=key).first()
     if mark is None:
@@ -260,11 +244,8 @@ def api_mark():
 
     if not day:
         return jsonify({"ok": False, "error": "Не передана дата"}), 400
-    if status not in (None, "win", "slip"):
-        return jsonify({"ok": False, "error": "Неизвестный статус"}), 400
 
     mark = DayMark.query.filter_by(day=day).first()
-
     if status is None and not note:
         if mark is not None:
             db.session.delete(mark)
@@ -284,17 +265,8 @@ def api_mark():
 def api_balance():
     data = request.get_json(silent=True) or {}
     day = (data.get("day") or today_str()).strip()
-
-    def as_keys(value):
-        if isinstance(value, list):
-            return [str(v)[:32] for v in value if str(v).strip()]
-        try:
-            return ["key"] * max(0, int(value or 0))
-        except (TypeError, ValueError):
-            return []
-
-    booster_keys = as_keys(data.get("boosters"))
-    trap_keys = as_keys(data.get("traps"))
+    booster_keys = [str(v)[:32] for v in (data.get("boosters") or []) if str(v).strip()]
+    trap_keys = [str(v)[:32] for v in (data.get("traps") or []) if str(v).strip()]
 
     boosters = len(booster_keys)
     traps = len(trap_keys)
@@ -342,7 +314,6 @@ def api_cbt_import():
     data = request.get_json(silent=True) or {}
     text = (data.get("text") or "").strip()
     if text:
-        # Разбиваем по абзацам или пустым строкам, чтобы импортировать пачкой
         paragraphs = [p.strip() for p in text.split("\n") if p.strip()]
         date_str = datetime.now().strftime("%d.%m.%Y %H:%M")
         for p in paragraphs:
@@ -424,14 +395,9 @@ def api_reset():
 @app.route("/export_cbt")
 def export_cbt():
     records = CbtRecord.query.order_by(CbtRecord.id.desc()).all()
-
     text_data = "=== RECOVERY HUB: АРХИВ КПТ-РАЗБОРОВ (АНТИ-ТРЕВОГА) ===\n\n"
     for r in records:
-        text_data += f"📅 Дата: {r.date}\n"
-        text_data += f"🏷️ Категория: {r.category}\n"
-        text_data += f"🧠 Автоматическая мысль: {r.automatic_thought}\n"
-        text_data += f"💡 Рациональный ответ: {r.rational_response}\n"
-        text_data += "-" * 50 + "\n\n"
+        text_data += f"📅 Дата: {r.date}\n🏷️ Категория: {r.category}\n🧠 Автоматическая мысль: {r.automatic_thought}\n💡 Рациональный ответ: {r.rational_response}\n" + "-" * 50 + "\n\n"
 
     return Response(
         text_data,
