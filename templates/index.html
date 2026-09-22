@@ -167,6 +167,46 @@
     </div>
 </div>
 
+<!-- 📅 МОДАЛКА ДЕТАЛЕЙ ДНЯ (ДНЕВНИК КАЛЕНДАРЯ) -->
+<div id="day-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="spotlight-card bg-bmwCard max-w-lg w-full p-8 rounded-3xl border border-bmwBorder shadow-2xl relative">
+        <button onclick="closeDayModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl font-bold w-10 h-10 rounded-xl bg-bmwDeep border border-bmwBorder flex items-center justify-center">✕</button>
+        
+        <div class="flex items-center gap-3 mb-6">
+            <div class="w-12 h-12 rounded-2xl bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-400 text-xl font-bold">📅</div>
+            <div>
+                <h3 id="modal-day-title" class="text-xl font-bold text-white">Дата</h3>
+                <p id="modal-day-status" class="text-xs font-bold text-gray-400 uppercase tracking-wider">Статус: Загрузка...</p>
+            </div>
+        </div>
+
+        <div class="space-y-6 max-h-[60vh] overflow-y-auto pr-2">
+            <!-- Цели за день -->
+            <div class="bg-bmwDeep p-5 rounded-2xl border border-bmwBorder">
+                <h4 class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-3">🎯 Фокусы и цели за день</h4>
+                <div id="modal-goals-list" class="space-y-2 text-sm text-gray-300">Пусто</div>
+            </div>
+
+            <!-- Телеметрия / Телесный баланс -->
+            <div class="bg-bmwDeep p-5 rounded-2xl border border-bmwBorder">
+                <h4 class="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-3">⚖️ Телеметрия и баланс</h4>
+                <div id="modal-balance-view" class="space-y-2 text-sm text-gray-300">Нет данных о балансе</div>
+            </div>
+
+            <!-- Тренировки за день -->
+            <div id="modal-workouts-wrapper" class="bg-bmwDeep p-5 rounded-2xl border border-bmwBorder hidden">
+                <h4 class="text-xs font-bold text-amber-400 uppercase tracking-widest mb-3">💪 Тренировки за этот день</h4>
+                <div id="modal-workouts-list" class="space-y-2 text-sm text-gray-300"></div>
+            </div>
+        </div>
+
+        <div class="mt-8 pt-4 border-t border-bmwBorder flex justify-between items-center">
+            <button onclick="toggleDayStatusModal()" id="modal-toggle-status-btn" class="px-5 py-3 bg-bmwDeep hover:bg-bmwBorder text-blue-400 font-bold rounded-xl text-xs border border-blue-500/40">🔄 Изменить статус дня</button>
+            <button onclick="closeDayModal()" class="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-xs">Закрыть</button>
+        </div>
+    </div>
+</div>
+
 <div class="max-w-3xl w-full spotlight-card bg-bmwCard/90 backdrop-blur-xl p-8 sm:p-14 rounded-3xl shadow-[0_30px_90px_rgba(0,0,0,0.95)] border border-bmwBorder relative overflow-hidden">
     <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-blue-500 to-transparent shadow-[0_0_20px_#3B82F6]"></div>
 
@@ -277,7 +317,7 @@
         </div>
 
         <!-- Progress -->
-        <div class="spotlight-card bg-bmwDark p-8 sm:p-20 rounded-2xl bmw-border-glow">
+        <div class="spotlight-card bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow">
             <h2 class="text-xs font-bold text-gray-300 uppercase tracking-widest mb-5">Метрика прогресса</h2>
             <button onclick="addDay()" class="w-full py-5 bmw-btn text-white font-bold rounded-xl text-base">⚡ Засчитать +1 день победы</button>
         </div>
@@ -287,7 +327,7 @@
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                 <div>
                     <h2 class="text-xl font-bold text-white mb-2">🗓️ Карта чистоты</h2>
-                    <p class="text-sm text-gray-400">Клик по дню — отметить победу или срыв.</p>
+                    <p class="text-sm text-gray-400">Клик по дню — просмотр дневника, фокусов и тренировок.</p>
                 </div>
                 <div class="flex items-center gap-2">
                     <button onclick="calShiftMonth(-1)" class="w-11 h-11 rounded-xl bg-bmwDeep border border-bmwBorder text-gray-300 font-bold">‹</button>
@@ -436,6 +476,7 @@ let chartInstance = null;
 let busy = false;
 let calViewYear = new Date().getFullYear();
 let calViewMonth = new Date().getMonth();
+let currentModalDay = null;
 
 // 🎲 Экстренные протоколы для рандомайзера SOS
 const SOS_ACTIONS = [
@@ -846,35 +887,89 @@ function calRenderGrid() {
         const mark = marks[key] || null;
         let cls = mark && mark.status === 'win' ? 'bg-[#3B82F6] text-white' : (mark && mark.status === 'slip' ? 'bg-[#7F1D1D] text-red-200' : 'bg-bmwDeep text-gray-300');
         if (key === tKey) cls += ' border-2 border-blue-500';
-        html += `<button type="button" onclick="calSaveDayQuick('${key}')" class="aspect-square rounded-xl border border-bmwBorder ${cls} text-sm font-bold flex items-center justify-center">${d}</button>`;
+        html += `<button type="button" onclick="openDayModal('${key}')" class="aspect-square rounded-xl border border-bmwBorder ${cls} text-sm font-bold flex items-center justify-center hover:border-blue-400 transition-all">${d}</button>`;
     }
     grid.innerHTML = html;
 }
 
-async function calSaveDayQuick(key) {
+// 📅 Модальное окно деталей дня
+async function openDayModal(key) {
+    currentModalDay = key;
+    const modal = document.getElementById('day-modal');
+    modal.classList.remove('hidden');
+    
+    document.getElementById('modal-day-title').innerText = key;
+    document.getElementById('modal-day-status').innerText = 'Загрузка дневника...';
+    document.getElementById('modal-goals-list').innerHTML = 'Загрузка...';
+    document.getElementById('modal-balance-view').innerHTML = 'Загрузка...';
+    document.getElementById('modal-workouts-wrapper').classList.add('hidden');
+
+    try {
+        const res = await fetch(`/api/day-details?day=${key}`);
+        const data = await res.json();
+        if (!data.ok) return;
+
+        // Статус
+        let statusText = '⚪ День внесесет сетку';
+        if (data.status === 'win') statusText = '🟢 Победа (Чистый день)';
+        else if (data.status === 'slip') statusText = '🔴 Срыв / Тяжелый день';
+        document.getElementById('modal-day-status').innerText = statusText;
+
+        // Цели
+        const goalsEl = document.getElementById('modal-goals-list');
+        if (data.goals && data.goals.length > 0) {
+            goalsEl.innerHTML = data.goals.map((g, idx) => `
+                <div class="flex items-center gap-2">
+                    <span class="${g.completed ? 'text-emerald-400' : 'text-gray-500'} font-bold">${g.completed ? '✓' : '○'}</span>
+                    <span class="${g.completed ? 'line-through text-gray-500' : 'text-white'}">${escapeHtml(g.text)}</span>
+                </div>
+            `).join('');
+        } else {
+            goalsEl.innerHTML = '<span class="text-gray-500 italic">Цели на этот день не фиксировались</span>';
+        }
+
+        // Баланс / Телеметрия
+        const balanceEl = document.getElementById('modal-balance-view');
+        const bList = data.balance.boosters || [];
+        const tList = data.balance.traps || [];
+        let bHtml = bList.length > 0 ? bList.map(b => `<span class="inline-block bg-blue-950/60 border border-blue-500/30 text-blue-300 text-xs px-2.5 py-1 rounded-lg mr-1 mb-1">🟢 ${escapeHtml(b)}</span>`).join('') : '<span class="text-gray-500">Нет бустеров</span>';
+        let tHtml = tList.length > 0 ? tList.map(t => `<span class="inline-block bg-red-950/60 border border-red-500/30 text-red-300 text-xs px-2.5 py-1 rounded-lg mr-1 mb-1">🔴 ${escapeHtml(t)}</span>`).join('') : '<span class="text-gray-500">Нет ловушек</span>';
+        balanceEl.innerHTML = `<div class="mb-2"><strong class="text-gray-400 text-xs uppercase">Индекс дня:</strong> <span class="text-white font-mono font-bold">${data.balance.index}</span></div><div class="mb-2"><strong>Бустеры:</strong><br>${bHtml}</div><div><strong>Ловушки:</strong><br>${tHtml}</div>`;
+
+        // Тренировки
+        const workoutsWrapper = document.getElementById('modal-workouts-wrapper');
+        const workoutsList = document.getElementById('modal-workouts-list');
+        if (data.workouts && data.workouts.length > 0) {
+            workoutsWrapper.classList.remove('hidden');
+            workoutsList.innerHTML = data.workouts.map(w => `
+                <div class="bg-bmwCard p-3 rounded-xl border border-bmwBorder text-xs">
+                    <span class="text-blue-400 font-bold">${escapeHtml(w.workout_type)}</span> · <span class="text-white">${escapeHtml(w.exercise_name)}</span> : <span class="text-gray-300">${escapeHtml(w.reps_data)}</span>
+                </div>
+            `).join('');
+        } else {
+            workoutsWrapper.classList.add('hidden');
+        }
+
+    } catch (e) {
+        toast('Ошибка загрузки данных дня', true);
+    }
+}
+
+function closeDayModal() {
+    document.getElementById('day-modal').classList.add('hidden');
+    currentModalDay = null;
+}
+
+async function toggleDayStatusModal() {
+    if (!currentModalDay) return;
     const marks = STATE.marks || {};
-    const cur = marks[key] ? marks[key].status : null;
+    const cur = marks[currentModalDay] ? marks[currentModalDay].status : null;
     let next = 'win';
     if (cur === 'win') next = 'slip';
     else if (cur === 'slip') next = null;
-    await send('/api/mark', { day: key, status: next, note: '' });
-    toast('День обновлен.');
-}
-
-function calRenderStats() {
-    const marks = STATE.marks || {};
-    const keys = Object.keys(marks);
-    const wins = keys.filter(k => marks[k].status === 'win').length;
-    const marked = keys.filter(k => marks[k].status).length;
-    let streak = 0;
-    const cursor = startOfToday();
-    while (marks[keyOf(cursor)] && marks[keyOf(cursor)].status === 'win') {
-        streak++; cursor.setDate(cursor.getDate() - 1);
-    }
-    document.getElementById('cal-stat-streak').innerText = streak;
-    document.getElementById('cal-stat-best').innerText = streak;
-    document.getElementById('cal-stat-wins').innerText = wins;
-    document.getElementById('cal-stat-pct').innerText = (marked > 0 ? Math.round((wins/marked)*100) : 0) + '%';
+    await send('/api/mark', { day: currentModalDay, status: next, note: '' });
+    openDayModal(currentModalDay); // Переоткрываем для обновления статуса
+    toast('Статус дня изменен.');
 }
 
 function calShiftMonth(delta) {

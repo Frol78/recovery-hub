@@ -1,5 +1,4 @@
 import os
-
 from datetime import datetime, timedelta
 
 from flask import Flask, render_template, request, jsonify, Response
@@ -61,7 +60,7 @@ class WorkoutRecord(db.Model):
     workout_type = db.Column(db.String(100), nullable=False)
     exercise_name = db.Column(db.String(150), nullable=False)
     reps_data = db.Column(db.String(100), nullable=False)
-    date = db.Column(db.String(50), nullable=False)
+    date = db.Column(db.String(50), nullable=False) # Формат YYYY-MM-DD или с временем
 
 class StrategyBoard(db.Model):
     __tablename__ = "strategy_board"
@@ -86,7 +85,6 @@ class BalanceLog(db.Model):
     traps_detail = db.Column(db.String(255), default="")
 
 class DailyGoal(db.Model):
-    """Три ключевые цели на день."""
     __tablename__ = "daily_goal"
     id = db.Column(db.Integer, primary_key=True)
     day = db.Column(db.String(10), nullable=False, index=True)
@@ -200,6 +198,37 @@ def index():
 @app.route("/api/state")
 def api_state():
     return jsonify(state_payload())
+
+@app.route("/api/day-details", methods=["GET"])
+def api_day_details():
+    day = request.args.get("day", today_str())
+    mark = DayMark.query.filter_by(day=day).first()
+    log = BalanceLog.query.filter_by(day=day).first()
+    goals = DailyGoal.query.filter_by(day=day).all()
+    
+    # Тренировки сохраняются со строкой даты (ищем те, у которых дата начинается с дня YYYY-MM-DD или содержит его в дд.мм.гггг)
+    # Преобразуем YYYY-MM-DD в DD.MM.YYYY для сопоставления с полем date в WorkoutRecord
+    try:
+        dt_obj = datetime.strptime(day, "%Y-%m-%d")
+        d_ru_prefix = dt_obj.strftime("%d.%m.%Y")
+    except ValueError:
+        d_ru_prefix = day
+
+    workouts = WorkoutRecord.query.filter(WorkoutRecord.date.like(f"%{d_ru_prefix}%")).all()
+
+    return jsonify({
+        "ok": True,
+        "day": day,
+        "status": mark.status if mark else None,
+        "note": mark.note if mark else "",
+        "balance": {
+            "index": log.index if log else 0,
+            "boosters": [k for k in (log.boosters_detail or "").split(",") if k] if log else [],
+            "traps": [k for k in (log.traps_detail or "").split(",") if k] if log else [],
+        },
+        "goals": [{"id": g.id, "text": g.text, "completed": g.completed} for g in goals],
+        "workouts": [{"workout_type": w.workout_type, "exercise_name": w.exercise_name, "reps_data": w.reps_data} for w in workouts]
+    })
 
 @app.route("/api/profile", methods=["POST"])
 def api_profile():
