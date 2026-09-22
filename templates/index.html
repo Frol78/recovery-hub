@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
@@ -7,104 +7,86 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    tailwind.config = {
-        theme: {
-            extend: {
-                colors: {
-                    bmwDeep: '#050505',
-                    bmwDark: '#0A0A0C',
-                    bmwCard: '#111115',
-                    bmwBorder: '#22222A',
-                    bmwAccent: '#3B82F6',
-                }
+tailwind.config = {
+    theme: {
+        extend: {
+            colors: {
+                bmwDeep: '#050505',
+                bmwDark: '#0A0A0C',
+                bmwCard: '#111115',
+                bmwBorder: '#22222A',
+                bmwAccent: '#3B82F6',
             }
         }
     }
+}
 </script>
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-    body {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-        background-color: #050505;
-        background-image:
-            linear-gradient(to right, rgba(34, 34, 42, 0.15) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(34, 34, 42, 0.15) 1px, transparent 1px);
-        background-size: 40px 40px;
-        position: relative;
-        overflow-x: hidden;
-    }
-    .spotlight-card {
-        position: relative;
-        overflow: hidden;
-        background: #111115;
-        border: 1px solid #22222A;
-        transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    }
-    .bmw-btn {
-        background: linear-gradient(135deg, #1c1c24 0%, #0d0d12 100%);
-        border: 1px solid #2e2e3a;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
-        transition: all 0.3s ease;
-    }
-    .bmw-btn:hover { border-color: #3b82f6; box-shadow: 0 6px 25px rgba(59, 130, 246, 0.25); transform: translateY(-1px); }
-    .bmw-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
-    @keyframes pulse-red {
-        0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7), 0 4px 20px rgba(239, 68, 68, 0.5); }
-        50% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0), 0 8px 30px rgba(239, 68, 68, 0.8); }
-    }
-    .sos-pulse { animation: pulse-red 2s infinite; }
-    .bmw-border-glow { border: 1px solid #22222A; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); }
-    .bmw-checkbox {
-        appearance: none;
-        background-color: #050505;
-        border: 1px solid #22222A;
-        width: 20px;
-        height: 20px;
-        border-radius: 6px;
-        display: inline-grid;
-        place-content: center;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        flex-shrink: 0;
-    }
-    .bmw-checkbox:checked { background-color: #3B82F6; border-color: #3B82F6; box-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
-    .bmw-checkbox:checked::before { content: "✓"; font-size: 12px; font-weight: bold; color: white; }
-    .bmw-checkbox-red:checked { background-color: #EF4444; border-color: #EF4444; box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
-    ::-webkit-scrollbar { width: 8px; }
-    ::-webkit-scrollbar-track { background: #0A0A0C; }
-    ::-webkit-scrollbar-thumb { background: #22222A; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #3B82F6; }
-    .eura-timer-card {
-        position: relative; width: 100%; max-width: 480px; padding: 24px 18px 20px;
-        border: 1px solid rgba(59, 130, 246, 0.45); border-radius: 22px;
-        background: radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.18), transparent 55%), linear-gradient(145deg, #111115, #07070a);
-        box-shadow: 0 0 35px rgba(37, 99, 235, 0.15), inset 0 0 25px rgba(59, 130, 246, 0.04);
-        overflow: hidden;
-    }
-    .eura-timer-label { position: relative; z-index: 1; margin-bottom: 18px; color: #93c5fd; font-size: 10px; font-weight: 800; letter-spacing: 3px; text-align: center; text-transform: uppercase; }
-    .eura-timer-main { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; }
-    .eura-time-group { display: flex; flex-direction: column; align-items: center; min-width: 68px; }
-    .eura-number { color: #eaf3ff; font-family: "Courier New", monospace; font-size: clamp(27px, 5vw, 43px); font-weight: 900; letter-spacing: 3px; line-height: 1; text-shadow: 0 0 4px #bfdbfe, 0 0 12px rgba(59, 130, 246, 0.95); }
-    .eura-unit { margin-top: 10px; color: #64748b; font-size: 9px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; }
-    .eura-separator { align-self: flex-start; margin-top: 4px; color: #3b82f6; font-family: "Courier New", monospace; font-size: 30px; font-weight: 900; text-shadow: 0 0 14px rgba(59, 130, 246, 0.9); }
-    .eura-timer-line { position: relative; z-index: 1; height: 1px; margin: 20px 10px 14px; background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.7), transparent); }
-    .eura-timer-status { position: relative; z-index: 1; color: #64748b; font-size: 10px; letter-spacing: 1px; text-align: center; text-transform: uppercase; }
-    #toast-box { position: fixed; top: 18px; left: 50%; transform: translateX(-50%); z-index: 100; display: flex; flex-direction: column; gap: 10px; width: min(92vw, 460px); }
-    @keyframes toast-in { from { opacity: 0; transform: translateY(-14px); } to { opacity: 1; transform: translateY(0); } }
-    .toast { animation: toast-in .22s ease-out; }
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background-color: #050505;
+    background-image:
+        linear-gradient(to right, rgba(34, 34, 42, 0.15) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(34, 34, 42, 0.15) 1px, transparent 1px);
+    background-size: 40px 40px;
+    position: relative;
+    overflow-x: hidden;
+}
+.spotlight-card { position: relative; overflow: hidden; background: #111115; border: 1px solid #22222A; transition: border-color 0.3s ease, box-shadow 0.3s ease; }
+.bmw-btn {
+    background: linear-gradient(135deg, #1c1c24 0%, #0d0d12 100%);
+    border: 1px solid #2e2e3a;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+    transition: all 0.3s ease;
+}
+.bmw-btn:hover { border-color: #3b82f6; box-shadow: 0 6px 25px rgba(59, 130, 246, 0.25); transform: translateY(-1px); }
+.bmw-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+@keyframes pulse-red {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7), 0 4px 20px rgba(239, 68, 68, 0.5); }
+    50% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0), 0 8px 30px rgba(239, 68, 68, 0.8); }
+}
+.sos-pulse { animation: pulse-red 2s infinite; }
+.bmw-border-glow { border: 1px solid #22222A; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); }
+.bmw-checkbox {
+    appearance: none; background-color: #050505; border: 1px solid #22222A;
+    width: 20px; height: 20px; border-radius: 6px; display: inline-grid; place-content: center;
+    cursor: pointer; transition: all 0.2s ease; flex-shrink: 0;
+}
+.bmw-checkbox:checked { background-color: #3B82F6; border-color: #3B82F6; box-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
+.bmw-checkbox:checked::before { content: "✓"; font-size: 12px; font-weight: bold; color: white; }
+.bmw-checkbox-red:checked { background-color: #EF4444; border-color: #EF4444; box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #0A0A0C; }
+::-webkit-scrollbar-thumb { background: #22222A; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #3B82F6; }
+.eura-timer-card {
+    position: relative; width: 100%; max-width: 480px; padding: 24px 18px 20px;
+    border: 1px solid rgba(59, 130, 246, 0.45); border-radius: 22px;
+    background: radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.18), transparent 55%), linear-gradient(145deg, #111115, #07070a);
+    box-shadow: 0 0 35px rgba(37, 99, 235, 0.15), inset 0 0 25px rgba(59, 130, 246, 0.04);
+    overflow: hidden;
+}
+.eura-timer-label { position: relative; z-index: 1; margin-bottom: 18px; color: #93c5fd; font-size: 10px; font-weight: 800; letter-spacing: 3px; text-align: center; text-transform: uppercase; }
+.eura-timer-main { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; }
+.eura-time-group { display: flex; flex-direction: column; align-items: center; min-width: 68px; }
+.eura-number { color: #eaf3ff; font-family: "Courier New", monospace; font-size: clamp(27px, 5vw, 43px); font-weight: 900; letter-spacing: 3px; line-height: 1; text-shadow: 0 0 4px #bfdbfe, 0 0 12px rgba(59, 130, 246, 0.95); }
+.eura-unit { margin-top: 10px; color: #64748b; font-size: 9px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; }
+.eura-separator { align-self: flex-start; margin-top: 4px; color: #3b82f6; font-family: "Courier New", monospace; font-size: 30px; font-weight: 900; text-shadow: 0 0 14px rgba(59, 130, 246, 0.9); }
+.eura-timer-line { position: relative; z-index: 1; height: 1px; margin: 20px 10px 14px; background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.7), transparent); }
+.eura-timer-status { position: relative; z-index: 1; color: #64748b; font-size: 10px; letter-spacing: 1px; text-align: center; text-transform: uppercase; }
+#toast-box { position: fixed; top: 18px; left: 50%; transform: translateX(-50%); z-index: 100; display: flex; flex-direction: column; gap: 10px; width: min(92vw, 460px); }
+@keyframes toast-in { from { opacity: 0; transform: translateY(-14px); } to { opacity: 1; transform: translateY(0); } }
+.toast { animation: toast-in .22s ease-out; }
 </style>
 </head>
 <body class="text-gray-100 min-h-screen py-8 sm:py-16 px-4 flex items-center justify-center">
-
 <div id="toast-box"></div>
-
 <!-- 🚨 МОДАЛКА SOS -->
 <div id="sos-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
     <div class="spotlight-card bg-bmwCard max-w-lg w-full p-8 rounded-3xl border border-red-500/50 shadow-2xl text-center relative">
         <button onclick="closeSosModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl font-bold w-10 h-10 rounded-xl bg-bmwDeep border border-bmwBorder flex items-center justify-center">✕</button>
-        <div class="w-16 h-16 rounded-2xl bg-red-950/40 border border-red-500/40 flex items-center justify-center mx-auto mb-5">
-            <span class="text-3xl">⚡</span>
-        </div>
+        <div class="w-16 h-16 rounded-2xl bg-red-950/40 border border-red-500/40 flex items-center justify-center mx-auto mb-5"><span class="text-3xl">⚡</span></div>
         <h3 id="sos-action-title" class="text-2xl font-bold text-white mb-3">Загрузка протокола...</h3>
         <p id="sos-action-desc" class="text-gray-300 text-sm mb-8 leading-relaxed">Мозг пытается тебя обмануть. Давай собьем этот паттерн.</p>
         <div id="sos-action-widget" class="mb-8 bg-bmwDeep p-6 rounded-2xl border border-bmwBorder"></div>
@@ -114,12 +96,10 @@
         </div>
     </div>
 </div>
-
-<!-- 📅 МОДАЛКА ДНЯ (ДНЕВНИК КАЛЕНДАРЯ) -->
+<!-- 📅 МОДАЛКА ДНЯ -->
 <div id="day-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
     <div class="spotlight-card bg-bmwCard max-w-lg w-full p-8 rounded-3xl border border-bmwBorder shadow-2xl relative">
         <button onclick="closeDayModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl font-bold w-10 h-10 rounded-xl bg-bmwDeep border border-bmwBorder flex items-center justify-center">✕</button>
-        
         <div class="flex items-center gap-3 mb-6">
             <div class="w-12 h-12 rounded-2xl bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-400 text-xl font-bold">📅</div>
             <div>
@@ -127,7 +107,6 @@
                 <p id="modal-day-status" class="text-xs font-bold text-gray-400 uppercase tracking-wider">Статус: Загрузка...</p>
             </div>
         </div>
-
         <div class="space-y-6 max-h-[60vh] overflow-y-auto pr-2">
             <div class="bg-bmwDeep p-5 rounded-2xl border border-bmwBorder">
                 <h4 class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-3">🎯 Фокусы и цели за день</h4>
@@ -142,42 +121,30 @@
                 <div id="modal-workouts-list" class="space-y-2 text-sm text-gray-300"></div>
             </div>
         </div>
-
         <div class="mt-8 pt-4 border-t border-bmwBorder flex justify-between items-center">
             <button onclick="toggleDayStatusModal()" id="modal-toggle-status-btn" class="px-5 py-3 bg-bmwDeep hover:bg-bmwBorder text-blue-400 font-bold rounded-xl text-xs border border-blue-500/40">🔄 Изменить статус дня</button>
             <button onclick="closeDayModal()" class="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-xs">Закрыть</button>
         </div>
     </div>
 </div>
-
 <div class="max-w-3xl w-full spotlight-card bg-bmwCard/90 backdrop-blur-xl p-8 sm:p-14 rounded-3xl shadow-[0_30px_90px_rgba(0,0,0,0.95)] border border-bmwBorder relative overflow-hidden">
     <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-blue-500 to-transparent shadow-[0_0_20px_#3B82F6]"></div>
-
-    <!-- Header -->
     <div class="mb-8 pb-6 border-b border-bmwBorder flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div class="flex items-center gap-4">
             <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600/20 to-bmwDeep border border-blue-500/40 flex items-center justify-center shadow-[0_0_25px_rgba(59,130,246,0.25)] shrink-0">
-                <svg class="w-7 h-7 text-blue-400 animate-pulse" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
-                </svg>
+                <svg class="w-7 h-7 text-blue-400 animate-pulse" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
             </div>
-            <div>
-                <h1 class="text-4xl sm:text-5xl font-semibold text-white tracking-tight">⚡ New You</h1>
-            </div>
+            <div><h1 class="text-4xl sm:text-5xl font-semibold text-white tracking-tight">⚡ New You</h1></div>
         </div>
         <div class="text-right shrink-0">
             <span class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Хранилище</span>
             <span id="storage-badge" class="text-xs font-bold text-gray-400">проверка...</span>
         </div>
     </div>
-
-    <!-- Storage warning -->
     <div id="storage-warning" class="hidden mb-8 p-6 bg-red-950/30 border border-red-500/40 rounded-2xl">
         <h3 class="text-sm font-bold text-red-400 mb-2">⚠️ Данные не защищены от пересборки</h3>
         <p class="text-xs text-gray-300 leading-relaxed">База лежит внутри контейнера (<span class="font-mono text-red-300" id="storage-warning-path">—</span>). Подключи постоянный диск <span class="font-mono">/data</span>.</p>
     </div>
-
-    <!-- Setup Form -->
     <div id="setup-section" class="hidden spotlight-card bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow mb-8">
         <h2 class="text-2xl font-bold text-white mb-3">Инициализация профиля</h2>
         <form id="profile-form" onsubmit="createProfile(event)" class="space-y-6">
@@ -192,12 +159,8 @@
             <button type="submit" class="w-full py-5 bmw-btn text-white font-bold rounded-xl text-base">Запустить систему 🚀</button>
         </form>
     </div>
-
     <div id="loading-section" class="text-center py-16"><p class="text-gray-400 text-sm font-mono">Инициализация...</p></div>
-
-    <!-- Dashboard -->
     <div id="dashboard-section" class="hidden space-y-8">
-        <!-- Timer -->
         <div class="flex justify-center">
             <div class="eura-timer-card spotlight-card">
                 <div class="eura-timer-label">⏱️ Чистое время · <span id="profile-name-display" class="text-white">Оператор</span></div>
@@ -214,64 +177,40 @@
                 <div id="status-name" class="eura-timer-status">Стабильность</div>
             </div>
         </div>
-
         <div class="hidden"><span id="profile-days-display">0</span><span id="status-desc"></span></div>
-
-        <!-- Motivation -->
         <div class="spotlight-card bg-bmwDark p-8 rounded-2xl border border-dashed border-bmwBorder text-center bmw-border-glow">
             <p id="quote-box" class="italic text-gray-200 text-base sm:text-lg min-h-[60px] flex items-center justify-center">«Загружаем...»</p>
             <button onclick="changeQuote()" class="mt-6 px-6 py-3 text-sm font-bold text-white bmw-btn rounded-xl">⚡ Сменить настрой</button>
         </div>
-
-        <!-- 🎯 3 ГЛАВНЫХ ФОКУСА НА ДЕНЬ -->
         <div class="spotlight-card bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow">
             <h2 class="text-xl font-bold text-white mb-2">🎯 3 главных фокуса на день</h2>
             <p class="text-sm text-gray-400 mb-6">Определи 3 ключевые задачи на сегодня. Никакого перегруза.</p>
             <form onsubmit="saveDailyGoals(event)" class="space-y-4">
                 <div class="space-y-3" id="goals-inputs-container">
-                    <div class="flex items-center gap-3">
-                        <span class="text-blue-400 font-bold text-sm">1.</span>
-                        <input type="text" data-goal-input required placeholder="Первая и главная цель..." class="w-full px-4 py-3 bg-bmwDeep border border-bmwBorder rounded-xl text-white text-sm focus:outline-none focus:border-blue-500">
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <span class="text-blue-400 font-bold text-sm">2.</span>
-                        <input type="text" data-goal-input required placeholder="Вторая цель..." class="w-full px-4 py-3 bg-bmwDeep border border-bmwBorder rounded-xl text-white text-sm focus:outline-none focus:border-blue-500">
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <span class="text-blue-400 font-bold text-sm">3.</span>
-                        <input type="text" data-goal-input required placeholder="Третья цель..." class="w-full px-4 py-3 bg-bmwDeep border border-bmwBorder rounded-xl text-white text-sm focus:outline-none focus:border-blue-500">
-                    </div>
+                    <div class="flex items-center gap-3"><span class="text-blue-400 font-bold text-sm">1.</span><input type="text" data-goal-input required placeholder="Первая и главная цель..." class="w-full px-4 py-3 bg-bmwDeep border border-bmwBorder rounded-xl text-white text-sm focus:outline-none focus:border-blue-500"></div>
+                    <div class="flex items-center gap-3"><span class="text-blue-400 font-bold text-sm">2.</span><input type="text" data-goal-input required placeholder="Вторая цель..." class="w-full px-4 py-3 bg-bmwDeep border border-bmwBorder rounded-xl text-white text-sm focus:outline-none focus:border-blue-500"></div>
+                    <div class="flex items-center gap-3"><span class="text-blue-400 font-bold text-sm">3.</span><input type="text" data-goal-input required placeholder="Третья цель..." class="w-full px-4 py-3 bg-bmwDeep border border-bmwBorder rounded-xl text-white text-sm focus:outline-none focus:border-blue-500"></div>
                 </div>
                 <button type="submit" class="w-full py-4 bmw-btn text-white font-bold rounded-xl text-sm">💾 Зафиксировать фокусы на день</button>
             </form>
-
             <div id="goals-status-container" class="mt-6 pt-6 border-t border-bmwBorder hidden">
                 <h3 class="text-xs font-bold text-blue-400 uppercase mb-4">✨ Активные цели на сегодня:</h3>
                 <div id="goals-list-view" class="space-y-3"></div>
             </div>
         </div>
-
-        <!-- SOS -->
         <div class="spotlight-card bg-bmwDark p-8 sm:p-10 rounded-2xl border-2 border-red-500/50">
             <h2 class="text-lg font-bold text-red-400 mb-3 flex items-center gap-3"><span class="text-2xl">🚨</span> Зона экстренного контроля</h2>
             <p class="text-sm text-gray-200 mb-6">Штормит или тяга? Аварийный протокол к твоим услугам.</p>
             <button onclick="triggerSOS()" class="w-full py-5 bg-gradient-to-r from-red-600 to-red-700 text-white font-bold rounded-xl sos-pulse text-base">🚨 АВАРИЙНЫЙ ВЫХОД (SOS)</button>
             <p class="text-sm text-gray-300 text-center mt-5">Отбитых атак: <strong id="sos-count" class="text-red-400 font-bold text-lg">0</strong></p>
         </div>
-
-        <!-- Progress -->
         <div class="spotlight-card bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow">
             <h2 class="text-xs font-bold text-gray-300 uppercase tracking-widest mb-5">Метрика прогресса</h2>
             <button onclick="addDay()" class="w-full py-5 bmw-btn text-white font-bold rounded-xl text-base">⚡ Засчитать +1 день победы</button>
         </div>
-
-        <!-- Calendar -->
         <div class="spotlight-card bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-                <div>
-                    <h2 class="text-xl font-bold text-white mb-2">🗓️ Карта чистоты</h2>
-                    <p class="text-sm text-gray-400">Клик по дню — просмотр дневника, фокусов и тренировок.</p>
-                </div>
+                <div><h2 class="text-xl font-bold text-white mb-2">🗓️ Карта чистоты</h2><p class="text-sm text-gray-400">Клик по дню — просмотр дневника, фокусов и тренировок.</p></div>
                 <div class="flex items-center gap-2">
                     <button onclick="calShiftMonth(-1)" class="w-11 h-11 rounded-xl bg-bmwDeep border border-bmwBorder text-gray-300 font-bold">‹</button>
                     <button onclick="calGoToday()" class="px-4 h-11 rounded-xl bg-bmwDeep border border-bmwBorder text-[11px] font-bold text-gray-300 uppercase">Сегодня</button>
@@ -288,15 +227,11 @@
             <div class="grid grid-cols-7 gap-2 mb-2" id="cal-weekdays"></div>
             <div id="cal-grid" class="grid grid-cols-7 gap-2"></div>
         </div>
-
-        <!-- Balance & Detailed Triggers -->
         <div class="spotlight-card bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow space-y-8">
             <div>
                 <h2 class="text-xl font-bold text-white mb-2">⚖️ Ежедневный баланс и телеметрия</h2>
                 <p class="text-sm text-gray-400 mb-6">Отмечай реальные факторы дня. Это питает график индекса стабильности.</p>
-                
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <!-- Бустеры -->
                     <div class="bg-bmwDeep p-6 rounded-xl border border-blue-500/30 space-y-3">
                         <h3 class="text-xs font-bold text-blue-400 uppercase mb-4">🟢 Бустеры и ресурс</h3>
                         <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-booster="sleep" class="bmw-checkbox"> Здоровый сон (режим в норме)</label>
@@ -304,7 +239,6 @@
                         <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-booster="sport" class="bmw-checkbox"> Спорт / Тело / Йога</label>
                         <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-booster="nocofer" class="bmw-checkbox"> Чистый день без кофе</label>
                     </div>
-                    <!-- Ловушки и Триггеры -->
                     <div class="bg-bmwDeep p-6 rounded-xl border border-red-500/30 space-y-3">
                         <h3 class="text-xs font-bold text-red-400 uppercase mb-4">🔴 Ловушки и Триггеры</h3>
                         <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-trap="coffee" class="bmw-checkbox bmw-checkbox-red"> Кофеин-триггер (тревога)</label>
@@ -321,8 +255,6 @@
                 <div class="bg-bmwDeep p-4 rounded-xl border border-bmwBorder relative h-64"><canvas id="stabilityChart"></canvas></div>
             </div>
         </div>
-
-        <!-- Letters -->
         <div class="spotlight-card bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow">
             <h2 class="text-xl font-bold text-white mb-2">✉️ Письма себе</h2>
             <form onsubmit="addLetter(event)" class="space-y-5">
@@ -332,25 +264,17 @@
             </form>
             <div id="letters-container" class="mt-10 hidden"><div id="letters-list" class="space-y-4"></div></div>
         </div>
-
-        <!-- Доска стратегии -->
         <div class="spotlight-card bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow">
             <h2 class="text-xl font-bold text-white mb-2">📋 Доска стратегии и заметок (Спорт)</h2>
             <p class="text-sm text-gray-400 mb-6">Свободное поле для твоих правил, акцентов по спине и планов.</p>
             <div class="space-y-4">
-                <textarea id="strategy-board-textarea" rows="6" placeholder="Пиши сюда любые правила, акценты, мысли..."
-                          class="w-full px-5 py-4 bg-bmwDeep border border-bmwBorder rounded-xl text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-all resize-y"></textarea>
-                <button type="button" onclick="saveBoard()" class="w-full py-4 bmw-btn text-white font-bold rounded-xl text-sm">
-                    💾 Сохранить доску
-                </button>
+                <textarea id="strategy-board-textarea" rows="6" placeholder="Пиши сюда любые правила, акценты, мысли..." class="w-full px-5 py-4 bg-bmwDeep border border-bmwBorder rounded-xl text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-all resize-y"></textarea>
+                <button type="button" onclick="saveBoard()" class="w-full py-4 bmw-btn text-white font-bold rounded-xl text-sm">💾 Сохранить доску</button>
             </div>
         </div>
-
-        <!-- Дневник тренировок -->
         <div class="spotlight-card bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow">
             <h2 class="text-xl font-bold text-white mb-2">💪 Дневник тренировок и тела</h2>
             <p class="text-sm text-gray-400 mb-8">Формат ввода: <span class="text-blue-400 font-mono">Отжимания : 4 по 15</span></p>
-
             <div class="space-y-5">
                 <select id="workout-type" class="w-full px-5 py-4 bg-bmwDeep border border-bmwBorder rounded-xl text-white">
                     <option value="🏋️ Силовая">🏋️ Силовая</option>
@@ -361,7 +285,6 @@
                 <input type="text" id="workout-line" placeholder="Напр. Отжимания : 4 по 15" class="w-full px-5 py-4 bg-bmwDeep border border-bmwBorder rounded-xl text-white">
                 <button type="button" onclick="stageWorkoutExercise()" class="w-full py-4 bg-bmwDeep hover:bg-bmwBorder text-blue-400 font-bold rounded-xl text-sm border border-blue-500/40">➕ Добавить в список сессии</button>
             </div>
-
             <div id="staged-exercises-container" class="mt-6 hidden">
                 <div class="bg-bmwDeep p-5 rounded-xl border border-blue-500/30 space-y-3">
                     <h4 class="text-xs font-bold text-blue-400 uppercase">📝 Упражнения на эту тренировку:</h4>
@@ -369,14 +292,11 @@
                     <button type="button" onclick="saveStagedWorkouts()" class="w-full py-4 bmw-btn text-white font-bold rounded-xl text-sm mt-3">🦾 Сохранить всю тренировку в базу</button>
                 </div>
             </div>
-
             <div id="workouts-container" class="mt-10 hidden">
                 <div class="border-b border-bmwBorder pb-4 mb-6"><h3 class="text-sm font-bold text-gray-200 uppercase">История тренировок <span id="workouts-count" class="text-blue-400">(0)</span></h3></div>
                 <div id="workouts-list" class="space-y-4 max-h-96 overflow-y-auto pr-2"></div>
             </div>
         </div>
-
-        <!-- CBT -->
         <div id="cbt-section-card" class="spotlight-card bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow">
             <h2 class="text-xl font-bold text-white mb-2">🧠 КПТ: Разбор мыслей</h2>
             <p class="text-sm text-gray-400 mb-6">Поймай автоматическую мысль, зафиксируй лог и дай рациональный отпор.</p>
@@ -386,7 +306,6 @@
                 <textarea id="cbt-resp" rows="3" required placeholder="Рациональный ответ..." class="w-full px-5 py-4 bg-bmwDeep border border-bmwBorder rounded-xl text-white resize-none"></textarea>
                 <button type="submit" class="w-full py-5 bmw-btn text-white font-bold rounded-xl">🛡️ Сохранить лог</button>
             </form>
-
             <div class="mt-8 pt-8 border-t border-bmwBorder">
                 <h3 class="text-base font-bold text-blue-400 mb-2">📥 Импорт заметок с улицы (Google Docs)</h3>
                 <p class="text-xs text-gray-400 mb-4">Скопируй свои заметки с телефона, вставь сюда — и они автоматически сохранятся в КПТ-архив с категорией «Улица»!</p>
@@ -395,7 +314,6 @@
                     <button type="submit" class="w-full py-4 bg-bmwDeep hover:bg-bmwBorder text-blue-400 font-bold rounded-xl text-sm border border-blue-500/40">🚀 Загрузить заметки в КПТ-архив</button>
                 </form>
             </div>
-
             <div id="cbt-records-container" class="mt-10 hidden">
                 <div class="flex justify-between items-center border-b border-bmwBorder pb-4 mb-6">
                     <h3 class="text-sm font-bold text-gray-200 uppercase">Архив <span id="cbt-count" class="text-blue-400">(0)</span></h3>
@@ -404,489 +322,8 @@
                 <div id="cbt-list" class="space-y-4"></div>
             </div>
         </div>
-
         <div class="text-center pt-6 border-t border-bmwBorder">
             <button onclick="resetCluster()" class="px-6 py-3 bg-bmwDeep text-gray-400 hover:text-red-400 border border-bmwBorder rounded-xl text-sm font-semibold">⚠️ Сбросить кластер</button>
         </div>
     </div>
 </div>
-
-<script>
-let STATE = { profile: null, marks: {}, balance_logs: [], cbt_records: [], letters: [], workouts: [], daily_goals: [], board_content: '', storage: { persistent: false, dir: '' } };
-let stagedWorkouts = [];
-let chartInstance = null;
-let busy = false;
-let calViewYear = new Date().getFullYear();
-let calViewMonth = new Date().getMonth();
-let currentModalDay = null;
-
-const SOS_ACTIONS = [
-    { title: "🫁 Дыхательный цикл (Квадрат)", desc: "Вдох на 4 сек, задержка на 4 сек, выдох на 4 сек.", widget: `<div class="text-3xl font-mono font-black text-blue-400">Дыши глубоко</div>` },
-    { title: "🦾 Физический сброс", desc: "Сбрось гормоны стресса прямо сейчас.", widget: `<div class="text-sm text-emerald-400 font-bold">⚡ 20 отжиманий или вис на турнике!</div>` },
-    { title: "⏳ Психологический предохранитель", desc: "Таймер на 20 минут.", widget: `<div class="text-3xl font-mono font-black text-amber-400">20:00</div>` },
-    { title: "🚶 Разрыв шаблона", desc: "Холодная вода на лицо на 30 секунд.", widget: `<div class="text-sm text-blue-300 font-bold">💧 Сбей химию мозга водой.</div>` }
-];
-
-async function triggerSOS() {
-    await send('/api/sos', {});
-    toast('🚨 Аварийный протокол активирован!');
-    openSosModal();
-}
-
-function openSosModal() { document.getElementById('sos-modal').classList.remove('hidden'); }
-function closeSosModal() { document.getElementById('sos-modal').classList.add('hidden'); }
-function spinSosAction() {
-    const a = SOS_ACTIONS[Math.floor(Math.random() * SOS_ACTIONS.length)];
-    document.getElementById('sos-action-title').innerText = a.title;
-    document.getElementById('sos-action-desc').innerText = a.desc;
-    document.getElementById('sos-action-widget').innerHTML = a.widget;
-}
-function goToCbtFromSos() { closeSosModal(); document.getElementById('cbt-section-card').scrollIntoView({ behavior: 'smooth' }); }
-
-async function api(path, body) {
-    const opts = body === undefined ? { method: 'GET', cache: 'no-store' } : { method: 'POST', cache: 'no-store', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body || {}) };
-    const res = await fetch(path, opts);
-    if (!res.ok) throw new Error('Ошибка сервера');
-    return res.json();
-}
-
-function applyState(payload) {
-    if (!payload) return;
-    STATE = payload;
-    if (!STATE.marks) STATE.marks = {};
-    if (!STATE.balance_logs) STATE.balance_logs = [];
-    if (!STATE.cbt_records) STATE.cbt_records = [];
-    if (!STATE.letters) STATE.letters = [];
-    if (!STATE.workouts) STATE.workouts = [];
-    if (!STATE.daily_goals) STATE.daily_goals = [];
-}
-
-async function loadState() {
-    try {
-        applyState(await api('/api/state'));
-        renderAll();
-    } catch (e) {
-        document.getElementById('loading-section').classList.add('hidden');
-        toast('Не удалось загрузить данные', true);
-    }
-}
-
-async function send(path, body) {
-    if (busy) return false;
-    busy = true;
-    try {
-        applyState(await api(path, body));
-        renderAll();
-        return true;
-    } catch (e) {
-        toast('Ошибка сохранения', true);
-        return false;
-    } finally {
-        busy = false;
-    }
-}
-
-function toast(text, isError) {
-    const box = document.getElementById('toast-box');
-    const el = document.createElement('div');
-    el.className = 'toast px-5 py-4 rounded-xl text-sm font-semibold border ' + (isError ? 'bg-red-950/95 border-red-500 text-red-100' : 'bg-bmwCard/95 border-blue-500 text-gray-100');
-    el.innerText = text;
-    box.appendChild(el);
-    setTimeout(() => el.remove(), 3000);
-}
-
-async function createProfile(e) {
-    e.preventDefault();
-    await send('/api/profile', { name: document.getElementById('input-name').value, days: parseInt(document.getElementById('input-days').value) || 0 });
-    toast('Система запущена.');
-}
-
-async function addDay() { await send('/api/day/add', { add_days: 1 }); toast('+1 день победы.'); }
-
-async function saveDailyGoals(e) {
-    e.preventDefault();
-    const inputs = document.querySelectorAll('[data-goal-input]');
-    const goals = Array.from(inputs).map(i => ({ text: i.value.trim(), completed: false })).filter(g => g.text);
-    if (goals.length === 0) return toast('Введи хотя бы одну цель!', true);
-    await send('/api/goals', { goals });
-    toast('🎯 Фокусы на день зафиксированы!');
-}
-
-async function toggleGoal(id) { await send('/api/goal/toggle', { id }); }
-
-function renderGoals() {
-    const goals = STATE.daily_goals || [];
-    const statusContainer = document.getElementById('goals-status-container');
-    const listView = document.getElementById('goals-list-view');
-    const inputs = document.querySelectorAll('[data-goal-input]');
-
-    if (goals.length > 0) {
-        statusContainer.classList.remove('hidden');
-        listView.innerHTML = goals.map((g, idx) => `
-            <div class="flex items-center justify-between bg-bmwDeep p-4 rounded-xl border border-bmwBorder text-sm">
-                <label class="flex items-center gap-3 cursor-pointer select-none">
-                    <input type="checkbox" ${g.completed ? 'checked' : ''} onchange="toggleGoal(${g.id})" class="bmw-checkbox">
-                    <span class="${g.completed ? 'line-through text-gray-500' : 'text-white font-medium'}">${escapeHtml(g.text)}</span>
-                </label>
-                <span class="text-[10px] text-gray-500 uppercase font-bold">Цель #${idx+1}</span>
-            </div>
-        `).join('');
-
-        inputs.forEach((inp, idx) => {
-            if (goals[idx] && !inp.value) inp.value = goals[idx].text;
-        });
-    } else {
-        statusContainer.classList.add('hidden');
-    }
-}
-
-async function saveDailyBalance() {
-    const boosters = Array.from(document.querySelectorAll('[data-booster]:checked')).map(i => i.dataset.booster);
-    const traps = Array.from(document.querySelectorAll('[data-trap]:checked')).map(i => i.dataset.trap);
-    await send('/api/balance', { day: todayKey(), boosters, traps });
-    toast('Баланс дня и телеметрия зафиксированы.');
-}
-
-async function addCbtRecord(e) {
-    e.preventDefault();
-    await send('/api/cbt', { category: document.getElementById('cbt-cat').value, automatic_thought: document.getElementById('cbt-thought').value, rational_response: document.getElementById('cbt-resp').value });
-    document.getElementById('cbt-cat').value = ''; document.getElementById('cbt-thought').value = ''; document.getElementById('cbt-resp').value = '';
-    toast('Лог КПТ сохранён.');
-}
-
-async function importStreetThoughts(e) {
-    e.preventDefault();
-    const text = document.getElementById('street-thoughts-input').value.trim();
-    if (!text) return;
-    await send('/api/cbt/import', { text });
-    document.getElementById('street-thoughts-input').value = '';
-    toast('🚀 Заметки загружены в КПТ-архив!');
-}
-
-async function addLetter(e) {
-    e.preventDefault();
-    await send('/api/letter', { title: document.getElementById('letter-title').value, content: document.getElementById('letter-content').value });
-    document.getElementById('letter-title').value = ''; document.getElementById('letter-content').value = '';
-    toast('Письмо запечатано.');
-}
-
-async function saveBoard() {
-    const content = document.getElementById('strategy-board-textarea').value;
-    await send('/api/board', { content });
-    toast('💾 Доска стратегии сохранена!');
-}
-
-function stageWorkoutExercise() {
-    const line = document.getElementById('workout-line').value.trim();
-    if (!line) return toast('Введи упражнение!', true);
-    const parts = line.split(':');
-    stagedWorkouts.push({ exercise: parts[0].trim(), reps: parts[1] ? parts[1].trim() : 'Подход' });
-    document.getElementById('workout-line').value = '';
-    renderStagedWorkouts();
-}
-
-function removeStagedExercise(idx) { stagedWorkouts.splice(idx, 1); renderStagedWorkouts(); }
-
-function renderStagedWorkouts() {
-    const container = document.getElementById('staged-exercises-container');
-    const list = document.getElementById('staged-list');
-    if (stagedWorkouts.length === 0) { container.classList.add('hidden'); return; }
-    container.classList.remove('hidden');
-    list.innerHTML = stagedWorkouts.map((item, idx) => `
-        <div class="flex justify-between items-center bg-bmwCard p-3 rounded-lg border border-bmwBorder text-xs">
-            <div><span class="text-white font-bold">${escapeHtml(item.exercise)}</span> : <span class="text-gray-300">${escapeHtml(item.reps)}</span></div>
-            <button type="button" onclick="removeStagedExercise(${idx})" class="text-red-400 font-bold px-2">✕</button>
-        </div>
-    `).join('');
-}
-
-async function saveStagedWorkouts() {
-    if (stagedWorkouts.length === 0) return;
-    const workoutType = document.getElementById('workout-type').value;
-    for (const item of stagedWorkouts) {
-        await send('/api/workout', { workout_type: workoutType, exercise_name: item.exercise, reps_data: item.reps });
-    }
-    stagedWorkouts = [];
-    renderStagedWorkouts();
-    toast('🦾 Тренировка сохранена!');
-}
-
-async function deleteWorkout(id) {
-    if (!confirm('Удалить эту запись?')) return;
-    await send('/api/workout/delete', { id });
-    toast('Запись удалена.');
-}
-
-function resetCluster() {
-    if (!confirm('Точно сбросить весь прогресс?')) return;
-    send('/api/reset', {}).then(() => toast('Кластер сброшен.'));
-}
-
-function renderProfile() {
-    const loading = document.getElementById('loading-section');
-    const setup = document.getElementById('setup-section');
-    const dashboard = document.getElementById('dashboard-section');
-    loading.classList.add('hidden');
-    if (!STATE.profile) { setup.classList.remove('hidden'); dashboard.classList.add('hidden'); return; }
-    setup.classList.add('hidden'); dashboard.classList.remove('hidden');
-    document.getElementById('profile-name-display').innerText = STATE.profile.name;
-    document.getElementById('sos-count').innerText = STATE.profile.slips_avoided || 0;
-    if (STATE.profile.start_time) initLiveTimer(STATE.profile.start_time);
-}
-
-function renderStorageBadge() {
-    const badge = document.getElementById('storage-badge');
-    const warn = document.getElementById('storage-warning');
-    if (STATE.storage && STATE.storage.persistent) {
-        badge.innerText = '● защищено'; badge.className = 'text-xs font-bold text-emerald-400'; warn.classList.add('hidden');
-    } else {
-        badge.innerText = '● не защищено'; badge.className = 'text-xs font-bold text-red-400'; warn.classList.remove('hidden');
-        document.getElementById('storage-warning-path').innerText = STATE.storage.dir || '—';
-    }
-}
-
-function renderBoard() {
-    const ta = document.getElementById('strategy-board-textarea');
-    if (ta && document.activeElement !== ta) ta.value = STATE.board_content || '';
-}
-
-function renderCbt() {
-    const container = document.getElementById('cbt-records-container');
-    const list = document.getElementById('cbt-list');
-    const count = document.getElementById('cbt-count');
-    if (!STATE.cbt_records.length) { container.classList.add('hidden'); return; }
-    container.classList.remove('hidden');
-    count.innerText = '(' + STATE.cbt_records.length + ')';
-    list.innerHTML = STATE.cbt_records.map(r => `
-        <div class="bg-bmwDeep p-5 rounded-xl border-l-4 border-blue-500 border border-bmwBorder text-sm">
-            <div class="flex justify-between items-center text-blue-400 mb-2 font-semibold"><span>${escapeHtml(r.category)}</span><span class="text-gray-400 text-xs">${escapeHtml(r.date)}</span></div>
-            <p class="text-red-400 mb-1"><strong>Мысль:</strong> ${escapeHtml(r.automatic_thought)}</p>
-            <p class="text-emerald-400"><strong>Ответ:</strong> ${escapeHtml(r.rational_response)}</p>
-        </div>
-    `).join('');
-}
-
-function renderLetters() {
-    const container = document.getElementById('letters-container');
-    const list = document.getElementById('letters-list');
-    if (!STATE.letters.length) { container.classList.add('hidden'); return; }
-    container.classList.remove('hidden');
-    list.innerHTML = STATE.letters.map(l => `
-        <div class="bg-bmwDeep p-5 rounded-xl border-l-4 border-blue-500 border border-bmwBorder text-sm">
-            <div class="flex justify-between items-center text-blue-400 mb-2 font-semibold"><span>${escapeHtml(l.title)}</span><span class="text-gray-400 text-xs">${escapeHtml(l.date)}</span></div>
-            <p class="text-gray-200 whitespace-pre-wrap">${escapeHtml(l.content)}</p>
-        </div>
-    `).join('');
-}
-
-function renderWorkouts() {
-    const container = document.getElementById('workouts-container');
-    const list = document.getElementById('workouts-list');
-    const count = document.getElementById('workouts-count');
-    const workouts = STATE.workouts || [];
-    if (workouts.length === 0) { container.classList.add('hidden'); return; }
-    container.classList.remove('hidden');
-    count.innerText = '(' + workouts.length + ')';
-    list.innerHTML = workouts.map(w => `
-        <div class="bg-bmwDeep p-5 rounded-xl border-l-4 border-blue-500 border border-bmwBorder text-sm flex justify-between items-center gap-3">
-            <div>
-                <div class="text-blue-400 font-semibold mb-1">${escapeHtml(w.workout_type)} · <span class="text-white">${escapeHtml(w.exercise_name)}</span></div>
-                <div class="text-gray-300 text-xs">${escapeHtml(w.reps_data)} <span class="text-gray-500 ml-2">(${escapeHtml(w.date)})</span></div>
-            </div>
-            <button type="button" onclick="deleteWorkout(${w.id})" class="text-red-400 hover:text-red-300 font-bold px-3 py-1 bg-bmwCard rounded-lg border border-bmwBorder text-xs shrink-0">Удалить</button>
-        </div>
-    `).join('');
-}
-
-function escapeHtml(value) {
-    return String(value == null ? '' : value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-}
-
-function renderBalance() {
-    const logs = STATE.balance_logs || [];
-    const today = todayKey();
-    const todayLog = logs.find(l => l.day === today);
-    const bSet = new Set(todayLog ? (todayLog.boosters_detail || []) : []);
-    const tSet = new Set(todayLog ? (todayLog.traps_detail || []) : []);
-    document.querySelectorAll('[data-booster]').forEach(box => { box.checked = bSet.has(box.dataset.booster); });
-    document.querySelectorAll('[data-trap]').forEach(box => { box.checked = tSet.has(box.dataset.trap); });
-    renderStabilityChart(logs);
-}
-
-function renderStabilityChart(logs) {
-    const canvas = document.getElementById('stabilityChart');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const chartData = logs.slice(-30);
-    const labels = chartData.map(l => new Date(l.day + 'T00:00:00').toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }));
-    const values = chartData.map(l => l.index);
-    if (chartInstance) chartInstance.destroy();
-    const gradient = ctx.createLinearGradient(0, 0, 0, 320);
-    gradient.addColorStop(0, 'rgba(59, 130, 246, 0.55)'); gradient.addColorStop(1, 'rgba(5, 5, 5, 0.0)');
-    chartInstance = new Chart(ctx, {
-        type: 'line',
-        data: { labels: labels, datasets: [{ data: values, borderColor: '#3B82F6', borderWidth: 3, backgroundColor: gradient, fill: true, tension: 0.4 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { color: 'rgba(34,34,42,0.3)' }, ticks: { color: '#6B7280' } }, y: { grid: { color: 'rgba(34,34,42,0.3)' }, ticks: { color: '#6B7280' } } } }
-    });
-}
-
-const CAL_MONTHS = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
-const CAL_WEEKDAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
-function pad2(n) { return String(n).padStart(2, '0'); }
-function keyOf(d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
-function todayKey() { return keyOf(new Date()); }
-function startOfToday() { const t = new Date(); t.setHours(0,0,0,0); return t; }
-
-function calRenderWeekdays() {
-    const wrap = document.getElementById('cal-weekdays');
-    if (!wrap) return;
-    wrap.innerHTML = CAL_WEEKDAYS.map(w => `<div class="text-center text-[10px] font-bold text-gray-400 pb-2">${w}</div>`).join('');
-}
-
-function calRenderGrid() {
-    const grid = document.getElementById('cal-grid');
-    const label = document.getElementById('cal-month-label');
-    if (!grid) return;
-    const marks = STATE.marks || {};
-    const tKey = todayKey();
-    if (label) label.innerText = CAL_MONTHS[calViewMonth] + ' ' + calViewYear;
-    const first = new Date(calViewYear, calViewMonth, 1);
-    const daysInMonth = new Date(calViewYear, calViewMonth + 1, 0).getDate();
-    const offset = first.getDay() === 0 ? 6 : first.getDay() - 1;
-    let html = '';
-    for (let i = 0; i < offset; i++) html += '<div></div>';
-    for (let d = 1; d <= daysInMonth; d++) {
-        const cur = new Date(calViewYear, calViewMonth, d);
-        const key = keyOf(cur);
-        const mark = marks[key] || null;
-        let cls = mark && mark.status === 'win' ? 'bg-[#3B82F6] text-white' : (mark && mark.status === 'slip' ? 'bg-[#7F1D1D] text-red-200' : 'bg-bmwDeep text-gray-300');
-        if (key === tKey) cls += ' border-2 border-blue-500';
-        html += `<button type="button" onclick="openDayModal('${key}')" class="aspect-square rounded-xl border border-bmwBorder ${cls} text-sm font-bold flex items-center justify-center hover:border-blue-400 transition-all">${d}</button>`;
-    }
-    grid.innerHTML = html;
-}
-
-async function openDayModal(key) {
-    currentModalDay = key;
-    const modal = document.getElementById('day-modal');
-    modal.classList.remove('hidden');
-    
-    document.getElementById('modal-day-title').innerText = key;
-    document.getElementById('modal-day-status').innerText = 'Загрузка дневника...';
-    document.getElementById('modal-goals-list').innerHTML = 'Загрузка...';
-    document.getElementById('modal-balance-view').innerHTML = 'Загрузка...';
-    document.getElementById('modal-workouts-wrapper').classList.add('hidden');
-
-    try {
-        const res = await fetch(`/api/day-details?day=${key}`);
-        const data = await res.json();
-        if (!data.ok) return;
-
-        let statusText = '⚪ День вне сетки';
-        if (data.status === 'win') statusText = '🟢 Победа (Чистый день)';
-        else if (data.status === 'slip') statusText = '🔴 Срыв / Тяжелый день';
-        document.getElementById('modal-day-status').innerText = statusText;
-
-        const goalsEl = document.getElementById('modal-goals-list');
-        if (data.goals && data.goals.length > 0) {
-            goalsEl.innerHTML = data.goals.map((g, idx) => `
-                <div class="flex items-center gap-2">
-                    <span class="${g.completed ? 'text-emerald-400' : 'text-gray-500'} font-bold">${g.completed ? '✓' : '○'}</span>
-                    <span class="${g.completed ? 'line-through text-gray-500' : 'text-white'}">${escapeHtml(g.text)}</span>
-                </div>
-            `).join('');
-        } else {
-            goalsEl.innerHTML = '<span class="text-gray-500 italic">Цели не фиксировались</span>';
-        }
-
-        const balanceEl = document.getElementById('modal-balance-view');
-        const bList = data.balance.boosters || [];
-        const tList = data.balance.traps || [];
-        let bHtml = bList.length > 0 ? bList.map(b => `<span class="inline-block bg-blue-950/60 border border-blue-500/30 text-blue-300 text-xs px-2.5 py-1 rounded-lg mr-1 mb-1">🟢 ${escapeHtml(b)}</span>`).join('') : '<span class="text-gray-500">Нет бустеров</span>';
-        let tHtml = tList.length > 0 ? tList.map(t => `<span class="inline-block bg-red-950/60 border border-red-500/30 text-red-300 text-xs px-2.5 py-1 rounded-lg mr-1 mb-1">🔴 ${escapeHtml(t)}</span>`).join('') : '<span class="text-gray-500">Нет ловушек</span>';
-        balanceEl.innerHTML = `<div class="mb-2"><strong class="text-gray-400 text-xs uppercase">Индекс дня:</strong> <span class="text-white font-mono font-bold">${data.balance.index}</span></div><div class="mb-2"><strong>Бустеры:</strong><br>${bHtml}</div><div><strong>Ловушки:</strong><br>${tHtml}</div>`;
-
-        const workoutsWrapper = document.getElementById('modal-workouts-wrapper');
-        const workoutsList = document.getElementById('modal-workouts-list');
-        if (data.workouts && data.workouts.length > 0) {
-            workoutsWrapper.classList.remove('hidden');
-            workoutsList.innerHTML = data.workouts.map(w => `
-                <div class="bg-bmwCard p-3 rounded-xl border border-bmwBorder text-xs">
-                    <span class="text-blue-400 font-bold">${escapeHtml(w.workout_type)}</span> · <span class="text-white">${escapeHtml(w.exercise_name)}</span> : <span class="text-gray-300">${escapeHtml(w.reps_data)}</span>
-                </div>
-            `).join('');
-        } else {
-            workoutsWrapper.classList.add('hidden');
-        }
-    } catch (e) {
-        toast('Ошибка загрузки данных дня', true);
-    }
-}
-
-function closeDayModal() {
-    document.getElementById('day-modal').classList.add('hidden');
-    currentModalDay = null;
-}
-
-async function toggleDayStatusModal() {
-    if (!currentModalDay) return;
-    const marks = STATE.marks || {};
-    const cur = marks[currentModalDay] ? marks[currentModalDay].status : null;
-    let next = 'win';
-    if (cur === 'win') next = 'slip';
-    else if (cur === 'slip') next = null;
-    await send('/api/mark', { day: currentModalDay, status: next, note: '' });
-    openDayModal(currentModalDay);
-    toast('Статус дня изменен.');
-}
-
-function calShiftMonth(delta) {
-    calViewMonth += delta;
-    if (calViewMonth > 11) { calViewMonth = 0; calViewYear++; }
-    if (calViewMonth < 0) { calViewMonth = 11; calViewYear--; }
-    calRenderGrid();
-}
-function calGoToday() { calViewYear = new Date().getFullYear(); calViewMonth = new Date().getMonth(); calRenderGrid(); }
-
-const quotes = [
-    "«Энергия течет туда, куда ты направляешь фокус.»",
-    "«Легкий дофамин — это ловушка для слабых.»",
-    "«Дисциплина — это выбор между тем, чего хочешь сейчас, и тем, чего хочешь больше всего.»"
-];
-function changeQuote() {
-    document.getElementById('quote-box').innerText = quotes[Math.floor(Math.random() * quotes.length)];
-}
-
-let timerInterval = null;
-function initLiveTimer(startTimeStr) {
-    if (timerInterval) clearInterval(timerInterval);
-    const startTime = new Date(startTimeStr).getTime();
-    if (isNaN(startTime)) return;
-    timerInterval = setInterval(() => {
-        const diff = Date.now() - startTime;
-        if (diff <= 0) return;
-        document.getElementById('timer-days').innerText = pad2(Math.floor(diff / 86400000));
-        document.getElementById('timer-hours').innerText = pad2(Math.floor((diff % 86400000) / 3600000));
-        document.getElementById('timer-mins').innerText = pad2(Math.floor((diff % 3600000) / 60000));
-        document.getElementById('timer-secs').innerText = pad2(Math.floor((diff % 60000) / 1000));
-    }, 1000);
-}
-
-function renderAll() {
-    renderProfile();
-    renderStorageBadge();
-    renderBoard();
-    renderGoals();
-    renderCbt();
-    renderLetters();
-    renderWorkouts();
-    renderBalance();
-    calRenderWeekdays();
-    calRenderGrid();
-    calRenderStats();
-}
-
-window.addEventListener('load', () => { changeQuote(); loadState(); });
-</script>
-</body>
-</html>

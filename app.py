@@ -94,7 +94,7 @@ class DailyGoal(db.Model):
 with app.app_context():
     db.create_all()
 
-print("✅ База данных готова")
+print("✅ База данных готова:", DB_PATH)
 
 # ─────────────────────────── ВСПОМОГАТЕЛЬНОЕ ───────────────────────────
 
