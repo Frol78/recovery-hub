@@ -8,7 +8,6 @@ app = Flask(__name__)
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
-# ─────────────────────────── ГДЕ ЛЕЖИТ БАЗА ───────────────────────────
 if os.environ.get("DATA_DIR"):
     DATA_DIR = os.environ["DATA_DIR"]
 elif os.path.isdir("/data"):
@@ -28,8 +27,6 @@ except AttributeError:
     app.config["JSON_AS_ASCII"] = False
 
 db = SQLAlchemy(app)
-
-# ─────────────────────────────── МОДЕЛИ ───────────────────────────────
 
 class Profile(db.Model):
     __tablename__ = "profile"
@@ -95,8 +92,6 @@ with app.app_context():
     db.create_all()
 
 print("✅ База данных готова:", DB_PATH)
-
-# ─────────────────────────── ВСПОМОГАТЕЛЬНОЕ ───────────────────────────
 
 def today_str():
     return datetime.now().strftime("%Y-%m-%d")
@@ -187,8 +182,6 @@ def state_payload():
             for g in goals
         ],
     }
-
-# ─────────────────────────────── РОУТЫ ───────────────────────────────
 
 @app.route("/")
 def index():
