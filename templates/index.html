@@ -279,29 +279,35 @@
             <div id="cal-grid" class="grid grid-cols-7 gap-2"></div>
         </div>
 
-        <!-- Balance -->
+        <!-- Balance & Detailed Triggers -->
         <div class="spotlight-card bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow space-y-8">
             <div>
-                <h2 class="text-xl font-bold text-white mb-2">⚖️ Ежедневный баланс дофамина</h2>
+                <h2 class="text-xl font-bold text-white mb-2">⚖️ Ежедневный баланс и телеметрия</h2>
+                <p class="text-sm text-gray-400 mb-6">Отмечай реальные факторы дня. Это питает график индекса стабильности.</p>
+                
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <!-- Бустеры -->
                     <div class="bg-bmwDeep p-6 rounded-xl border border-blue-500/30 space-y-3">
-                        <h3 class="text-xs font-bold text-blue-400 uppercase mb-4">🟢 Бустеры</h3>
-                        <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-booster="coding" class="bmw-checkbox"> Кодинг</label>
-                        <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-booster="body" class="bmw-checkbox"> Тело / спорт</label>
-                        <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-booster="mind" class="bmw-checkbox"> Разум</label>
-                        <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-booster="spirit" class="bmw-checkbox"> Дух</label>
+                        <h3 class="text-xs font-bold text-blue-400 uppercase mb-4">🟢 Бустеры и ресурс</h3>
+                        <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-booster="sleep" class="bmw-checkbox"> Здоровый сон (режим в норме)</label>
+                        <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-booster="coding" class="bmw-checkbox"> Продуктивный кодинг</label>
+                        <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-booster="sport" class="bmw-checkbox"> Спорт / Тело / Йога</label>
+                        <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-booster="nocofer" class="bmw-checkbox"> Чистый день без кофе</label>
                     </div>
+                    <!-- Ловушки и Триггеры -->
                     <div class="bg-bmwDeep p-6 rounded-xl border border-red-500/30 space-y-3">
-                        <h3 class="text-xs font-bold text-red-400 uppercase mb-4">🔴 Ловушки</h3>
-                        <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-trap="pity" class="bmw-checkbox bmw-checkbox-red"> Саможалость</label>
-                        <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-trap="procr" class="bmw-checkbox bmw-checkbox-red"> Прокрастинация</label>
-                        <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-trap="lust" class="bmw-checkbox bmw-checkbox-red"> Слив энергии</label>
+                        <h3 class="text-xs font-bold text-red-400 uppercase mb-4">🔴 Ловушки и Триггеры</h3>
+                        <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-trap="coffee" class="bmw-checkbox bmw-checkbox-red"> Кофеин-триггер (тревога)</label>
+                        <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-trap="bad_sleep" class="bmw-checkbox bmw-checkbox-red"> Сбой сна (долгий/поздний)</label>
+                        <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-trap="back_pain" class="bmw-checkbox bmw-checkbox-red"> Боль в спине / Остеохондроз</label>
+                        <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-trap="pity" class="bmw-checkbox bmw-checkbox-red"> Саможалость / Торг</label>
+                        <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-trap="procr" class="bmw-checkbox bmw-checkbox-red"> Тупняк за ноутом / Прокрастинация</label>
                     </div>
                 </div>
                 <button onclick="saveDailyBalance()" class="w-full py-5 bmw-btn text-white font-bold rounded-xl">🛡️ Зафиксировать баланс дня</button>
             </div>
             <div class="pt-6 border-t border-bmwBorder">
-                <h3 class="text-xs font-bold text-blue-400 uppercase mb-4">📈 Индекс стабильности</h3>
+                <h3 class="text-xs font-bold text-blue-400 uppercase mb-4">📈 Индекс стабильности (Динамика)</h3>
                 <div class="bg-bmwDeep p-4 rounded-xl border border-bmwBorder relative h-64"><canvas id="stabilityChart"></canvas></div>
             </div>
         </div>
@@ -552,7 +558,7 @@ async function saveDailyBalance() {
     const boosters = Array.from(document.querySelectorAll('[data-booster]:checked')).map(i => i.dataset.booster);
     const traps = Array.from(document.querySelectorAll('[data-trap]:checked')).map(i => i.dataset.trap);
     await send('/api/balance', { day: todayKey(), boosters, traps });
-    toast('Баланс дня зафиксирован.');
+    toast('Баланс дня и телеметрия зафиксированы.');
 }
 
 async function addCbtRecord(e) {
