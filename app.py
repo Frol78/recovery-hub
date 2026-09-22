@@ -1,4 +1,5 @@
 import os
+
 from datetime import datetime, timedelta
 
 from flask import Flask, render_template, request, jsonify, Response
@@ -84,6 +85,14 @@ class BalanceLog(db.Model):
     boosters_detail = db.Column(db.String(255), default="")
     traps_detail = db.Column(db.String(255), default="")
 
+class DailyGoal(db.Model):
+    """Три ключевые цели на день."""
+    __tablename__ = "daily_goal"
+    id = db.Column(db.Integer, primary_key=True)
+    day = db.Column(db.String(10), nullable=False, index=True)
+    text = db.Column(db.String(255), nullable=False)
+    completed = db.Column(db.Boolean, default=False)
+
 with app.app_context():
     db.create_all()
 
@@ -114,6 +123,7 @@ def state_payload():
     cbt = CbtRecord.query.order_by(CbtRecord.id.desc()).all()
     letters = Letter.query.order_by(Letter.id.desc()).all()
     workouts = WorkoutRecord.query.order_by(WorkoutRecord.id.desc()).all()
+    goals = DailyGoal.query.filter_by(day=today_str()).all()
 
     return {
         "ok": True,
@@ -171,9 +181,17 @@ def state_payload():
             }
             for w in workouts
         ],
+        "daily_goals": [
+            {
+                "id": g.id,
+                "text": g.text,
+                "completed": g.completed,
+            }
+            for g in goals
+        ],
     }
 
-# ─────────────────────────────── РРОУТЫ ───────────────────────────────
+# ─────────────────────────────── РОУТЫ ───────────────────────────────
 
 @app.route("/")
 def index():
@@ -291,6 +309,36 @@ def api_balance():
     db.session.commit()
     return jsonify(state_payload())
 
+@app.route("/api/goals", methods=["POST"])
+def api_goals_save():
+    data = request.get_json(silent=True) or {}
+    day = today_str()
+    goals_list = data.get("goals", [])
+    
+    DailyGoal.query.filter_by(day=day).delete()
+    
+    for item in goals_list[:3]:
+        text = str(item.get("text", "")).strip()[:255]
+        if text:
+            db.session.add(DailyGoal(
+                day=day,
+                text=text,
+                completed=bool(item.get("completed", False))
+            ))
+    db.session.commit()
+    return jsonify(state_payload())
+
+@app.route("/api/goal/toggle", methods=["POST"])
+def api_goal_toggle():
+    data = request.get_json(silent=True) or {}
+    g_id = data.get("id")
+    if g_id:
+        goal = DailyGoal.query.get(g_id)
+        if goal:
+            goal.completed = not goal.completed
+            db.session.commit()
+    return jsonify(state_payload())
+
 @app.route("/api/cbt", methods=["POST"])
 def api_cbt():
     data = request.get_json(silent=True) or {}
@@ -388,6 +436,7 @@ def api_reset():
     Letter.query.delete()
     WorkoutRecord.query.delete()
     StrategyBoard.query.delete()
+    DailyGoal.query.delete()
     Profile.query.delete()
     db.session.commit()
     return jsonify(state_payload())

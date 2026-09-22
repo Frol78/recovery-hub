@@ -240,6 +240,34 @@
             <button onclick="changeQuote()" class="mt-6 px-6 py-3 text-sm font-bold text-white bmw-btn rounded-xl">⚡ Сменить настрой</button>
         </div>
 
+        <!-- 🎯 3 ГЛАВНЫХ ФОКУСА НА ДЕНЬ -->
+        <div class="spotlight-card bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow">
+            <h2 class="text-xl font-bold text-white mb-2">🎯 3 главных фокуса на день</h2>
+            <p class="text-sm text-gray-400 mb-6">Определи 3 ключевые задачи на сегодня. Никакого перегруза.</p>
+            <form onsubmit="saveDailyGoals(event)" class="space-y-4">
+                <div class="space-y-3" id="goals-inputs-container">
+                    <div class="flex items-center gap-3">
+                        <span class="text-blue-400 font-bold text-sm">1.</span>
+                        <input type="text" data-goal-input required placeholder="Первая и главная цель..." class="w-full px-4 py-3 bg-bmwDeep border border-bmwBorder rounded-xl text-white text-sm focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="text-blue-400 font-bold text-sm">2.</span>
+                        <input type="text" data-goal-input required placeholder="Вторая цель..." class="w-full px-4 py-3 bg-bmwDeep border border-bmwBorder rounded-xl text-white text-sm focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="text-blue-400 font-bold text-sm">3.</span>
+                        <input type="text" data-goal-input required placeholder="Третья цель..." class="w-full px-4 py-3 bg-bmwDeep border border-bmwBorder rounded-xl text-white text-sm focus:outline-none focus:border-blue-500">
+                    </div>
+                </div>
+                <button type="submit" class="w-full py-4 bmw-btn text-white font-bold rounded-xl text-sm">💾 Зафиксировать фокусы на день</button>
+            </form>
+
+            <div id="goals-status-container" class="mt-6 pt-6 border-t border-bmwBorder hidden">
+                <h3 class="text-xs font-bold text-blue-400 uppercase mb-4">✨ Активные цели на сегодня:</h3>
+                <div id="goals-list-view" class="space-y-3"></div>
+            </div>
+        </div>
+
         <!-- SOS -->
         <div class="spotlight-card bg-bmwDark p-8 sm:p-10 rounded-2xl border-2 border-red-500/50">
             <h2 class="text-lg font-bold text-red-400 mb-3 flex items-center gap-3"><span class="text-2xl">🚨</span> Зона экстренного контроля</h2>
@@ -249,7 +277,7 @@
         </div>
 
         <!-- Progress -->
-        <div class="spotlight-card bg-bmwDark p-8 rounded-2xl bmw-border-glow">
+        <div class="spotlight-card bg-bmwDark p-8 sm:p-20 rounded-2xl bmw-border-glow">
             <h2 class="text-xs font-bold text-gray-300 uppercase tracking-widest mb-5">Метрика прогресса</h2>
             <button onclick="addDay()" class="w-full py-5 bmw-btn text-white font-bold rounded-xl text-base">⚡ Засчитать +1 день победы</button>
         </div>
@@ -402,7 +430,7 @@
 </div>
 
 <script>
-let STATE = { profile: null, marks: {}, balance_logs: [], cbt_records: [], letters: [], workouts: [], board_content: '', storage: { persistent: false, dir: '' } };
+let STATE = { profile: null, marks: {}, balance_logs: [], cbt_records: [], letters: [], workouts: [], daily_goals: [], board_content: '', storage: { persistent: false, dir: '' } };
 let stagedWorkouts = [];
 let chartInstance = null;
 let busy = false;
@@ -509,6 +537,7 @@ function applyState(payload) {
     if (!STATE.cbt_records) STATE.cbt_records = [];
     if (!STATE.letters) STATE.letters = [];
     if (!STATE.workouts) STATE.workouts = [];
+    if (!STATE.daily_goals) STATE.daily_goals = [];
 }
 
 async function loadState() {
@@ -552,6 +581,47 @@ async function createProfile(e) {
 }
 
 async function addDay() { await send('/api/day/add', { add_days: 1 }); toast('+1 день победы.'); }
+
+async function saveDailyGoals(e) {
+    e.preventDefault();
+    const inputs = document.querySelectorAll('[data-goal-input]');
+    const goals = Array.from(inputs).map(i => ({ text: i.value.trim(), completed: false })).filter(g => g.text);
+    if (goals.length === 0) return toast('Введи хотя бы одну цель!', true);
+    await send('/api/goals', { goals });
+    toast('🎯 Фокусы на день зафиксированы!');
+}
+
+async function toggleGoal(id) {
+    await send('/api/goal/toggle', { id });
+}
+
+function renderGoals() {
+    const goals = STATE.daily_goals || [];
+    const statusContainer = document.getElementById('goals-status-container');
+    const listView = document.getElementById('goals-list-view');
+    const inputs = document.querySelectorAll('[data-goal-input]');
+
+    if (goals.length > 0) {
+        statusContainer.classList.remove('hidden');
+        listView.innerHTML = goals.map((g, idx) => `
+            <div class="flex items-center justify-between bg-bmwDeep p-4 rounded-xl border border-bmwBorder text-sm">
+                <label class="flex items-center gap-3 cursor-pointer select-none">
+                    <input type="checkbox" ${g.completed ? 'checked' : ''} onchange="toggleGoal(${g.id})" class="bmw-checkbox">
+                    <span class="${g.completed ? 'line-through text-gray-500' : 'text-white font-medium'}">${escapeHtml(g.text)}</span>
+                </label>
+                <span class="text-[10px] text-gray-500 uppercase font-bold">Цель #${idx+1}</span>
+            </div>
+        `).join('');
+
+        inputs.forEach((inp, idx) => {
+            if (goals[idx] && !inp.value) {
+                inp.value = goals[idx].text;
+            }
+        });
+    } else {
+        statusContainer.classList.add('hidden');
+    }
+}
 
 async function saveDailyBalance() {
     const boosters = Array.from(document.querySelectorAll('[data-booster]:checked')).map(i => i.dataset.booster);
@@ -844,6 +914,7 @@ function renderAll() {
     renderProfile();
     renderStorageBadge();
     renderBoard();
+    renderGoals();
     renderCbt();
     renderLetters();
     renderWorkouts();
