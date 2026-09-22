@@ -23,7 +23,6 @@
 </script>
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-
     body {
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
         background-color: #050505;
@@ -34,7 +33,6 @@
         position: relative;
         overflow-x: hidden;
     }
-
     .spotlight-card {
         position: relative;
         overflow: hidden;
@@ -42,42 +40,20 @@
         border: 1px solid #22222A;
         transition: border-color 0.3s ease, box-shadow 0.3s ease;
     }
-    .spotlight-card::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        pointer-events: none;
-        background: radial-gradient(
-            500px circle at var(--mouse-x, 0) var(--mouse-y, 0),
-            rgba(59, 130, 246, 0.16),
-            transparent 45%
-        );
-        z-index: 1;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-    .spotlight-card:hover::before { opacity: 1; }
-
     .bmw-btn {
         background: linear-gradient(135deg, #1c1c24 0%, #0d0d12 100%);
         border: 1px solid #2e2e3a;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
         transition: all 0.3s ease;
     }
-    .bmw-btn:hover {
-        border-color: #3b82f6;
-        box-shadow: 0 6px 25px rgba(59, 130, 246, 0.25);
-        transform: translateY(-1px);
-    }
+    .bmw-btn:hover { border-color: #3b82f6; box-shadow: 0 6px 25px rgba(59, 130, 246, 0.25); transform: translateY(-1px); }
     .bmw-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
-
     @keyframes pulse-red {
         0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7), 0 4px 20px rgba(239, 68, 68, 0.5); }
         50% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0), 0 8px 30px rgba(239, 68, 68, 0.8); }
     }
     .sos-pulse { animation: pulse-red 2s infinite; }
     .bmw-border-glow { border: 1px solid #22222A; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); }
-
     .bmw-checkbox {
         appearance: none;
         background-color: #050505;
@@ -91,38 +67,17 @@
         transition: all 0.2s ease;
         flex-shrink: 0;
     }
-    .bmw-checkbox:checked {
-        background-color: #3B82F6;
-        border-color: #3B82F6;
-        box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
-    }
-    .bmw-checkbox:checked::before {
-        content: "✓";
-        font-size: 12px;
-        font-weight: bold;
-        color: white;
-    }
-    .bmw-checkbox-red:checked {
-        background-color: #EF4444;
-        border-color: #EF4444;
-        box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
-    }
-
+    .bmw-checkbox:checked { background-color: #3B82F6; border-color: #3B82F6; box-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
+    .bmw-checkbox:checked::before { content: "✓"; font-size: 12px; font-weight: bold; color: white; }
+    .bmw-checkbox-red:checked { background-color: #EF4444; border-color: #EF4444; box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
     ::-webkit-scrollbar { width: 8px; }
     ::-webkit-scrollbar-track { background: #0A0A0C; }
     ::-webkit-scrollbar-thumb { background: #22222A; border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: #3B82F6; }
-
     .eura-timer-card {
-        position: relative;
-        width: 100%;
-        max-width: 480px;
-        padding: 24px 18px 20px;
-        border: 1px solid rgba(59, 130, 246, 0.45);
-        border-radius: 22px;
-        background:
-            radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.18), transparent 55%),
-            linear-gradient(145deg, #111115, #07070a);
+        position: relative; width: 100%; max-width: 480px; padding: 24px 18px 20px;
+        border: 1px solid rgba(59, 130, 246, 0.45); border-radius: 22px;
+        background: radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.18), transparent 55%), linear-gradient(145deg, #111115, #07070a);
         box-shadow: 0 0 35px rgba(37, 99, 235, 0.15), inset 0 0 25px rgba(59, 130, 246, 0.04);
         overflow: hidden;
     }
@@ -134,7 +89,6 @@
     .eura-separator { align-self: flex-start; margin-top: 4px; color: #3b82f6; font-family: "Courier New", monospace; font-size: 30px; font-weight: 900; text-shadow: 0 0 14px rgba(59, 130, 246, 0.9); }
     .eura-timer-line { position: relative; z-index: 1; height: 1px; margin: 20px 10px 14px; background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.7), transparent); }
     .eura-timer-status { position: relative; z-index: 1; color: #64748b; font-size: 10px; letter-spacing: 1px; text-align: center; text-transform: uppercase; }
-
     #toast-box { position: fixed; top: 18px; left: 50%; transform: translateX(-50%); z-index: 100; display: flex; flex-direction: column; gap: 10px; width: min(92vw, 460px); }
     @keyframes toast-in { from { opacity: 0; transform: translateY(-14px); } to { opacity: 1; transform: translateY(0); } }
     .toast { animation: toast-in .22s ease-out; }
@@ -144,22 +98,16 @@
 
 <div id="toast-box"></div>
 
-<!-- 🚨 МОДАЛКА ЭКСТРЕННОГО РАНДОМАЙЗЕРА (SOS) -->
+<!-- 🚨 МОДАЛКА SOS -->
 <div id="sos-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-    <div class="spotlight-card bg-bmwCard max-w-lg w-full p-8 rounded-3xl border border-red-500/50 shadow-[0_0_50px_rgba(239,68,68,0.3)] text-center relative">
+    <div class="spotlight-card bg-bmwCard max-w-lg w-full p-8 rounded-3xl border border-red-500/50 shadow-2xl text-center relative">
         <button onclick="closeSosModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl font-bold w-10 h-10 rounded-xl bg-bmwDeep border border-bmwBorder flex items-center justify-center">✕</button>
-        
-        <div class="w-16 h-16 rounded-2xl bg-red-950/40 border border-red-500/40 flex items-center justify-center mx-auto mb-5 shadow-[0_0_20px_rgba(239,68,68,0.3)]">
+        <div class="w-16 h-16 rounded-2xl bg-red-950/40 border border-red-500/40 flex items-center justify-center mx-auto mb-5">
             <span class="text-3xl">⚡</span>
         </div>
-        
         <h3 id="sos-action-title" class="text-2xl font-bold text-white mb-3">Загрузка протокола...</h3>
         <p id="sos-action-desc" class="text-gray-300 text-sm mb-8 leading-relaxed">Мозг пытается тебя обмануть. Давай собьем этот паттерн.</p>
-        
-        <div id="sos-action-widget" class="mb-8 bg-bmwDeep p-6 rounded-2xl border border-bmwBorder">
-            <!-- Интерактив -->
-        </div>
-
+        <div id="sos-action-widget" class="mb-8 bg-bmwDeep p-6 rounded-2xl border border-bmwBorder"></div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <button onclick="spinSosAction()" class="py-4 bg-bmwDeep hover:bg-bmwBorder text-blue-400 font-bold rounded-xl text-sm border border-blue-500/40">🎲 Другой вариант</button>
             <button onclick="goToCbtFromSos()" class="py-4 bg-gradient-to-r from-red-600 to-red-700 text-white font-bold rounded-xl text-sm shadow-lg">🛡️ Перейти к КПТ</button>
@@ -167,7 +115,7 @@
     </div>
 </div>
 
-<!-- 📅 МОДАЛКА ДЕТАЛЕЙ ДНЯ (ДНЕВНИК КАЛЕНДАРЯ) -->
+<!-- 📅 МОДАЛКА ДНЯ (ДНЕВНИК КАЛЕНДАРЯ) -->
 <div id="day-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
     <div class="spotlight-card bg-bmwCard max-w-lg w-full p-8 rounded-3xl border border-bmwBorder shadow-2xl relative">
         <button onclick="closeDayModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl font-bold w-10 h-10 rounded-xl bg-bmwDeep border border-bmwBorder flex items-center justify-center">✕</button>
@@ -181,19 +129,14 @@
         </div>
 
         <div class="space-y-6 max-h-[60vh] overflow-y-auto pr-2">
-            <!-- Цели за день -->
             <div class="bg-bmwDeep p-5 rounded-2xl border border-bmwBorder">
                 <h4 class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-3">🎯 Фокусы и цели за день</h4>
                 <div id="modal-goals-list" class="space-y-2 text-sm text-gray-300">Пусто</div>
             </div>
-
-            <!-- Телеметрия / Телесный баланс -->
             <div class="bg-bmwDeep p-5 rounded-2xl border border-bmwBorder">
                 <h4 class="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-3">⚖️ Телеметрия и баланс</h4>
                 <div id="modal-balance-view" class="space-y-2 text-sm text-gray-300">Нет данных о балансе</div>
             </div>
-
-            <!-- Тренировки за день -->
             <div id="modal-workouts-wrapper" class="bg-bmwDeep p-5 rounded-2xl border border-bmwBorder hidden">
                 <h4 class="text-xs font-bold text-amber-400 uppercase tracking-widest mb-3">💪 Тренировки за этот день</h4>
                 <div id="modal-workouts-list" class="space-y-2 text-sm text-gray-300"></div>
@@ -444,7 +387,6 @@
                 <button type="submit" class="w-full py-5 bmw-btn text-white font-bold rounded-xl">🛡️ Сохранить лог</button>
             </form>
 
-            <!-- Импорт мыслей с улицы -->
             <div class="mt-8 pt-8 border-t border-bmwBorder">
                 <h3 class="text-base font-bold text-blue-400 mb-2">📥 Импорт заметок с улицы (Google Docs)</h3>
                 <p class="text-xs text-gray-400 mb-4">Скопируй свои заметки с телефона, вставь сюда — и они автоматически сохранятся в КПТ-архив с категорией «Улица»!</p>
@@ -478,31 +420,12 @@ let calViewYear = new Date().getFullYear();
 let calViewMonth = new Date().getMonth();
 let currentModalDay = null;
 
-// 🎲 Экстренные протоколы для рандомайзера SOS
 const SOS_ACTIONS = [
-    {
-        title: "🫁 Дыхательный цикл (Квадрат)",
-        desc: "Сделай паузу. Дыши глубоко: Вдох на 4 сек, задержка на 4 сек, выдох на 4 сек.",
-        widget: `<div id="breath-timer" class="text-3xl font-mono font-black text-blue-400">Вдох... (4с)</div>`
-    },
-    {
-        title: "🦾 Физический сброс",
-        desc: "Сбрось гормоны стресса прямо сейчас. Сделай 15-20 отжиманий или повиси на турнике.",
-        widget: `<div class="text-sm text-emerald-400 font-bold">⚡ Иди к турнику или падай в упор лежа! 20 повторений.</div>`
-    },
-    {
-        title: "⏳ Психологический предохранитель",
-        desc: "Включи таймер на 20 минут. Скажи себе: «Я не принимаю решений прямо сейчас. Я просто жду»",
-        widget: `<div id="sos-countdown" class="text-3xl font-mono font-black text-amber-400">20:00</div>`
-    },
-    {
-        title: "🚶 Разрыв шаблона",
-        desc: "Встань со стула, выйди из комнаты, умойся холодной водой или выйди на улицу на 5 минут.",
-        widget: `<div class="text-sm text-blue-300 font-bold">💧 Холодная вода на лицо сбивает химию мозга за 30 секунд.</div>`
-    }
+    { title: "🫁 Дыхательный цикл (Квадрат)", desc: "Вдох на 4 сек, задержка на 4 сек, выдох на 4 сек.", widget: `<div class="text-3xl font-mono font-black text-blue-400">Дыши глубоко</div>` },
+    { title: "🦾 Физический сброс", desc: "Сбрось гормоны стресса прямо сейчас.", widget: `<div class="text-sm text-emerald-400 font-bold">⚡ 20 отжиманий или вис на турнике!</div>` },
+    { title: "⏳ Психологический предохранитель", desc: "Таймер на 20 минут.", widget: `<div class="text-3xl font-mono font-black text-amber-400">20:00</div>` },
+    { title: "🚶 Разрыв шаблона", desc: "Холодная вода на лицо на 30 секунд.", widget: `<div class="text-sm text-blue-300 font-bold">💧 Сбей химию мозга водой.</div>` }
 ];
-
-let currentSosInterval = null;
 
 async function triggerSOS() {
     await send('/api/sos', {});
@@ -510,58 +433,15 @@ async function triggerSOS() {
     openSosModal();
 }
 
-function openSosModal() {
-    document.getElementById('sos-modal').classList.remove('hidden');
-    spinSosAction();
-}
-
-function closeSosModal() {
-    document.getElementById('sos-modal').classList.add('hidden');
-    if (currentSosInterval) clearInterval(currentSosInterval);
-}
-
+function openSosModal() { document.getElementById('sos-modal').classList.remove('hidden'); }
+function closeSosModal() { document.getElementById('sos-modal').classList.add('hidden'); }
 function spinSosAction() {
-    if (currentSosInterval) clearInterval(currentSosInterval);
-    
-    const action = SOS_ACTIONS[Math.floor(Math.random() * SOS_ACTIONS.length)];
-    
-    document.getElementById('sos-action-title').innerText = action.title;
-    document.getElementById('sos-action-desc').innerText = action.desc;
-    document.getElementById('sos-action-widget').innerHTML = action.widget;
-
-    if (action.title.includes("предохранитель")) {
-        let timeLeft = 20 * 60;
-        const el = document.getElementById('sos-countdown');
-        currentSosInterval = setInterval(() => {
-            timeLeft--;
-            const m = Math.floor(timeLeft / 60);
-            const s = timeLeft % 60;
-            if (el) el.innerText = `${pad2(m)}:${pad2(s)}`;
-            if (timeLeft <= 0) {
-                clearInterval(currentSosInterval);
-                if (el) el.innerText = "Время вышло! Тяга отступила?";
-            }
-        }, 1000);
-    }
+    const a = SOS_ACTIONS[Math.floor(Math.random() * SOS_ACTIONS.length)];
+    document.getElementById('sos-action-title').innerText = a.title;
+    document.getElementById('sos-action-desc').innerText = a.desc;
+    document.getElementById('sos-action-widget').innerHTML = a.widget;
 }
-
-function goToCbtFromSos() {
-    closeSosModal();
-    const cbtCard = document.getElementById('cbt-section-card');
-    if (cbtCard) {
-        cbtCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        const firstInput = cbtCard.querySelector('input');
-        if (firstInput) setTimeout(() => firstInput.focus(), 500);
-    }
-}
-
-document.addEventListener('mousemove', e => {
-    for (const card of document.getElementsByClassName('spotlight-card')) {
-        const rect = card.getBoundingClientRect();
-        card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
-        card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
-    }
-});
+function goToCbtFromSos() { closeSosModal(); document.getElementById('cbt-section-card').scrollIntoView({ behavior: 'smooth' }); }
 
 async function api(path, body) {
     const opts = body === undefined ? { method: 'GET', cache: 'no-store' } : { method: 'POST', cache: 'no-store', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body || {}) };
@@ -599,7 +479,7 @@ async function send(path, body) {
         renderAll();
         return true;
     } catch (e) {
-        toast('Не сохранилось', true);
+        toast('Ошибка сохранения', true);
         return false;
     } finally {
         busy = false;
@@ -632,9 +512,7 @@ async function saveDailyGoals(e) {
     toast('🎯 Фокусы на день зафиксированы!');
 }
 
-async function toggleGoal(id) {
-    await send('/api/goal/toggle', { id });
-}
+async function toggleGoal(id) { await send('/api/goal/toggle', { id }); }
 
 function renderGoals() {
     const goals = STATE.daily_goals || [];
@@ -655,9 +533,7 @@ function renderGoals() {
         `).join('');
 
         inputs.forEach((inp, idx) => {
-            if (goals[idx] && !inp.value) {
-                inp.value = goals[idx].text;
-            }
+            if (goals[idx] && !inp.value) inp.value = goals[idx].text;
         });
     } else {
         statusContainer.classList.add('hidden');
@@ -682,9 +558,9 @@ async function importStreetThoughts(e) {
     e.preventDefault();
     const text = document.getElementById('street-thoughts-input').value.trim();
     if (!text) return;
-    await send('/api/cbt/import', { text: text });
+    await send('/api/cbt/import', { text });
     document.getElementById('street-thoughts-input').value = '';
-    toast('🚀 Заметки успешно загружены в КПТ-архив!');
+    toast('🚀 Заметки загружены в КПТ-архив!');
 }
 
 async function addLetter(e) {
@@ -732,7 +608,7 @@ async function saveStagedWorkouts() {
     }
     stagedWorkouts = [];
     renderStagedWorkouts();
-    toast('🦾 Тренировка сохранена в базу!');
+    toast('🦾 Тренировка сохранена!');
 }
 
 async function deleteWorkout(id) {
@@ -771,9 +647,7 @@ function renderStorageBadge() {
 
 function renderBoard() {
     const ta = document.getElementById('strategy-board-textarea');
-    if (ta && document.activeElement !== ta) {
-        ta.value = STATE.board_content || '';
-    }
+    if (ta && document.activeElement !== ta) ta.value = STATE.board_content || '';
 }
 
 function renderCbt() {
@@ -892,7 +766,6 @@ function calRenderGrid() {
     grid.innerHTML = html;
 }
 
-// 📅 Модальное окно деталей дня
 async function openDayModal(key) {
     currentModalDay = key;
     const modal = document.getElementById('day-modal');
@@ -909,13 +782,11 @@ async function openDayModal(key) {
         const data = await res.json();
         if (!data.ok) return;
 
-        // Статус
-        let statusText = '⚪ День внесесет сетку';
+        let statusText = '⚪ День вне сетки';
         if (data.status === 'win') statusText = '🟢 Победа (Чистый день)';
         else if (data.status === 'slip') statusText = '🔴 Срыв / Тяжелый день';
         document.getElementById('modal-day-status').innerText = statusText;
 
-        // Цели
         const goalsEl = document.getElementById('modal-goals-list');
         if (data.goals && data.goals.length > 0) {
             goalsEl.innerHTML = data.goals.map((g, idx) => `
@@ -925,10 +796,9 @@ async function openDayModal(key) {
                 </div>
             `).join('');
         } else {
-            goalsEl.innerHTML = '<span class="text-gray-500 italic">Цели на этот день не фиксировались</span>';
+            goalsEl.innerHTML = '<span class="text-gray-500 italic">Цели не фиксировались</span>';
         }
 
-        // Баланс / Телеметрия
         const balanceEl = document.getElementById('modal-balance-view');
         const bList = data.balance.boosters || [];
         const tList = data.balance.traps || [];
@@ -936,7 +806,6 @@ async function openDayModal(key) {
         let tHtml = tList.length > 0 ? tList.map(t => `<span class="inline-block bg-red-950/60 border border-red-500/30 text-red-300 text-xs px-2.5 py-1 rounded-lg mr-1 mb-1">🔴 ${escapeHtml(t)}</span>`).join('') : '<span class="text-gray-500">Нет ловушек</span>';
         balanceEl.innerHTML = `<div class="mb-2"><strong class="text-gray-400 text-xs uppercase">Индекс дня:</strong> <span class="text-white font-mono font-bold">${data.balance.index}</span></div><div class="mb-2"><strong>Бустеры:</strong><br>${bHtml}</div><div><strong>Ловушки:</strong><br>${tHtml}</div>`;
 
-        // Тренировки
         const workoutsWrapper = document.getElementById('modal-workouts-wrapper');
         const workoutsList = document.getElementById('modal-workouts-list');
         if (data.workouts && data.workouts.length > 0) {
@@ -949,7 +818,6 @@ async function openDayModal(key) {
         } else {
             workoutsWrapper.classList.add('hidden');
         }
-
     } catch (e) {
         toast('Ошибка загрузки данных дня', true);
     }
@@ -968,7 +836,7 @@ async function toggleDayStatusModal() {
     if (cur === 'win') next = 'slip';
     else if (cur === 'slip') next = null;
     await send('/api/mark', { day: currentModalDay, status: next, note: '' });
-    openDayModal(currentModalDay); // Переоткрываем для обновления статуса
+    openDayModal(currentModalDay);
     toast('Статус дня изменен.');
 }
 
@@ -986,8 +854,7 @@ const quotes = [
     "«Дисциплина — это выбор между тем, чего хочешь сейчас, и тем, чего хочешь больше всего.»"
 ];
 function changeQuote() {
-    const box = document.getElementById('quote-box');
-    box.innerText = quotes[Math.floor(Math.random() * quotes.length)];
+    document.getElementById('quote-box').innerText = quotes[Math.floor(Math.random() * quotes.length)];
 }
 
 let timerInterval = null;

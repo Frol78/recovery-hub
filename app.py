@@ -60,7 +60,7 @@ class WorkoutRecord(db.Model):
     workout_type = db.Column(db.String(100), nullable=False)
     exercise_name = db.Column(db.String(150), nullable=False)
     reps_data = db.Column(db.String(100), nullable=False)
-    date = db.Column(db.String(50), nullable=False) # Формат YYYY-MM-DD или с временем
+    date = db.Column(db.String(50), nullable=False)
 
 class StrategyBoard(db.Model):
     __tablename__ = "strategy_board"
@@ -95,7 +95,6 @@ with app.app_context():
     db.create_all()
 
 print("✅ База данных готова")
-print("Путь к базе:", DB_PATH)
 
 # ─────────────────────────── ВСПОМОГАТЕЛЬНОЕ ───────────────────────────
 
@@ -206,8 +205,6 @@ def api_day_details():
     log = BalanceLog.query.filter_by(day=day).first()
     goals = DailyGoal.query.filter_by(day=day).all()
     
-    # Тренировки сохраняются со строкой даты (ищем те, у которых дата начинается с дня YYYY-MM-DD или содержит его в дд.мм.гггг)
-    # Преобразуем YYYY-MM-DD в DD.MM.YYYY для сопоставления с полем date в WorkoutRecord
     try:
         dt_obj = datetime.strptime(day, "%Y-%m-%d")
         d_ru_prefix = dt_obj.strftime("%d.%m.%Y")
@@ -473,9 +470,9 @@ def api_reset():
 @app.route("/export_cbt")
 def export_cbt():
     records = CbtRecord.query.order_by(CbtRecord.id.desc()).all()
-    text_data = "=== RECOVERY HUB: АРХИВ КПТ-РАЗБОРОВ (АНТИ-ТРЕВОГА) ===\n\n"
+    text_data = "=== RECOVERY HUB: АРХИВ КПТ-РАЗБОРОВ ===\n\n"
     for r in records:
-        text_data += f"📅 Дата: {r.date}\n🏷️ Категория: {r.category}\n🧠 Автоматическая мысль: {r.automatic_thought}\n💡 Рациональный ответ: {r.rational_response}\n" + "-" * 50 + "\n\n"
+        text_data += f"📅 Дата: {r.date}\n🏷️ Категория: {r.category}\n🧠 Мысль: {r.automatic_thought}\n💡 Ответ: {r.rational_response}\n" + "-" * 50 + "\n\n"
 
     return Response(
         text_data,
