@@ -9,6 +9,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 app = Flask(__name__)
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -40,10 +46,18 @@ db = SQLAlchemy(app)
 def require_auth(f):
     @wraps(f)
     def decorated(*args, **kwargs):
+<<<<<<< HEAD
         header = request.headers.get("Authorization", "")
         token = header.replace("Bearer ", "").strip()
         if not API_TOKEN or token != API_TOKEN:
             return jsonify({"ok": False, "error": "Unauthorized"}), 401
+=======
+        if API_TOKEN:
+            header = request.headers.get("Authorization", "")
+            token = header.replace("Bearer ", "").strip()
+            if token != API_TOKEN:
+                return jsonify({"ok": False, "error": "Unauthorized"}), 401
+>>>>>>> ba0a99268a9749016ff36d390f3fb91838d13765
         return f(*args, **kwargs)
     return decorated
 
@@ -128,7 +142,10 @@ def get_board():
     return board
 
 def parse_slip_note(note_str):
+<<<<<<< HEAD
     """Parse slip analysis JSON from note field, return dict or None."""
+=======
+>>>>>>> ba0a99268a9749016ff36d390f3fb91838d13765
     if not note_str:
         return None
     try:
@@ -293,7 +310,10 @@ def api_profile():
 @app.route("/api/slip", methods=["POST"])
 @require_auth
 def api_slip():
+<<<<<<< HEAD
     """Record a relapse: reset timer, mark today as slip, save analysis."""
+=======
+>>>>>>> ba0a99268a9749016ff36d390f3fb91838d13765
     data = request.get_json(silent=True) or {}
     trigger = (data.get("trigger") or "").strip()
     feelings = (data.get("feelings") or "").strip()
@@ -398,7 +418,10 @@ def api_balance():
     if mark is None:
         mark = DayMark(day=day, note="")
         db.session.add(mark)
+<<<<<<< HEAD
     # Don't overwrite a slip mark with balance data
+=======
+>>>>>>> ba0a99268a9749016ff36d390f3fb91838d13765
     if mark.status != "slip":
         mark.status = "win" if index >= 0 else "slip"
     db.session.commit()

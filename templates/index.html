@@ -187,9 +187,9 @@ body {
             <p class="text-sm text-gray-400 mb-6">Определи 3 ключевые задачи на сегодня. Никакого перегруза.</p>
             <form onsubmit="saveDailyGoals(event)" class="space-y-4">
                 <div class="space-y-3" id="goals-inputs-container">
-                    <div class="flex items-center gap-3"><span class="text-blue-400 font-bold text-sm">1.</span><input type="text" data-goal-input required placeholder="Первая и главная цель..." class="w-full px-4 py-3 bg-bmwDeep border border-bmwBorder rounded-xl text-white text-sm focus:outline-none focus:border-blue-500"></div>
-                    <div class="flex items-center gap-3"><span class="text-blue-400 font-bold text-sm">2.</span><input type="text" data-goal-input required placeholder="Вторая цель..." class="w-full px-4 py-3 bg-bmwDeep border border-bmwBorder rounded-xl text-white text-sm focus:outline-none focus:border-blue-500"></div>
-                    <div class="flex items-center gap-3"><span class="text-blue-400 font-bold text-sm">3.</span><input type="text" data-goal-input required placeholder="Третья цель..." class="w-full px-4 py-3 bg-bmwDeep border border-bmwBorder rounded-xl text-white text-sm focus:outline-none focus:border-blue-500"></div>
+                    <div class="flex items-center gap-3"><span class="text-blue-400 font-bold text-sm">1.</span><input type="text" data-goal-input placeholder="Первая и главная цель..." class="w-full px-4 py-3 bg-bmwDeep border border-bmwBorder rounded-xl text-white text-sm focus:outline-none focus:border-blue-500"></div>
+                    <div class="flex items-center gap-3"><span class="text-blue-400 font-bold text-sm">2.</span><input type="text" data-goal-input placeholder="Вторая цель..." class="w-full px-4 py-3 bg-bmwDeep border border-bmwBorder rounded-xl text-white text-sm focus:outline-none focus:border-blue-500"></div>
+                    <div class="flex items-center gap-3"><span class="text-blue-400 font-bold text-sm">3.</span><input type="text" data-goal-input placeholder="Третья цель..." class="w-full px-4 py-3 bg-bmwDeep border border-bmwBorder rounded-xl text-white text-sm focus:outline-none focus:border-blue-500"></div>
                 </div>
                 <button type="submit" class="w-full py-4 bmw-btn text-white font-bold rounded-xl text-sm">💾 Зафиксировать фокусы на день</button>
             </form>
@@ -330,7 +330,6 @@ body {
 </body>
 </html>
 <script>
-
 let STATE = {profile:null,marks:{},balance_logs:[],cbt_records:[],letters:[],workouts:[],daily_goals:[],board_content:'',storage:{persistent:false,dir:''}};
 let stagedWorkouts = [];
 let chartInstance = null;
