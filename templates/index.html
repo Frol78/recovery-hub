@@ -30,79 +30,51 @@ body {
         linear-gradient(to right, rgba(34, 34, 42, 0.15) 1px, transparent 1px),
         linear-gradient(to bottom, rgba(34, 34, 42, 0.15) 1px, transparent 1px);
     background-size: 40px 40px;
+    position: relative;
     overflow-x: hidden;
 }
 .spotlight-card { position: relative; overflow: hidden; background: #111115; border: 1px solid #22222A; transition: border-color 0.3s ease, box-shadow 0.3s ease; }
 .bmw-btn {
     background: linear-gradient(135deg, #1c1c24 0%, #0d0d12 100%);
     border: 1px solid #2e2e3a;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
     transition: all 0.3s ease;
 }
-.bmw-btn:hover { border-color: #3b82f6; box-shadow: 0 6px 25px rgba(59,130,246,0.25); transform: translateY(-1px); }
+.bmw-btn:hover { border-color: #3b82f6; box-shadow: 0 6px 25px rgba(59, 130, 246, 0.25); transform: translateY(-1px); }
 .bmw-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
 @keyframes pulse-red {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.7), 0 4px 20px rgba(239,68,68,0.5); }
-    50% { box-shadow: 0 0 0 15px rgba(239,68,68,0), 0 8px 30px rgba(239,68,68,0.8); }
+    0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7), 0 4px 20px rgba(239, 68, 68, 0.5); }
+    50% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0), 0 8px 30px rgba(239, 68, 68, 0.8); }
 }
 .sos-pulse { animation: pulse-red 2s infinite; }
-.bmw-border-glow { border: 1px solid #22222A; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+.bmw-border-glow { border: 1px solid #22222A; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); }
 .bmw-checkbox {
     appearance: none; background-color: #050505; border: 1px solid #22222A;
     width: 20px; height: 20px; border-radius: 6px; display: inline-grid; place-content: center;
     cursor: pointer; transition: all 0.2s ease; flex-shrink: 0;
 }
-.bmw-checkbox:checked { background-color: #3B82F6; border-color: #3B82F6; box-shadow: 0 0 10px rgba(59,130,246,0.5); }
+.bmw-checkbox:checked { background-color: #3B82F6; border-color: #3B82F6; box-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
 .bmw-checkbox:checked::before { content: "✓"; font-size: 12px; font-weight: bold; color: white; }
-.bmw-checkbox-red:checked { background-color: #EF4444; border-color: #EF4444; box-shadow: 0 0 10px rgba(239,68,68,0.5); }
+.bmw-checkbox-red:checked { background-color: #EF4444; border-color: #EF4444; box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: #0A0A0C; }
 ::-webkit-scrollbar-thumb { background: #22222A; border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: #3B82F6; }
-
-/* Timer card */
 .eura-timer-card {
     position: relative; width: 100%; max-width: 480px; padding: 24px 18px 20px;
-    border: 1px solid rgba(59,130,246,0.45); border-radius: 22px;
-    background: radial-gradient(circle at 50% 0%, rgba(59,130,246,0.18), transparent 55%), linear-gradient(145deg, #111115, #07070a);
-    box-shadow: 0 0 35px rgba(37,99,235,0.15), inset 0 0 25px rgba(59,130,246,0.04);
+    border: 1px solid rgba(59, 130, 246, 0.45); border-radius: 22px;
+    background: radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.18), transparent 55%), linear-gradient(145deg, #111115, #07070a);
+    box-shadow: 0 0 35px rgba(37, 99, 235, 0.15), inset 0 0 25px rgba(59, 130, 246, 0.04);
     overflow: hidden;
 }
 .eura-timer-label { position: relative; z-index: 1; margin-bottom: 18px; color: #93c5fd; font-size: 10px; font-weight: 800; letter-spacing: 3px; text-align: center; text-transform: uppercase; }
 .eura-timer-main { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; }
 .eura-time-group { display: flex; flex-direction: column; align-items: center; min-width: 68px; }
-.eura-number { color: #eaf3ff; font-family: "Courier New", monospace; font-size: clamp(27px, 5vw, 43px); font-weight: 900; letter-spacing: 3px; line-height: 1; text-shadow: 0 0 4px #bfdbfe, 0 0 12px rgba(59,130,246,0.95); }
+.eura-number { color: #eaf3ff; font-family: "Courier New", monospace; font-size: clamp(27px, 5vw, 43px); font-weight: 900; letter-spacing: 3px; line-height: 1; text-shadow: 0 0 4px #bfdbfe, 0 0 12px rgba(59, 130, 246, 0.95); }
 .eura-unit { margin-top: 10px; color: #64748b; font-size: 9px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; }
-.eura-separator { align-self: flex-start; margin-top: 4px; color: #3b82f6; font-family: "Courier New", monospace; font-size: 30px; font-weight: 900; text-shadow: 0 0 14px rgba(59,130,246,0.9); }
-.eura-timer-line { position: relative; z-index: 1; height: 1px; margin: 20px 10px 14px; background: linear-gradient(90deg, transparent, rgba(59,130,246,0.7), transparent); }
+.eura-separator { align-self: flex-start; margin-top: 4px; color: #3b82f6; font-family: "Courier New", monospace; font-size: 30px; font-weight: 900; text-shadow: 0 0 14px rgba(59, 130, 246, 0.9); }
+.eura-timer-line { position: relative; z-index: 1; height: 1px; margin: 20px 10px 14px; background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.7), transparent); }
 .eura-timer-status { position: relative; z-index: 1; color: #64748b; font-size: 10px; letter-spacing: 1px; text-align: center; text-transform: uppercase; }
-
-/* Slip button — friction design: thin, muted, almost invisible */
-.slip-btn {
-    display: block;
-    width: 100%;
-    max-width: 480px;
-    margin: 8px auto 0;
-    padding: 6px 12px;
-    background: transparent;
-    border: 1px solid rgba(127, 29, 29, 0.25);
-    border-radius: 8px;
-    color: rgba(156, 63, 63, 0.45);
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all 0.4s ease;
-    text-align: center;
-}
-.slip-btn:hover {
-    border-color: rgba(239, 68, 68, 0.4);
-    color: rgba(239, 68, 68, 0.6);
-    background: rgba(127, 29, 29, 0.08);
-}
-
-/* Toast */
 #toast-box { position: fixed; top: 18px; left: 50%; transform: translateX(-50%); z-index: 100; display: flex; flex-direction: column; gap: 10px; width: min(92vw, 460px); }
 @keyframes toast-in { from { opacity: 0; transform: translateY(-14px); } to { opacity: 1; transform: translateY(0); } }
 .toast { animation: toast-in .22s ease-out; }
@@ -110,8 +82,7 @@ body {
 </head>
 <body class="text-gray-100 min-h-screen py-8 sm:py-16 px-4 flex items-center justify-center">
 <div id="toast-box"></div>
-
-<!-- 🚨 SOS MODAL -->
+<!-- 🚨 МОДАЛКА SOS -->
 <div id="sos-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
     <div class="spotlight-card bg-bmwCard max-w-lg w-full p-8 rounded-3xl border border-red-500/50 shadow-2xl text-center relative">
         <button onclick="closeSosModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl font-bold w-10 h-10 rounded-xl bg-bmwDeep border border-bmwBorder flex items-center justify-center">✕</button>
@@ -125,40 +96,7 @@ body {
         </div>
     </div>
 </div>
-
-<!-- 🔴 SLIP ANALYSIS MODAL -->
-<div id="slip-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-    <div class="spotlight-card bg-bmwCard max-w-lg w-full p-8 rounded-3xl border border-red-900/60 shadow-2xl relative">
-        <button onclick="closeSlipModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl font-bold w-10 h-10 rounded-xl bg-bmwDeep border border-bmwBorder flex items-center justify-center">✕</button>
-        <div class="flex items-center gap-4 mb-6">
-            <div class="w-14 h-14 rounded-2xl bg-red-950/40 border border-red-800/40 flex items-center justify-center shrink-0"><span class="text-2xl">🔴</span></div>
-            <div>
-                <h3 class="text-xl font-bold text-white">Анализ срыва</h3>
-                <p class="text-xs text-gray-400 mt-1">Счётчик обнулится. Зафиксируй честно — это поможет в следующий раз.</p>
-            </div>
-        </div>
-        <form onsubmit="submitSlip(event)" class="space-y-5">
-            <div>
-                <label class="block text-xs font-bold text-red-400 uppercase tracking-wider mb-2">Триггер / Что произошло?</label>
-                <textarea id="slip-trigger" rows="2" required placeholder="Скука, усталость, стресс, конкретная ситуация..." class="w-full px-4 py-3 bg-bmwDeep border border-bmwBorder rounded-xl text-white text-sm placeholder-gray-600 focus:outline-none focus:border-red-500 resize-none"></textarea>
-            </div>
-            <div>
-                <label class="block text-xs font-bold text-orange-400 uppercase tracking-wider mb-2">Что почувствовал до и после?</label>
-                <textarea id="slip-feelings" rows="2" required placeholder="До: тяга, пустота... После: разочарование, кайфа нет..." class="w-full px-4 py-3 bg-bmwDeep border border-bmwBorder rounded-xl text-white text-sm placeholder-gray-600 focus:outline-none focus:border-orange-500 resize-none"></textarea>
-            </div>
-            <div>
-                <label class="block text-xs font-bold text-blue-400 uppercase tracking-wider mb-2">Как перехватить в следующий раз?</label>
-                <textarea id="slip-prevention" rows="2" required placeholder="Конкретный план: выйти на улицу, 20 отжиманий, позвонить другу..." class="w-full px-4 py-3 bg-bmwDeep border border-bmwBorder rounded-xl text-white text-sm placeholder-gray-600 focus:outline-none focus:border-blue-500 resize-none"></textarea>
-            </div>
-            <div class="pt-2 grid grid-cols-2 gap-3">
-                <button type="button" onclick="closeSlipModal()" class="py-4 bg-bmwDeep hover:bg-bmwBorder text-gray-300 font-bold rounded-xl text-sm border border-bmwBorder">Отмена</button>
-                <button type="submit" class="py-4 bg-gradient-to-r from-red-700 to-red-800 hover:from-red-600 hover:to-red-700 text-white font-bold rounded-xl text-sm">Зафиксировать и обнулить</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- 📅 DAY MODAL -->
+<!-- 📅 МОДАЛКА ДНЯ -->
 <div id="day-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
     <div class="spotlight-card bg-bmwCard max-w-lg w-full p-8 rounded-3xl border border-bmwBorder shadow-2xl relative">
         <button onclick="closeDayModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl font-bold w-10 h-10 rounded-xl bg-bmwDeep border border-bmwBorder flex items-center justify-center">✕</button>
@@ -166,81 +104,64 @@ body {
             <div class="w-12 h-12 rounded-2xl bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-400 text-xl font-bold">📅</div>
             <div>
                 <h3 id="modal-day-title" class="text-xl font-bold text-white">Дата</h3>
-                <p id="modal-day-status" class="text-xs font-bold text-gray-400 uppercase tracking-wider">Загрузка...</p>
+                <p id="modal-day-status" class="text-xs font-bold text-gray-400 uppercase tracking-wider">Статус: Загрузка...</p>
             </div>
         </div>
-        <div class="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
-            <!-- Slip analysis block — shown only for slip days -->
-            <div id="modal-slip-wrapper" class="hidden bg-red-950/20 p-5 rounded-2xl border border-red-800/40">
-                <h4 class="text-xs font-bold text-red-400 uppercase tracking-widest mb-3">🔴 Анализ срыва</h4>
-                <div id="modal-slip-analysis" class="space-y-3 text-sm"></div>
-            </div>
+        <div class="space-y-6 max-h-[60vh] overflow-y-auto pr-2">
             <div class="bg-bmwDeep p-5 rounded-2xl border border-bmwBorder">
                 <h4 class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-3">🎯 Фокусы и цели за день</h4>
                 <div id="modal-goals-list" class="space-y-2 text-sm text-gray-300">Пусто</div>
             </div>
             <div class="bg-bmwDeep p-5 rounded-2xl border border-bmwBorder">
                 <h4 class="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-3">⚖️ Телеметрия и баланс</h4>
-                <div id="modal-balance-view" class="space-y-2 text-sm text-gray-300">Нет данных</div>
+                <div id="modal-balance-view" class="space-y-2 text-sm text-gray-300">Нет данных о балансе</div>
             </div>
             <div id="modal-workouts-wrapper" class="bg-bmwDeep p-5 rounded-2xl border border-bmwBorder hidden">
                 <h4 class="text-xs font-bold text-amber-400 uppercase tracking-widest mb-3">💪 Тренировки за этот день</h4>
                 <div id="modal-workouts-list" class="space-y-2 text-sm text-gray-300"></div>
             </div>
         </div>
-        <div class="mt-6 pt-4 border-t border-bmwBorder flex justify-between items-center">
-            <button onclick="toggleDayStatusModal()" class="px-5 py-3 bg-bmwDeep hover:bg-bmwBorder text-blue-400 font-bold rounded-xl text-xs border border-blue-500/40">🔄 Изменить статус</button>
+        <div class="mt-8 pt-4 border-t border-bmwBorder flex justify-between items-center">
+            <button onclick="toggleDayStatusModal()" id="modal-toggle-status-btn" class="px-5 py-3 bg-bmwDeep hover:bg-bmwBorder text-blue-400 font-bold rounded-xl text-xs border border-blue-500/40">🔄 Изменить статус дня</button>
             <button onclick="closeDayModal()" class="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-xs">Закрыть</button>
         </div>
     </div>
 </div>
-
-<!-- MAIN CONTAINER -->
 <div class="max-w-3xl w-full spotlight-card bg-bmwCard/90 backdrop-blur-xl p-8 sm:p-14 rounded-3xl shadow-[0_30px_90px_rgba(0,0,0,0.95)] border border-bmwBorder relative overflow-hidden">
     <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-blue-500 to-transparent shadow-[0_0_20px_#3B82F6]"></div>
-
-    <!-- Header -->
     <div class="mb-8 pb-6 border-b border-bmwBorder flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div class="flex items-center gap-4">
             <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600/20 to-bmwDeep border border-blue-500/40 flex items-center justify-center shadow-[0_0_25px_rgba(59,130,246,0.25)] shrink-0">
-                <svg class="w-7 h-7 text-blue-400 animate-pulse" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                <svg class="w-7 h-7 text-blue-400 animate-pulse" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
             </div>
-            <h1 class="text-4xl sm:text-5xl font-semibold text-white tracking-tight">⚡ New You</h1>
+            <div><h1 class="text-4xl sm:text-5xl font-semibold text-white tracking-tight">⚡ New You</h1></div>
         </div>
         <div class="text-right shrink-0">
             <span class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Хранилище</span>
             <span id="storage-badge" class="text-xs font-bold text-gray-400">проверка...</span>
         </div>
     </div>
-
     <div id="storage-warning" class="hidden mb-8 p-6 bg-red-950/30 border border-red-500/40 rounded-2xl">
         <h3 class="text-sm font-bold text-red-400 mb-2">⚠️ Данные не защищены от пересборки</h3>
         <p class="text-xs text-gray-300 leading-relaxed">База лежит внутри контейнера (<span class="font-mono text-red-300" id="storage-warning-path">—</span>). Подключи постоянный диск <span class="font-mono">/data</span>.</p>
     </div>
-
-    <!-- Setup -->
     <div id="setup-section" class="hidden spotlight-card bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow mb-8">
         <h2 class="text-2xl font-bold text-white mb-3">Инициализация профиля</h2>
         <form id="profile-form" onsubmit="createProfile(event)" class="space-y-6">
             <div>
-                <label for="input-name" class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-3">Позывной / Имя:</label>
-                <input type="text" id="input-name" name="name" required placeholder="Введи свой позывной" class="w-full px-5 py-4 bg-bmwDeep border border-bmwBorder rounded-xl text-white focus:outline-none focus:border-blue-500">
+                <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-3">Позывной / Имя:</label>
+                <input type="text" id="input-name" required placeholder="Введи свой позывной" class="w-full px-5 py-4 bg-bmwDeep border border-bmwBorder rounded-xl text-white focus:outline-none focus:border-blue-500">
             </div>
             <div>
-                <label for="input-days" class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-3">Дней без срывов (Старт):</label>
-                <input type="number" id="input-days" name="days" min="0" value="0" required class="w-full px-5 py-4 bg-bmwDeep border border-bmwBorder rounded-xl text-white focus:outline-none focus:border-blue-500">
+                <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-3">Дней без срывов (Старт):</label>
+                <input type="number" id="input-days" min="0" value="0" required class="w-full px-5 py-4 bg-bmwDeep border border-bmwBorder rounded-xl text-white focus:outline-none focus:border-blue-500">
             </div>
             <button type="submit" class="w-full py-5 bmw-btn text-white font-bold rounded-xl text-base">Запустить систему 🚀</button>
         </form>
     </div>
-
     <div id="loading-section" class="text-center py-16"><p class="text-gray-400 text-sm font-mono">Инициализация...</p></div>
-
-    <!-- Dashboard -->
     <div id="dashboard-section" class="hidden space-y-8">
-
-        <!-- Timer + slip button -->
-        <div class="flex flex-col items-center">
+        <div class="flex justify-center">
             <div class="eura-timer-card spotlight-card">
                 <div class="eura-timer-label">⏱️ Чистое время · <span id="profile-name-display" class="text-white">Оператор</span></div>
                 <div class="eura-timer-main">
@@ -255,22 +176,15 @@ body {
                 <div class="eura-timer-line"></div>
                 <div id="status-name" class="eura-timer-status">Стабильность</div>
             </div>
-            <!-- Friction slip button — intentionally thin and muted -->
-            <button class="slip-btn" onclick="openSlipModal()">был срыв / обнулить счётчик</button>
         </div>
-
         <div class="hidden"><span id="profile-days-display">0</span><span id="status-desc"></span></div>
-
-        <!-- Quote -->
         <div class="spotlight-card bg-bmwDark p-8 rounded-2xl border border-dashed border-bmwBorder text-center bmw-border-glow">
             <p id="quote-box" class="italic text-gray-200 text-base sm:text-lg min-h-[60px] flex items-center justify-center">«Загружаем...»</p>
             <button onclick="changeQuote()" class="mt-6 px-6 py-3 text-sm font-bold text-white bmw-btn rounded-xl">⚡ Сменить настрой</button>
         </div>
-
-        <!-- Goals -->
         <div class="spotlight-card bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow">
             <h2 class="text-xl font-bold text-white mb-2">🎯 3 главных фокуса на день</h2>
-            <p class="text-sm text-gray-400 mb-6">Определи 3 ключевые задачи на сегодня.</p>
+            <p class="text-sm text-gray-400 mb-6">Определи 3 ключевые задачи на сегодня. Никакого перегруза.</p>
             <form onsubmit="saveDailyGoals(event)" class="space-y-4">
                 <div class="space-y-3" id="goals-inputs-container">
                     <div class="flex items-center gap-3"><span class="text-blue-400 font-bold text-sm">1.</span><input type="text" data-goal-input placeholder="Первая и главная цель..." class="w-full px-4 py-3 bg-bmwDeep border border-bmwBorder rounded-xl text-white text-sm focus:outline-none focus:border-blue-500"></div>
@@ -284,22 +198,16 @@ body {
                 <div id="goals-list-view" class="space-y-3"></div>
             </div>
         </div>
-
-        <!-- SOS -->
         <div class="spotlight-card bg-bmwDark p-8 sm:p-10 rounded-2xl border-2 border-red-500/50">
             <h2 class="text-lg font-bold text-red-400 mb-3 flex items-center gap-3"><span class="text-2xl">🚨</span> Зона экстренного контроля</h2>
             <p class="text-sm text-gray-200 mb-6">Штормит или тяга? Аварийный протокол к твоим услугам.</p>
             <button onclick="triggerSOS()" class="w-full py-5 bg-gradient-to-r from-red-600 to-red-700 text-white font-bold rounded-xl sos-pulse text-base">🚨 АВАРИЙНЫЙ ВЫХОД (SOS)</button>
             <p class="text-sm text-gray-300 text-center mt-5">Отбитых атак: <strong id="sos-count" class="text-red-400 font-bold text-lg">0</strong></p>
         </div>
-
-        <!-- Add day -->
         <div class="spotlight-card bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow">
             <h2 class="text-xs font-bold text-gray-300 uppercase tracking-widest mb-5">Метрика прогресса</h2>
             <button onclick="addDay()" class="w-full py-5 bmw-btn text-white font-bold rounded-xl text-base">⚡ Засчитать +1 день победы</button>
         </div>
-
-        <!-- Calendar -->
         <div class="spotlight-card bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                 <div><h2 class="text-xl font-bold text-white mb-2">🗓️ Карта чистоты</h2><p class="text-sm text-gray-400">Клик по дню — просмотр дневника, фокусов и тренировок.</p></div>
@@ -319,8 +227,6 @@ body {
             <div class="grid grid-cols-7 gap-2 mb-2" id="cal-weekdays"></div>
             <div id="cal-grid" class="grid grid-cols-7 gap-2"></div>
         </div>
-
-        <!-- Balance -->
         <div class="spotlight-card bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow space-y-8">
             <div>
                 <h2 class="text-xl font-bold text-white mb-2">⚖️ Ежедневный баланс и телеметрия</h2>
@@ -328,18 +234,18 @@ body {
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <div class="bg-bmwDeep p-6 rounded-xl border border-blue-500/30 space-y-3">
                         <h3 class="text-xs font-bold text-blue-400 uppercase mb-4">🟢 Бустеры и ресурс</h3>
-                        <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-booster="sleep" class="bmw-checkbox"> Здоровый сон</label>
+                        <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-booster="sleep" class="bmw-checkbox"> Здоровый сон (режим в норме)</label>
                         <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-booster="coding" class="bmw-checkbox"> Продуктивный кодинг</label>
                         <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-booster="sport" class="bmw-checkbox"> Спорт / Тело / Йога</label>
                         <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-booster="nocofer" class="bmw-checkbox"> Чистый день без кофе</label>
                     </div>
                     <div class="bg-bmwDeep p-6 rounded-xl border border-red-500/30 space-y-3">
                         <h3 class="text-xs font-bold text-red-400 uppercase mb-4">🔴 Ловушки и Триггеры</h3>
-                        <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-trap="coffee" class="bmw-checkbox bmw-checkbox-red"> Кофеин-триггер</label>
-                        <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-trap="bad_sleep" class="bmw-checkbox bmw-checkbox-red"> Сбой сна</label>
-                        <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-trap="back_pain" class="bmw-checkbox bmw-checkbox-red"> Боль в спине</label>
+                        <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-trap="coffee" class="bmw-checkbox bmw-checkbox-red"> Кофеин-триггер (тревога)</label>
+                        <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-trap="bad_sleep" class="bmw-checkbox bmw-checkbox-red"> Сбой сна (долгий/поздний)</label>
+                        <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-trap="back_pain" class="bmw-checkbox bmw-checkbox-red"> Боль в спине / Остеохондроз</label>
                         <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-trap="pity" class="bmw-checkbox bmw-checkbox-red"> Жалость к себе</label>
-                        <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-trap="procr" class="bmw-checkbox bmw-checkbox-red"> Прокрастинация</label>
+                        <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-trap="procr" class="bmw-checkbox bmw-checkbox-red"> Тупняк за ноутом / Прокрастинация</label>
                     </div>
                 </div>
                 <button onclick="saveDailyBalance()" class="w-full py-5 bmw-btn text-white font-bold rounded-xl">🛡️ Зафиксировать баланс дня</button>
@@ -349,8 +255,6 @@ body {
                 <div class="bg-bmwDeep p-4 rounded-xl border border-bmwBorder relative h-64"><canvas id="stabilityChart"></canvas></div>
             </div>
         </div>
-
-        <!-- Letters -->
         <div class="spotlight-card bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow">
             <h2 class="text-xl font-bold text-white mb-2">✉️ Письма себе</h2>
             <form onsubmit="addLetter(event)" class="space-y-5">
@@ -360,31 +264,25 @@ body {
             </form>
             <div id="letters-container" class="mt-10 hidden"><div id="letters-list" class="space-y-4"></div></div>
         </div>
-
-        <!-- Strategy board -->
         <div class="spotlight-card bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow">
             <h2 class="text-xl font-bold text-white mb-2">📋 Доска стратегии и заметок (Спорт)</h2>
             <p class="text-sm text-gray-400 mb-6">Свободное поле для твоих правил, акцентов по спине и планов.</p>
             <div class="space-y-4">
-                <textarea id="strategy-board-textarea" rows="6" placeholder="Пиши сюда любые правила, акценты, мысли..." class="w-full px-5 py-4 bg-bmwDeep border border-bmwBorder rounded-xl text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 resize-y"></textarea>
+                <textarea id="strategy-board-textarea" rows="6" placeholder="Пиши сюда любые правила, акценты, мысли..." class="w-full px-5 py-4 bg-bmwDeep border border-bmwBorder rounded-xl text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-all resize-y"></textarea>
                 <button type="button" onclick="saveBoard()" class="w-full py-4 bmw-btn text-white font-bold rounded-xl text-sm">💾 Сохранить доску</button>
             </div>
         </div>
-
-        <!-- Workouts -->
         <div class="spotlight-card bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow">
             <h2 class="text-xl font-bold text-white mb-2">💪 Дневник тренировок и тела</h2>
-            <p class="text-sm text-gray-400 mb-8">Формат: <span class="text-blue-400 font-mono">Отжимания : 4 по 15</span></p>
+            <p class="text-sm text-gray-400 mb-8">Формат ввода: <span class="text-blue-400 font-mono">Отжимания : 4 по 15</span></p>
             <div class="space-y-5">
-                <label for="workout-type" class="sr-only">Тип тренировки</label>
-                <select id="workout-type" name="workout-type" class="w-full px-5 py-4 bg-bmwDeep border border-bmwBorder rounded-xl text-white">
+                <select id="workout-type" class="w-full px-5 py-4 bg-bmwDeep border border-bmwBorder rounded-xl text-white">
                     <option value="🏋️ Силовая">🏋️ Силовая</option>
                     <option value="🧘 Йога / Растяжка">🧘 Йога / Растяжка</option>
                     <option value="🏃 Кардио / Прогулка">🏃 Кардио / Прогулка</option>
                     <option value="🛡️ Реабилитация спины">🛡️ Реабилитация спины</option>
                 </select>
-                <label for="workout-line" class="sr-only">Упражнение</label>
-                <input type="text" id="workout-line" name="workout-line" placeholder="Напр. Отжимания : 4 по 15" class="w-full px-5 py-4 bg-bmwDeep border border-bmwBorder rounded-xl text-white">
+                <input type="text" id="workout-line" placeholder="Напр. Отжимания : 4 по 15" class="w-full px-5 py-4 bg-bmwDeep border border-bmwBorder rounded-xl text-white">
                 <button type="button" onclick="stageWorkoutExercise()" class="w-full py-4 bg-bmwDeep hover:bg-bmwBorder text-blue-400 font-bold rounded-xl text-sm border border-blue-500/40">➕ Добавить в список сессии</button>
             </div>
             <div id="staged-exercises-container" class="mt-6 hidden">
@@ -399,8 +297,6 @@ body {
                 <div id="workouts-list" class="space-y-4 max-h-96 overflow-y-auto pr-2"></div>
             </div>
         </div>
-
-        <!-- CBT -->
         <div id="cbt-section-card" class="spotlight-card bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow">
             <h2 class="text-xl font-bold text-white mb-2">🧠 КПТ: Разбор мыслей</h2>
             <p class="text-sm text-gray-400 mb-6">Поймай автоматическую мысль, зафиксируй лог и дай рациональный отпор.</p>
@@ -412,7 +308,7 @@ body {
             </form>
             <div class="mt-8 pt-8 border-t border-bmwBorder">
                 <h3 class="text-base font-bold text-blue-400 mb-2">📥 Импорт заметок с улицы (Google Docs)</h3>
-                <p class="text-xs text-gray-400 mb-4">Скопируй заметки с телефона — сохранятся в КПТ-архив с категорией «Улица».</p>
+                <p class="text-xs text-gray-400 mb-4">Скопируй свои заметки с телефона, вставь сюда — и они автоматически сохранятся в КПТ-архив с категорией «Улица»!</p>
                 <form onsubmit="importStreetThoughts(event)" class="space-y-4">
                     <textarea id="street-thoughts-input" rows="5" required placeholder="Вставь сюда текст заметок с телефона..." class="w-full px-5 py-4 bg-bmwDeep border border-bmwBorder rounded-xl text-white resize-y text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500"></textarea>
                     <button type="submit" class="w-full py-4 bg-bmwDeep hover:bg-bmwBorder text-blue-400 font-bold rounded-xl text-sm border border-blue-500/40">🚀 Загрузить заметки в КПТ-архив</button>
@@ -426,18 +322,14 @@ body {
                 <div id="cbt-list" class="space-y-4"></div>
             </div>
         </div>
-
-        <!-- Reset -->
         <div class="text-center pt-6 border-t border-bmwBorder">
             <button onclick="resetCluster()" class="px-6 py-3 bg-bmwDeep text-gray-400 hover:text-red-400 border border-bmwBorder rounded-xl text-sm font-semibold">⚠️ Сбросить кластер</button>
         </div>
-
     </div>
 </div>
 </body>
 </html>
 <script>
-
 let STATE = {profile:null,marks:{},balance_logs:[],cbt_records:[],letters:[],workouts:[],daily_goals:[],board_content:'',storage:{persistent:false,dir:''}};
 let stagedWorkouts = [];
 let chartInstance = null;
@@ -483,7 +375,7 @@ function renderBoard(){const ta=document.getElementById('strategy-board-textarea
 function renderCbt(){const container=document.getElementById('cbt-records-container');const list=document.getElementById('cbt-list');const count=document.getElementById('cbt-count');if(!STATE.cbt_records.length){container.classList.add('hidden');return;}container.classList.remove('hidden');count.innerText='('+STATE.cbt_records.length+')';list.innerHTML=STATE.cbt_records.map(r=>`<div class="bg-bmwDeep p-5 rounded-xl border-l-4 border-blue-500 border border-bmwBorder text-sm"><div class="flex justify-between items-center text-blue-400 mb-2 font-semibold"><span>${escapeHtml(r.category)}</span><span class="text-gray-400 text-xs">${escapeHtml(r.date)}</span></div><p class="text-red-400 mb-1"><strong>Мысль:</strong> ${escapeHtml(r.automatic_thought)}</p><p class="text-emerald-400"><strong>Ответ:</strong> ${escapeHtml(r.rational_response)}</p></div>`).join('');}
 function renderLetters(){const container=document.getElementById('letters-container');const list=document.getElementById('letters-list');if(!STATE.letters.length){container.classList.add('hidden');return;}container.classList.remove('hidden');list.innerHTML=STATE.letters.map(l=>`<div class="bg-bmwDeep p-5 rounded-xl border-l-4 border-blue-500 border border-bmwBorder text-sm"><div class="flex justify-between items-center text-blue-400 mb-2 font-semibold"><span>${escapeHtml(l.title)}</span><span class="text-gray-400 text-xs">${escapeHtml(l.date)}</span></div><p class="text-gray-200 whitespace-pre-wrap">${escapeHtml(l.content)}</p></div>`).join('');}
 function renderWorkouts(){const container=document.getElementById('workouts-container');const list=document.getElementById('workouts-list');const count=document.getElementById('workouts-count');const workouts=STATE.workouts||[];if(workouts.length===0){container.classList.add('hidden');return;}container.classList.remove('hidden');count.innerText='('+workouts.length+')';list.innerHTML=workouts.map(w=>`<div class="bg-bmwDeep p-5 rounded-xl border-l-4 border-blue-500 border border-bmwBorder text-sm flex justify-between items-center gap-3"><div><div class="text-blue-400 font-semibold mb-1">${escapeHtml(w.workout_type)} · <span class="text-white">${escapeHtml(w.exercise_name)}</span></div><div class="text-gray-300 text-xs">${escapeHtml(w.reps_data)} <span class="text-gray-500 ml-2">(${escapeHtml(w.date)})</span></div></div><button type="button" onclick="deleteWorkout(${w.id})" class="text-red-400 hover:text-red-300 font-bold px-3 py-1 bg-bmwCard rounded-lg border border-bmwBorder text-xs shrink-0">Удалить</button></div>`).join('');}
-function escapeHtml(value){return String(value==null?'':value).replace(/&/g,'&amp;').replace(/</g,'<').replace(/>/g,'>').replace(/"/g,'"').replace(/'/g,''');}
+function escapeHtml(value){return String(value==null?'':value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 function renderBalance(){const logs=STATE.balance_logs||[];const today=todayKey();const todayLog=logs.find(l=>l.day===today);const bSet=new Set(todayLog?(todayLog.boosters_detail||[]):[]);const tSet=new Set(todayLog?(todayLog.traps_detail||[]):[]);document.querySelectorAll('[data-booster]').forEach(box=>{box.checked=bSet.has(box.dataset.booster);});document.querySelectorAll('[data-trap]').forEach(box=>{box.checked=tSet.has(box.dataset.trap);});renderStabilityChart(logs);}
 function renderStabilityChart(logs){const canvas=document.getElementById('stabilityChart');if(!canvas)return;const ctx=canvas.getContext('2d');const chartData=logs.slice(-30);const labels=chartData.map(l=>new Date(l.day+'T00:00:00').toLocaleDateString('ru-RU',{day:'numeric',month:'short'}));const values=chartData.map(l=>l.index);if(chartInstance)chartInstance.destroy();const gradient=ctx.createLinearGradient(0,0,0,320);gradient.addColorStop(0,'rgba(59, 130, 246, 0.55)');gradient.addColorStop(1,'rgba(5, 5, 5, 0.0)');chartInstance=new Chart(ctx,{type:'line',data:{labels:labels,datasets:[{data:values,borderColor:'#3B82F6',borderWidth:3,backgroundColor:gradient,fill:true,tension:0.4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(34,34,42,0.3)'},ticks:{color:'#6B7280'}},y:{grid:{color:'rgba(34,34,42,0.3)'},ticks:{color:'#6B7280'}}}}});}
 const CAL_MONTHS=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];const CAL_WEEKDAYS=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
