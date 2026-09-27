@@ -1,8 +1,13 @@
 import os
+import json
 from datetime import datetime, timedelta
+from functools import wraps
 
 from flask import Flask, render_template, request, jsonify, Response
 from flask_sqlalchemy import SQLAlchemy
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
 
@@ -20,6 +25,9 @@ DB_PATH = os.path.join(DATA_DIR, "recovery.db")
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + DB_PATH
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-key-change-in-production")
+
+API_TOKEN = os.environ.get("API_TOKEN")
 
 try:
     app.json.ensure_ascii = False
@@ -27,6 +35,18 @@ except AttributeError:
     app.config["JSON_AS_ASCII"] = False
 
 db = SQLAlchemy(app)
+
+
+def require_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        header = request.headers.get("Authorization", "")
+        token = header.replace("Bearer ", "").strip()
+        if not API_TOKEN or token != API_TOKEN:
+            return jsonify({"ok": False, "error": "Unauthorized"}), 401
+        return f(*args, **kwargs)
+    return decorated
+
 
 class Profile(db.Model):
     __tablename__ = "profile"
@@ -107,6 +127,18 @@ def get_board():
         db.session.commit()
     return board
 
+def parse_slip_note(note_str):
+    """Parse slip analysis JSON from note field, return dict or None."""
+    if not note_str:
+        return None
+    try:
+        data = json.loads(note_str)
+        if isinstance(data, dict) and "trigger" in data:
+            return data
+    except (json.JSONDecodeError, TypeError):
+        pass
+    return None
+
 def state_payload():
     profile = get_profile()
     board = get_board()
@@ -116,6 +148,15 @@ def state_payload():
     letters = Letter.query.order_by(Letter.id.desc()).all()
     workouts = WorkoutRecord.query.order_by(WorkoutRecord.id.desc()).all()
     goals = DailyGoal.query.filter_by(day=today_str()).all()
+
+    marks_dict = {}
+    for m in marks:
+        slip_analysis = parse_slip_note(m.note)
+        marks_dict[m.day] = {
+            "status": m.status,
+            "note": m.note or "",
+            "slip_analysis": slip_analysis,
+        }
 
     return {
         "ok": True,
@@ -130,9 +171,7 @@ def state_payload():
             "start_time": profile.start_time,
         },
         "board_content": board.content if board else "",
-        "marks": {
-            m.day: {"status": m.status, "note": m.note or ""} for m in marks
-        },
+        "marks": marks_dict,
         "balance_logs": [
             {
                 "day": l.day,
@@ -188,16 +227,18 @@ def index():
     return render_template("index.html")
 
 @app.route("/api/state")
+@require_auth
 def api_state():
     return jsonify(state_payload())
 
 @app.route("/api/day-details", methods=["GET"])
+@require_auth
 def api_day_details():
     day = request.args.get("day", today_str())
     mark = DayMark.query.filter_by(day=day).first()
     log = BalanceLog.query.filter_by(day=day).first()
     goals = DailyGoal.query.filter_by(day=day).all()
-    
+
     try:
         dt_obj = datetime.strptime(day, "%Y-%m-%d")
         d_ru_prefix = dt_obj.strftime("%d.%m.%Y")
@@ -206,11 +247,16 @@ def api_day_details():
 
     workouts = WorkoutRecord.query.filter(WorkoutRecord.date.like(f"%{d_ru_prefix}%")).all()
 
+    slip_analysis = None
+    if mark and mark.note:
+        slip_analysis = parse_slip_note(mark.note)
+
     return jsonify({
         "ok": True,
         "day": day,
         "status": mark.status if mark else None,
         "note": mark.note if mark else "",
+        "slip_analysis": slip_analysis,
         "balance": {
             "index": log.index if log else 0,
             "boosters": [k for k in (log.boosters_detail or "").split(",") if k] if log else [],
@@ -221,6 +267,7 @@ def api_day_details():
     })
 
 @app.route("/api/profile", methods=["POST"])
+@require_auth
 def api_profile():
     data = request.get_json(silent=True) or {}
     name = (data.get("name") or "").strip()[:100] or "Боец"
@@ -230,7 +277,6 @@ def api_profile():
         days = 0
 
     start_dt = datetime.now() - timedelta(days=days)
-
     profile = get_profile()
     if profile:
         profile.name = name
@@ -238,21 +284,49 @@ def api_profile():
         profile.start_time = start_dt.isoformat()
     else:
         db.session.add(Profile(
-            name=name,
-            days=days,
-            slips_avoided=0,
+            name=name, days=days, slips_avoided=0,
             start_time=start_dt.isoformat(),
         ))
+    db.session.commit()
+    return jsonify(state_payload())
+
+@app.route("/api/slip", methods=["POST"])
+@require_auth
+def api_slip():
+    """Record a relapse: reset timer, mark today as slip, save analysis."""
+    data = request.get_json(silent=True) or {}
+    trigger = (data.get("trigger") or "").strip()
+    feelings = (data.get("feelings") or "").strip()
+    prevention = (data.get("prevention") or "").strip()
+
+    note = json.dumps({
+        "trigger": trigger,
+        "feelings": feelings,
+        "prevention": prevention,
+    }, ensure_ascii=False)
+
+    day = today_str()
+    mark = DayMark.query.filter_by(day=day).first()
+    if mark is None:
+        mark = DayMark(day=day, note="")
+        db.session.add(mark)
+    mark.status = "slip"
+    mark.note = note
+
+    profile = get_profile()
+    if profile:
+        profile.start_time = datetime.now().isoformat()
+        profile.days = 0
 
     db.session.commit()
     return jsonify(state_payload())
 
 @app.route("/api/day/add", methods=["POST"])
+@require_auth
 def api_day_add():
     profile = get_profile()
     if profile is None:
         return jsonify({"ok": False, "error": "Профиль ещё не создан"}), 400
-
     profile.days = max(0, (profile.days or 0) + 1)
     key = today_str()
     mark = DayMark.query.filter_by(day=key).first()
@@ -260,11 +334,11 @@ def api_day_add():
         mark = DayMark(day=key, note="")
         db.session.add(mark)
     mark.status = "win"
-
     db.session.commit()
     return jsonify(state_payload())
 
 @app.route("/api/sos", methods=["POST"])
+@require_auth
 def api_sos():
     profile = get_profile()
     if profile is not None:
@@ -273,6 +347,7 @@ def api_sos():
     return jsonify(state_payload())
 
 @app.route("/api/mark", methods=["POST"])
+@require_auth
 def api_mark():
     data = request.get_json(silent=True) or {}
     day = (data.get("day") or "").strip()
@@ -292,13 +367,13 @@ def api_mark():
     if mark is None:
         mark = DayMark(day=day, note="")
         db.session.add(mark)
-
     mark.status = status
     mark.note = note
     db.session.commit()
     return jsonify(state_payload())
 
 @app.route("/api/balance", methods=["POST"])
+@require_auth
 def api_balance():
     data = request.get_json(silent=True) or {}
     day = (data.get("day") or today_str()).strip()
@@ -323,31 +398,31 @@ def api_balance():
     if mark is None:
         mark = DayMark(day=day, note="")
         db.session.add(mark)
-    mark.status = "win" if index >= 0 else "slip"
-
+    # Don't overwrite a slip mark with balance data
+    if mark.status != "slip":
+        mark.status = "win" if index >= 0 else "slip"
     db.session.commit()
     return jsonify(state_payload())
 
 @app.route("/api/goals", methods=["POST"])
+@require_auth
 def api_goals_save():
     data = request.get_json(silent=True) or {}
     day = today_str()
     goals_list = data.get("goals", [])
-    
     DailyGoal.query.filter_by(day=day).delete()
-    
     for item in goals_list[:3]:
         text = str(item.get("text", "")).strip()[:255]
         if text:
             db.session.add(DailyGoal(
-                day=day,
-                text=text,
+                day=day, text=text,
                 completed=bool(item.get("completed", False))
             ))
     db.session.commit()
     return jsonify(state_payload())
 
 @app.route("/api/goal/toggle", methods=["POST"])
+@require_auth
 def api_goal_toggle():
     data = request.get_json(silent=True) or {}
     g_id = data.get("id")
@@ -359,24 +434,23 @@ def api_goal_toggle():
     return jsonify(state_payload())
 
 @app.route("/api/cbt", methods=["POST"])
+@require_auth
 def api_cbt():
     data = request.get_json(silent=True) or {}
     category = (data.get("category") or "").strip()[:100] or "Общее"
     thought = (data.get("automatic_thought") or "").strip()
     response = (data.get("rational_response") or "").strip()
-
     if thought and response:
         db.session.add(CbtRecord(
-            category=category,
-            automatic_thought=thought,
+            category=category, automatic_thought=thought,
             rational_response=response,
             date=datetime.now().strftime("%d.%m.%Y %H:%M"),
         ))
         db.session.commit()
-
     return jsonify(state_payload())
 
 @app.route("/api/cbt/import", methods=["POST"])
+@require_auth
 def api_cbt_import():
     data = request.get_json(silent=True) or {}
     text = (data.get("text") or "").strip()
@@ -394,40 +468,37 @@ def api_cbt_import():
     return jsonify(state_payload())
 
 @app.route("/api/letter", methods=["POST"])
+@require_auth
 def api_letter():
     data = request.get_json(silent=True) or {}
     title = (data.get("title") or "").strip()[:150]
     content = (data.get("content") or "").strip()
-
     if title and content:
         db.session.add(Letter(
-            title=title,
-            content=content,
+            title=title, content=content,
             date=datetime.now().strftime("%d.%m.%Y %H:%M"),
         ))
         db.session.commit()
-
     return jsonify(state_payload())
 
 @app.route("/api/workout", methods=["POST"])
+@require_auth
 def api_workout():
     data = request.get_json(silent=True) or {}
     w_type = (data.get("workout_type") or "").strip()[:100]
     ex_name = (data.get("exercise_name") or "").strip()[:150]
     reps = (data.get("reps_data") or "").strip()[:100]
-
     if w_type and ex_name and reps:
         db.session.add(WorkoutRecord(
-            workout_type=w_type,
-            exercise_name=ex_name,
+            workout_type=w_type, exercise_name=ex_name,
             reps_data=reps,
             date=datetime.now().strftime("%d.%m.%Y %H:%M"),
         ))
         db.session.commit()
-
     return jsonify(state_payload())
 
 @app.route("/api/workout/delete", methods=["POST"])
+@require_auth
 def api_workout_delete():
     data = request.get_json(silent=True) or {}
     w_id = data.get("id")
@@ -439,6 +510,7 @@ def api_workout_delete():
     return jsonify(state_payload())
 
 @app.route("/api/board", methods=["POST"])
+@require_auth
 def api_board():
     data = request.get_json(silent=True) or {}
     content = (data.get("content") or "").strip()
@@ -448,6 +520,7 @@ def api_board():
     return jsonify(state_payload())
 
 @app.route("/api/reset", methods=["POST"])
+@require_auth
 def api_reset():
     DayMark.query.delete()
     BalanceLog.query.delete()
@@ -461,12 +534,12 @@ def api_reset():
     return jsonify(state_payload())
 
 @app.route("/export_cbt")
+@require_auth
 def export_cbt():
     records = CbtRecord.query.order_by(CbtRecord.id.desc()).all()
     text_data = "=== RECOVERY HUB: АРХИВ КПТ-РАЗБОРОВ ===\n\n"
     for r in records:
         text_data += f"📅 Дата: {r.date}\n🏷️ Категория: {r.category}\n🧠 Мысль: {r.automatic_thought}\n💡 Ответ: {r.rational_response}\n" + "-" * 50 + "\n\n"
-
     return Response(
         text_data,
         mimetype="text/plain; charset=utf-8",
@@ -475,4 +548,4 @@ def export_cbt():
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=port, debug=False)
