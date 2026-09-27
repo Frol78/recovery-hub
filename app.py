@@ -43,7 +43,7 @@ db = SQLAlchemy(app)
 def require_auth(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        if API_TOKEN:  # Проверяем токен только если он реально задан в настройках Амверы
+        if API_TOKEN:
             header = request.headers.get("Authorization", "")
             token = header.replace("Bearer ", "").strip()
             if token != API_TOKEN:
@@ -534,7 +534,6 @@ def api_reset():
     db.session.commit()
     return jsonify(state_payload())
 
-@app.export_cbt if hasattr(app, "export_cbt") else None # placeholder
 @app.route("/export_cbt")
 @require_auth
 def export_cbt():
