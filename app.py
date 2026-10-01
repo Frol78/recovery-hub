@@ -28,8 +28,8 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-key-change-in-production")
 
 # Настройка логина и пароля (можно переопределить через переменные окружения Амвера)
-AUTH_USER = os.environ.get("AUTH_USER", "admin")
-AUTH_PASS = os.environ.get("AUTH_PASS", "secret123")
+AUTH_USER = os.environ.get("AUTH_USER", "Evgeniy")
+AUTH_PASS = os.environ.get("AUTH_PASS", "04_07_1993$")
 
 try:
     app.json.ensure_ascii = False
