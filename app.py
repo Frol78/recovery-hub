@@ -9,12 +9,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-try:
-    from dotenv import load_dotenv
-    load_dotenv()
-except ImportError:
-    pass
-
 app = Flask(__name__)
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -33,7 +27,9 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + DB_PATH
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-key-change-in-production")
 
-API_TOKEN = os.environ.get("API_TOKEN")
+# Настройка логина и пароля (можно переопределить через переменные окружения Амвера)
+AUTH_USER = os.environ.get("AUTH_USER", "admin")
+AUTH_PASS = os.environ.get("AUTH_PASS", "secret123")
 
 try:
     app.json.ensure_ascii = False
@@ -46,11 +42,13 @@ db = SQLAlchemy(app)
 def require_auth(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        if API_TOKEN:
-            header = request.headers.get("Authorization", "")
-            token = header.replace("Bearer ", "").strip()
-            if token != API_TOKEN:
-                return jsonify({"ok": False, "error": "Unauthorized"}), 401
+        auth = request.authorization
+        if not auth or auth.username != AUTH_USER or auth.password != AUTH_PASS:
+            return Response(
+                "Доступ ограничен. Требуется авторизация.",
+                401,
+                {"WWW-Authenticate": 'Basic realm="Recovery Hub Login Required"'}
+            )
         return f(*args, **kwargs)
     return decorated
 
@@ -135,7 +133,6 @@ def get_board():
     return board
 
 def parse_slip_note(note_str):
-    """Parse slip analysis JSON from note field, return dict or None."""
     if not note_str:
         return None
     try:
@@ -230,6 +227,7 @@ def state_payload():
     }
 
 @app.route("/")
+@require_auth
 def index():
     return render_template("index.html")
 
@@ -300,7 +298,6 @@ def api_profile():
 @app.route("/api/slip", methods=["POST"])
 @require_auth
 def api_slip():
-    """Record a relapse: reset timer, mark today as slip, save analysis."""
     data = request.get_json(silent=True) or {}
     trigger = (data.get("trigger") or "").strip()
     feelings = (data.get("feelings") or "").strip()
@@ -405,7 +402,6 @@ def api_balance():
     if mark is None:
         mark = DayMark(day=day, note="")
         db.session.add(mark)
-    # Don't overwrite a slip mark with balance data
     if mark.status != "slip":
         mark.status = "win" if index >= 0 else "slip"
     db.session.commit()
