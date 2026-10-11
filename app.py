@@ -1,5 +1,6 @@
 import os
 import json
+import math
 from datetime import datetime, timedelta
 from functools import wraps
 
@@ -64,6 +65,48 @@ TRAP_WEIGHTS = {
     "Боль в спине / Остеохондроз": -15,
     "Жалость к себе": -20,
     "Тупняк за ноутом / Прокрастинация": -10,
+}
+
+# ==========================================
+# ТЕКСТЫ ДЛЯ СИМУЛЯТОРА РАЗВИЛКИ
+# Правь формулировки здесь — фронт забирает их как есть.
+# ==========================================
+FORECAST_META = {
+    "horizon_default": 30,
+    "horizon_max": 180,
+    "series": {
+        "strength": {"label": "Путь силы", "desc": "Реальность, если ты выстоишь и не заплатишь зависимости"},
+        "slip": {"label": "Путь срыва", "desc": "Реальность, если ты сдашься прямо сейчас"},
+        "mirage": {"label": "Мираж зависимости", "desc": "То, что она тебе обещает в момент тяги"},
+    },
+    "slip_consequences": [
+        {"icon": "📉", "title": "Дофаминовая яма",
+         "text": "10 минут фантомного кайфа — и 3–5 дней серости. Ничего не радует: ни музыка, ни код, ни люди."},
+        {"icon": "⚡", "title": "Сосуды и потенция",
+         "text": "Хронический перегруз дофамином и сосудистый спазм бьют по эрекции. Это физиология, а не миф, и лечится она только воздержанием."},
+        {"icon": "🧠", "title": "Укрепление старой связи",
+         "text": "Каждый срыв протаптывает нейронную дорожку глубже. В следующий раз тянуть будет сильнее и быстрее."},
+        {"icon": "⏳", "title": "Обнуление серии",
+         "text": "Счётчик чистого времени уходит в ноль. Всё, что наработал днями и ночами, стирается за одну секунду."},
+        {"icon": "🪞", "title": "Удар по самооценке",
+         "text": "Стыд, торг, обесценивание себя. Ты снова тот, кто не держит слово даже самому себе."},
+        {"icon": "🎯", "title": "Откат от целей",
+         "text": "Девушка, целостность, сила духа — это не абстракция. Каждый срыв отодвигает всё это назад на дни и недели."},
+    ],
+    "strength_gains": [
+        {"icon": "🛡️", "title": "Связь слабеет",
+         "text": "Ты не заплатил зависимости. Дорожка сужается, а не расширяется — и в следующий раз тянуть будет тише."},
+        {"icon": "🔥", "title": "Энергия остаётся в тебе",
+         "text": "Тестостерон, дофаминовая чувствительность, ясность в голове — всё это остаётся в теле, а не сливается в унитаз."},
+        {"icon": "🎯", "title": "+1 день к цели",
+         "text": "Ты ближе к цели ровно на сутки. Сухие цифры, которые без пафоса складываются в новую жизнь."},
+        {"icon": "🧱", "title": "Тренировка характера",
+         "text": "Каждый пройденный шторм — это подход к штанге для воли. Ты становишься человеком, который держит слово."},
+        {"icon": "🌈", "title": "Возврат красок",
+         "text": "Реальность отдаёт обратно вкус: еда, музыка, работа, люди снова начинают цеплять по-настоящему."},
+        {"icon": "🪞", "title": "Самоуважение",
+         "text": "Утром ты смотришь в зеркало без омерзения. Это дороже любого фантомного кайфа."},
+    ],
 }
 
 
@@ -144,35 +187,78 @@ class DailyGoal(db.Model):
     text = db.Column(db.String(255), nullable=False)
     completed = db.Column(db.Boolean, default=False)
 
+# ---------- НОВОЕ: фундамент судьбы ----------
+class LifeGoal(db.Model):
+    """Глобальная карта: кто я, откуда иду, куда иду."""
+    __tablename__ = "life_goal"
+    id = db.Column(db.Integer, primary_key=True)
+    age = db.Column(db.Integer, default=33)
+    past_dependencies = db.Column(db.Text, default="[]")   # JSON-список пройденного
+    current_dependency = db.Column(db.String(150), default="")
+    dependency_gives = db.Column(db.Text, default="")      # что она даёт / от чего ухожу
+    goal_title = db.Column(db.String(200), default="")
+    goal_description = db.Column(db.Text, default="")
+    goal_days_target = db.Column(db.Integer, default=365)
+    started_at = db.Column(db.String(100), nullable=True)
+    updated_at = db.Column(db.String(100), nullable=True)
+
+class GoalStep(db.Model):
+    """Конкретные шаги, которые ты реально сделал в сторону цели."""
+    __tablename__ = "goal_step"
+    id = db.Column(db.Integer, primary_key=True)
+    text = db.Column(db.String(255), nullable=False)
+    weight = db.Column(db.Integer, default=1)
+    done = db.Column(db.Boolean, default=False)
+    date = db.Column(db.String(50), nullable=False)
+
+class UrgeLog(db.Model):
+    """Точка выбора: накрыла тяга — что выбрал."""
+    __tablename__ = "urge_log"
+    id = db.Column(db.Integer, primary_key=True)
+    date = db.Column(db.String(50), nullable=False)        # ISO timestamp
+    day = db.Column(db.String(10), nullable=False, index=True)
+    intensity = db.Column(db.Integer, default=5)           # 1..10
+    trigger = db.Column(db.String(255), default="")
+    note = db.Column(db.Text, default="")
+    choice = db.Column(db.String(15), default="pending")   # pending / strength / slip
+    resolved_at = db.Column(db.String(50), default="")
+    days_at_stake = db.Column(db.Integer, default=0)       # сколько дней было на кону
+
+
+def _ensure_column(table, column, ddl_type):
+    """Безопасно добавляет колонку в существующую таблицу. Ничего не удаляет."""
+    try:
+        with db.engine.connect() as conn:
+            conn.execute(db.text(f"ALTER TABLE {table} ADD COLUMN {column} {ddl_type}"))
+            conn.commit()
+    except Exception:
+        pass
+
+
 with app.app_context():
     db.create_all()
-    # Автоматическое добавление недостающих колонок для старых баз данных
-    try:
-        with db.engine.connect() as conn:
-            conn.execute(db.text("ALTER TABLE cbt_record ADD COLUMN bad_sleep BOOLEAN DEFAULT 0"))
-            conn.commit()
-    except Exception:
-        pass
-    try:
-        with db.engine.connect() as conn:
-            conn.execute(db.text("ALTER TABLE cbt_record ADD COLUMN back_pain BOOLEAN DEFAULT 0"))
-            conn.commit()
-    except Exception:
-        pass
-    try:
-        with db.engine.connect() as conn:
-            conn.execute(db.text("ALTER TABLE cbt_record ADD COLUMN isolation BOOLEAN DEFAULT 0"))
-            conn.commit()
-    except Exception:
-        pass
+    # Авто-миграция старых баз: дописываем недостающие колонки, строки не трогаем
+    _ensure_column("cbt_record", "bad_sleep", "BOOLEAN DEFAULT 0")
+    _ensure_column("cbt_record", "back_pain", "BOOLEAN DEFAULT 0")
+    _ensure_column("cbt_record", "isolation", "BOOLEAN DEFAULT 0")
 
 print("✅ База данных готова:", DB_PATH)
 
+
+# ==========================================
+# ХЕЛПЕРЫ
+# ==========================================
 def today_str():
     return datetime.now().strftime("%Y-%m-%d")
 
+
 def get_profile():
     return Profile.query.first()
+
+
+def get_life_goal():
+    return LifeGoal.query.first()
+
 
 def get_board():
     board = StrategyBoard.query.first()
@@ -181,6 +267,7 @@ def get_board():
         db.session.add(board)
         db.session.commit()
     return board
+
 
 def parse_slip_note(note_str):
     if not note_str:
@@ -193,434 +280,69 @@ def parse_slip_note(note_str):
         pass
     return None
 
-def state_payload():
-    profile = get_profile()
-    board = get_board()
-    marks = DayMark.query.all()
-    logs = BalanceLog.query.order_by(BalanceLog.day.asc()).all()
-    cbt = CbtRecord.query.order_by(CbtRecord.id.desc()).all()
-    letters = Letter.query.order_by(Letter.id.desc()).all()
-    workouts = WorkoutRecord.query.order_by(WorkoutRecord.id.desc()).all()
-    goals = DailyGoal.query.filter_by(day=today_str()).all()
 
-    marks_dict = {}
-    for m in marks:
-        slip_analysis = parse_slip_note(m.note)
-        marks_dict[m.day] = {
-            "status": m.status,
-            "note": m.note or "",
-            "slip_analysis": slip_analysis,
-        }
+def target_days():
+    goal = get_life_goal()
+    if goal and goal.goal_days_target:
+        return max(1, int(goal.goal_days_target))
+    return 365
 
-    return {
-        "ok": True,
-        "storage": {
-            "dir": DATA_DIR,
-            "persistent": os.path.abspath(DATA_DIR) != os.path.abspath(basedir),
-        },
-        "profile": None if profile is None else {
-            "name": profile.name,
-            "days": profile.days or 0,
-            "slips_avoided": profile.slips_avoided or 0,
-            "start_time": profile.start_time,
-        },
-        "board_content": board.content if board else "",
-        "marks": marks_dict,
-        "balance_logs": [
-            {
-                "day": l.day,
-                "index": l.index or 0,
-                "boosters": l.boosters or 0,
-                "traps": l.traps or 0,
-                "boosters_detail": [k for k in (l.boosters_detail or "").split(",") if k],
-                "traps_detail": [k for k in (l.traps_detail or "").split(",") if k],
-            }
-            for l in logs
-        ],
-        "cbt_records": [
-            {
-                "id": c.id,
-                "category": c.category,
-                "automatic_thought": c.automatic_thought,
-                "rational_response": c.rational_response,
-                "date": c.date,
-                "bad_sleep": getattr(c, 'bad_sleep', False),
-                "back_pain": getattr(c, 'back_pain', False),
-                "isolation": getattr(c, 'isolation', False),
-            }
-            for c in cbt
-        ],
-        "letters": [
-            {
-                "id": l.id,
-                "title": l.title,
-                "content": l.content,
-                "date": l.date,
-            }
-            for l in letters
-        ],
-        "workouts": [
-            {
-                "id": w.id,
-                "workout_type": w.workout_type,
-                "exercise_name": w.exercise_name,
-                "reps_data": w.reps_data,
-                "date": w.date,
-            }
-            for w in workouts
-        ],
-        "daily_goals": [
-            {
-                "id": g.id,
-                "text": g.text,
-                "completed": g.completed,
-            }
-            for g in goals
-        ],
-    }
 
-@app.route("/")
-@require_auth
-def index():
-    return render_template("index.html")
+def goal_days_in():
+    """Сколько дней идёт текущая глобальная цель."""
+    goal = get_life_goal()
+    started = None
+    if goal and goal.started_at:
+        try:
+            started = datetime.fromisoformat(goal.started_at)
+        except (ValueError, TypeError):
+            started = None
+    if started is None:
+        profile = get_profile()
+        if profile and profile.start_time:
+            try:
+                started = datetime.fromisoformat(profile.start_time)
+            except (ValueError, TypeError):
+                started = None
+    if started is None:
+        return 0
+    return max(0, (datetime.now() - started).days)
 
-@app.route("/api/state")
-@require_auth
-def api_state():
-    return jsonify(state_payload())
 
-@app.route("/api/day-details", methods=["GET"])
-@require_auth
-def api_day_details():
-    day = request.args.get("day", today_str())
-    mark = DayMark.query.filter_by(day=day).first()
-    log = BalanceLog.query.filter_by(day=day).first()
-    goals = DailyGoal.query.filter_by(day=day).all()
-
-    try:
-        dt_obj = datetime.strptime(day, "%Y-%m-%d")
-        d_ru_prefix = dt_obj.strftime("%d.%m.%Y")
-    except ValueError:
-        d_ru_prefix = day
-
-    workouts = WorkoutRecord.query.filter(WorkoutRecord.date.like(f"%{d_ru_prefix}%")).all()
-
-    slip_analysis = None
-    if mark and mark.note:
-        slip_analysis = parse_slip_note(mark.note)
-
-    return jsonify({
-        "ok": True,
-        "day": day,
-        "status": mark.status if mark else None,
-        "note": mark.note if mark else "",
-        "slip_analysis": slip_analysis,
-        "balance": {
-            "index": log.index if log else 0,
-            "boosters": [k for k in (log.boosters_detail or "").split(",") if k] if log else [],
-            "traps": [k for k in (log.traps_detail or "").split(",") if k] if log else [],
-        },
-        "goals": [{"id": g.id, "text": g.text, "completed": g.completed} for g in goals],
-        "workouts": [{"workout_type": w.workout_type, "exercise_name": w.exercise_name, "reps_data": w.reps_data} for w in workouts]
-    })
-
-@app.route("/api/profile", methods=["POST"])
-@require_auth
-def api_profile():
-    data = request.get_json(silent=True) or {}
-    name = (data.get("name") or "").strip()[:100] or "Боец"
-    try:
-        days = max(0, int(data.get("days") or 0))
-    except (TypeError, ValueError):
-        days = 0
-
-    start_dt = datetime.now() - timedelta(days=days)
-    profile = get_profile()
-    if profile:
-        profile.name = name
-        profile.days = days
-        profile.start_time = start_dt.isoformat()
-    else:
-        db.session.add(Profile(
-            name=name, days=days, slips_avoided=0,
-            start_time=start_dt.isoformat(),
-        ))
-    db.session.commit()
-    return jsonify(state_payload())
-
-@app.route("/api/slip", methods=["POST"])
-@require_auth
-def api_slip():
-    data = request.get_json(silent=True) or {}
-    trigger = (data.get("trigger") or "").strip()
-    feelings = (data.get("feelings") or "").strip()
-    prevention = (data.get("prevention") or "").strip()
-
-    note = json.dumps({
-        "trigger": trigger,
-        "feelings": feelings,
-        "prevention": prevention,
-    }, ensure_ascii=False)
-
+def apply_slip(note_text):
+    """Один общий путь срыва: помечаем день и обнуляем таймер."""
     day = today_str()
     mark = DayMark.query.filter_by(day=day).first()
     if mark is None:
         mark = DayMark(day=day, note="")
         db.session.add(mark)
     mark.status = "slip"
-    mark.note = note
+    mark.note = note_text
 
     profile = get_profile()
     if profile:
         profile.start_time = datetime.now().isoformat()
         profile.days = 0
+    return mark
 
-    db.session.commit()
-    return jsonify(state_payload())
 
-@app.route("/api/day/add", methods=["POST"])
-@require_auth
-def api_day_add():
-    profile = get_profile()
-    if profile is None:
-        return jsonify({"ok": False, "error": "Профиль ещё не создан"}), 400
-    profile.days = max(0, (profile.days or 0) + 1)
-    key = today_str()
-    mark = DayMark.query.filter_by(day=key).first()
-    if mark is None:
-        mark = DayMark(day=key, note="")
-        db.session.add(mark)
-    mark.status = "win"
-    db.session.commit()
-    return jsonify(state_payload())
+# ==========================================
+# ПРОГНОЗНЫЙ ДВИЖОК (ТРИ КРИВЫЕ)
+# ==========================================
+def _strength_value(t, target):
+    """Путь силы: плавный рост к 100 с насыщением."""
+    if target <= 0:
+        target = 365
+    return 100.0 * (1.0 - math.exp(-2.4 * t / float(target)))
 
-@app.route("/api/sos", methods=["POST"])
-@require_auth
-def api_sos():
-    profile = get_profile()
-    if profile is not None:
-        profile.slips_avoided = (profile.slips_avoided or 0) + 1
-        db.session.commit()
-    return jsonify(state_payload())
 
-@app.route("/api/mark", methods=["POST"])
-@require_auth
-def api_mark():
-    data = request.get_json(silent=True) or {}
-    day = (data.get("day") or "").strip()
-    status = (data.get("status") or "").strip() or None
-    note = (data.get("note") or "").strip()
-
-    if not day:
-        return jsonify({"ok": False, "error": "Не передана дата"}), 400
-
-    mark = DayMark.query.filter_by(day=day).first()
-    if status is None and not note:
-        if mark is not None:
-            db.session.delete(mark)
-            db.session.commit()
-        return jsonify(state_payload())
-
-    if mark is None:
-        mark = DayMark(day=day, note="")
-        db.session.add(mark)
-    mark.status = status
-    mark.note = note
-    db.session.commit()
-    return jsonify(state_payload())
-
-@app.route("/api/balance", methods=["POST"])
-@require_auth
-def api_balance():
-    data = request.get_json(silent=True) or {}
-    day = (data.get("day") or today_str()).strip()
-    booster_keys = [str(v)[:32] for v in (data.get("boosters") or []) if str(v).strip()]
-    trap_keys = [str(v)[:32] for v in (data.get("traps") or []) if str(v).strip()]
-
-    index = 0
-    for b in booster_keys:
-        index += BOOSTER_WEIGHTS.get(b, 15)
-    for t in trap_keys:
-        index += TRAP_WEIGHTS.get(t, -15)
-
-    boosters = len(booster_keys)
-    traps = len(trap_keys)
-
-    log = BalanceLog.query.filter_by(day=day).first()
-    if log is None:
-        log = BalanceLog(day=day)
-        db.session.add(log)
-    
-    log.boosters = boosters
-    log.traps = traps
-    log.index = index
-    log.boosters_detail = ",".join(booster_keys)[:255]
-    log.traps_detail = ",".join(trap_keys)[:255]
-
-    mark = DayMark.query.filter_by(day=day).first()
-    if mark is None:
-        mark = DayMark(day=day, note="")
-        db.session.add(mark)
-    if mark.status != "slip":
-        mark.status = "win" if index >= -10 else "slip"
-        
-    db.session.commit()
-    return jsonify(state_payload())
-
-@app.route("/api/goals", methods=["POST"])
-@require_auth
-def api_goals_save():
-    data = request.get_json(silent=True) or {}
-    day = today_str()
-    goals_list = data.get("goals", [])
-    DailyGoal.query.filter_by(day=day).delete()
-    for item in goals_list[:3]:
-        text = str(item.get("text", "")).strip()[:255]
-        if text:
-            db.session.add(DailyGoal(
-                day=day, text=text,
-                completed=bool(item.get("completed", False))
-            ))
-    db.session.commit()
-    return jsonify(state_payload())
-
-@app.route("/api/goal/toggle", methods=["POST"])
-@require_auth
-def api_goal_toggle():
-    data = request.get_json(silent=True) or {}
-    g_id = data.get("id")
-    if g_id:
-        goal = DailyGoal.query.get(g_id)
-        if goal:
-            goal.completed = not goal.completed
-            db.session.commit()
-    return jsonify(state_payload())
-
-@app.route("/api/cbt", methods=["POST"])
-@require_auth
-def api_cbt():
-    data = request.get_json(silent=True) or {}
-    category = (data.get("category") or "").strip()[:100] or "Общее"
-    thought = (data.get("automatic_thought") or "").strip()
-    response = (data.get("rational_response") or "").strip()
-    
-    bad_sleep = bool(data.get("bad_sleep", False))
-    back_pain = bool(data.get("back_pain", False))
-    isolation = bool(data.get("isolation", False))
-
-    if thought and response:
-        db.session.add(CbtRecord(
-            category=category, 
-            automatic_thought=thought,
-            rational_response=response,
-            date=datetime.now().strftime("%d.%m.%Y %H:%M"),
-            bad_sleep=bad_sleep,
-            back_pain=back_pain,
-            isolation=isolation,
-        ))
-        db.session.commit()
-    return jsonify(state_payload())
-
-@app.route("/api/cbt/import", methods=["POST"])
-@require_auth
-def api_cbt_import():
-    data = request.get_json(silent=True) or {}
-    text = (data.get("text") or "").strip()
-    if text:
-        paragraphs = [p.strip() for p in text.split("\n") if p.strip()]
-        date_str = datetime.now().strftime("%d.%m.%Y %H:%M")
-        for p in paragraphs:
-            db.session.add(CbtRecord(
-                category="Улица / Google Docs",
-                automatic_thought=p,
-                rational_response="[Импорт с телефона — ждет анализа и рационализации]",
-                date=date_str,
-                bad_sleep=False,
-                back_pain=False,
-                isolation=False,
-            ))
-        db.session.commit()
-    return jsonify(state_payload())
-
-@app.route("/api/letter", methods=["POST"])
-@require_auth
-def api_letter():
-    data = request.get_json(silent=True) or {}
-    title = (data.get("title") or "").strip()[:150]
-    content = (data.get("content") or "").strip()
-    if title and content:
-        db.session.add(Letter(
-            title=title, content=content,
-            date=datetime.now().strftime("%d.%m.%Y %H:%M"),
-        ))
-        db.session.commit()
-    return jsonify(state_payload())
-
-@app.route("/api/workout", methods=["POST"])
-@require_auth
-def api_workout():
-    data = request.get_json(silent=True) or {}
-    w_type = (data.get("workout_type") or "").strip()[:100]
-    ex_name = (data.get("exercise_name") or "").strip()[:150]
-    reps = (data.get("reps_data") or "").strip()[:100]
-    if w_type and ex_name and reps:
-        db.session.add(WorkoutRecord(
-            workout_type=w_type, exercise_name=ex_name,
-            reps_data=reps,
-            date=datetime.now().strftime("%d.%m.%Y %H:%M"),
-        ))
-        db.session.commit()
-    return jsonify(state_payload())
-
-@app.route("/api/workout/delete", methods=["POST"])
-@require_auth
-def api_workout_delete():
-    data = request.get_json(silent=True) or {}
-    w_id = data.get("id")
-    if w_id:
-        record = WorkoutRecord.query.get(w_id)
-        if record:
-            db.session.delete(record)
-            db.session.commit()
-    return jsonify(state_payload())
-
-@app.route("/api/board", methods=["POST"])
-@require_auth
-def api_board():
-    data = request.get_json(silent=True) or {}
-    content = (data.get("content") or "").strip()
-    board = get_board()
-    board.content = content
-    db.session.commit()
-    return jsonify(state_payload())
-
-@app.route("/api/reset", methods=["POST"])
-@require_auth
-def api_reset():
-    DayMark.query.delete()
-    BalanceLog.query.delete()
-    CbtRecord.query.delete()
-    Letter.query.delete()
-    WorkoutRecord.query.delete()
-    StrategyBoard.query.delete()
-    DailyGoal.query.delete()
-    Profile.query.delete()
-    db.session.commit()
-    return jsonify(state_payload())
-
-@app.route("/export_cbt")
-@require_auth
-def export_cbt():
-    records = CbtRecord.query.order_by(CbtRecord.id.desc()).all()
-    text_data = "=== RECOVERY HUB: АРХИВ КПТ-РАЗБОРОВ ===\n\n"
-    for r in records:
-        text_data += f"📅 Дата: {r.date}\n🏷️ Категория: {r.category}\n🧠 Мысль: {r.automatic_thought}\n💡 Ответ: {r.rational_response}\n" + "-" * 50 + "\n\n"
-    return Response(
-        text_data,
-        mimetype="text/plain; charset=utf-8",
-        headers={"Content-disposition": "attachment; filename=cbt_recovery_log.txt"},
-    )
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8080))
-    app.run(host="0.0.0.0", port=port, debug=False)
+def _mirage_curve(start_val, horizon):
+    """Мираж: мозг обещает подъём — реальность падает ниже всех."""
+    floor = -45.0
+    peak = start_val + 15.0
+    out = []
+    for d in range(horizon + 1):
+        if d == 0:
+            out.append(start_val)
+        elif d == 1:
+            out.appen
