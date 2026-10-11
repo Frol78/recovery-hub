@@ -27,7 +27,7 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + DB_PATH
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-key-change-in-production")
 
-# Настройка логина и пароля (можно переопределить через переменные окружения Амвера)
+# Настройка логина и пароля
 AUTH_USER = os.environ.get("AUTH_USER", "Evgeniy")
 AUTH_PASS = os.environ.get("AUTH_PASS", "04_07_1993$")
 
@@ -37,6 +37,36 @@ except AttributeError:
     app.config["JSON_AS_ASCII"] = False
 
 db = SQLAlchemy(app)
+
+# ==========================================
+# ВЕСА ФАКТОРОВ ВЫЗДОРОВЛЕНИЯ (УМНЫЙ СКОРИНГ)
+# ==========================================
+BOOSTER_WEIGHTS = {
+    "physics_action": 35,     # Экстренное переключение на физику (турник/прогулка/улица)
+    "cbt_written": 25,        # Написал полноценный АМРО / разбор мыслей
+    "clean_victory": 30,      # Победил тягу без просмотра (чистое прохождение)
+    "coding_flow": 15,        # Продуктивный кодинг без срывов в прокрастинацию
+    "body_care": 15,          # Забота о теле, спина, йога, растяжка
+    # Старые ключи для обратной совместимости
+    "Здоровый сон (режим в норме)": 15,
+    "Продуктивный кодинг": 15,
+    "Спорт / Тело / Йога": 15,
+    "Чистый день без кофе": 10,
+}
+
+TRAP_WEIGHTS = {
+    "micro_slip": -30,        # «Просто поглазеть» / микро-залипание (тяжелый удар)
+    "loneliness_pity": -20,   # Одиночество / жалость к себе
+    "news_overload": -15,     # Новостной мусор / триггеры извне
+    "coding_frustration": -10, # Ступор / фрустрация в задачах
+    "sleep_disrupt": -10,     # Сбой режима / долгий утренний сон
+    # Старые ключи для обратной совместимости
+    "Кофеин-триггер (тревога)": -10,
+    "Сбой сна (долгий/поздний)": -10,
+    "Боль в спине / Остеохондроз": -15,
+    "Жалость к себе": -20,
+    "Тупняк за ноутом / Прокрастинация": -10,
+}
 
 
 def require_auth(f):
@@ -384,14 +414,21 @@ def api_balance():
     booster_keys = [str(v)[:32] for v in (data.get("boosters") or []) if str(v).strip()]
     trap_keys = [str(v)[:32] for v in (data.get("traps") or []) if str(v).strip()]
 
+    # Умный взвешенный расчет индекса стабильности
+    index = 0
+    for b in booster_keys:
+        index += BOOSTER_WEIGHTS.get(b, 15)
+    for t in trap_keys:
+        index += TRAP_WEIGHTS.get(t, -15)
+
     boosters = len(booster_keys)
     traps = len(trap_keys)
-    index = boosters * 2 - traps * 2
 
     log = BalanceLog.query.filter_by(day=day).first()
     if log is None:
         log = BalanceLog(day=day)
         db.session.add(log)
+    
     log.boosters = boosters
     log.traps = traps
     log.index = index
@@ -403,7 +440,9 @@ def api_balance():
         mark = DayMark(day=day, note="")
         db.session.add(mark)
     if mark.status != "slip":
-        mark.status = "win" if index >= 0 else "slip"
+        # Если суммарный индекс ушел глубоко в минус (тяжелые ловушки перевесили), день помечается как откат/срыв
+        mark.status = "win" if index >= -10 else "slip"
+        
     db.session.commit()
     return jsonify(state_payload())
 
