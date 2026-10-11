@@ -245,9 +245,73 @@ def _ensure_column(table, column, ddl_type):
         pass
 
 
+def _sqlite_type_for(column):
+    """Простой SQLite-тип под колонку модели (для ALTER TABLE)."""
+    try:
+        py = column.type.python_type
+    except Exception:
+        return "TEXT"
+    if py is bool:
+        return "BOOLEAN"
+    if py is int:
+        return "INTEGER"
+    if py is float:
+        return "REAL"
+    return "TEXT"
+
+
+def _default_clause(column):
+    """Значение по умолчанию, чтобы старые строки не остались NULL."""
+    t = _sqlite_type_for(column)
+    return " DEFAULT 0" if t in ("INTEGER", "REAL", "BOOLEAN") else " DEFAULT ''"
+
+
+def sync_schema():
+    """Приводит существующую базу к текущим моделям.
+
+    db.create_all() создаёт только НЕДОСТАЮЩИЕ таблицы и никогда не трогает уже
+    существующие. Поэтому база от прошлой версии приложения остаётся со старым
+    набором колонок — и любой запрос к такой таблице падает с 500
+    («no such column»). Здесь дописываются только недостающие колонки:
+    ничего не удаляется, не переименовывается и не теряется.
+    """
+    added = []
+    try:
+        inspector = db.inspect(db.engine)
+        for model in db.Model.__subclasses__():
+            table = getattr(model, "__tablename__", None)
+            if not table:
+                continue
+            try:
+                if not inspector.has_table(table):
+                    continue
+                existing = {c["name"] for c in inspector.get_columns(table)}
+            except Exception:
+                continue
+            for column in model.__table__.columns:
+                if column.name in existing:
+                    continue
+                ddl = _sqlite_type_for(column) + _default_clause(column)
+                try:
+                    with db.engine.connect() as conn:
+                        conn.execute(db.text(
+                            'ALTER TABLE "' + table + '" ADD COLUMN "' + column.name + '" ' + ddl
+                        ))
+                        conn.commit()
+                    added.append(table + "." + column.name)
+                except Exception as e:
+                    print("⚠️ Не удалось добавить " + table + "." + column.name + ":", e)
+    except Exception as e:
+        print("⚠️ Сверка схемы пропущена:", e)
+    if added:
+        print("🔧 Дописаны недостающие колонки:", ", ".join(added))
+    return added
+
+
 with app.app_context():
     db.create_all()
-    # Авто-миграция старых баз: дописываем недостающие колонки, строки не трогаем
+    sync_schema()
+    # Страховка для самых старых баз: этих колонок в КПТ могло не быть.
     _ensure_column("cbt_record", "bad_sleep", "BOOLEAN DEFAULT 0")
     _ensure_column("cbt_record", "back_pain", "BOOLEAN DEFAULT 0")
     _ensure_column("cbt_record", "isolation", "BOOLEAN DEFAULT 0")
