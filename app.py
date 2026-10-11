@@ -98,6 +98,10 @@ class CbtRecord(db.Model):
     automatic_thought = db.Column(db.Text, nullable=False)
     rational_response = db.Column(db.Text, nullable=False)
     date = db.Column(db.String(50), nullable=False)
+    # Новые телесные маркеры для хирургической точности анализа
+    bad_sleep = db.Column(db.Boolean, default=False)
+    back_pain = db.Column(db.Boolean, default=False)
+    isolation = db.Column(db.Boolean, default=False)
 
 class Letter(db.Model):
     __tablename__ = "letter"
@@ -224,6 +228,9 @@ def state_payload():
                 "automatic_thought": c.automatic_thought,
                 "rational_response": c.rational_response,
                 "date": c.date,
+                "bad_sleep": getattr(c, 'bad_sleep', False),
+                "back_pain": getattr(c, 'back_pain', False),
+                "isolation": getattr(c, 'isolation', False),
             }
             for c in cbt
         ],
@@ -414,7 +421,6 @@ def api_balance():
     booster_keys = [str(v)[:32] for v in (data.get("boosters") or []) if str(v).strip()]
     trap_keys = [str(v)[:32] for v in (data.get("traps") or []) if str(v).strip()]
 
-    # Умный взвешенный расчет индекса стабильности
     index = 0
     for b in booster_keys:
         index += BOOSTER_WEIGHTS.get(b, 15)
@@ -440,7 +446,6 @@ def api_balance():
         mark = DayMark(day=day, note="")
         db.session.add(mark)
     if mark.status != "slip":
-        # Если суммарный индекс ушел глубоко в минус (тяжелые ловушки перевесили), день помечается как откат/срыв
         mark.status = "win" if index >= -10 else "slip"
         
     db.session.commit()
@@ -482,11 +487,21 @@ def api_cbt():
     category = (data.get("category") or "").strip()[:100] or "Общее"
     thought = (data.get("automatic_thought") or "").strip()
     response = (data.get("rational_response") or "").strip()
+    
+    # Читаем физические маркеры чек-листа
+    bad_sleep = bool(data.get("bad_sleep", False))
+    back_pain = bool(data.get("back_pain", False))
+    isolation = bool(data.get("isolation", False))
+
     if thought and response:
         db.session.add(CbtRecord(
-            category=category, automatic_thought=thought,
+            category=category, 
+            automatic_thought=thought,
             rational_response=response,
             date=datetime.now().strftime("%d.%m.%Y %H:%M"),
+            bad_sleep=bad_sleep,
+            back_pain=back_pain,
+            isolation=isolation,
         ))
         db.session.commit()
     return jsonify(state_payload())
@@ -505,6 +520,9 @@ def api_cbt_import():
                 automatic_thought=p,
                 rational_response="[Импорт с телефона — ждет анализа и рационализации]",
                 date=date_str,
+                bad_sleep=False,
+                back_pain=False,
+                isolation=False,
             ))
         db.session.commit()
     return jsonify(state_payload())
