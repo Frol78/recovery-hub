@@ -42,12 +42,11 @@ db = SQLAlchemy(app)
 # ВЕСА ФАКТОРОВ ВЫЗДОРОВЛЕНИЯ (УМНЫЙ СКОРИНГ)
 # ==========================================
 BOOSTER_WEIGHTS = {
-    "physics_action": 35,     # Экстренное переключение на физику (турник/прогулка/улица)
-    "cbt_written": 25,        # Написал полноценный АМРО / разбор мыслей
-    "clean_victory": 30,      # Победил тягу без просмотра (чистое прохождение)
-    "coding_flow": 15,        # Продуктивный кодинг без срывов в прокрастинацию
-    "body_care": 15,          # Забота о теле, спина, йога, растяжка
-    # Старые ключи для обратной совместимости
+    "physics_action": 35,
+    "cbt_written": 25,
+    "clean_victory": 30,
+    "coding_flow": 15,
+    "body_care": 15,
     "Здоровый сон (режим в норме)": 15,
     "Продуктивный кодинг": 15,
     "Спорт / Тело / Йога": 15,
@@ -55,12 +54,11 @@ BOOSTER_WEIGHTS = {
 }
 
 TRAP_WEIGHTS = {
-    "micro_slip": -30,        # «Просто поглазеть» / микро-залипание (тяжелый удар)
-    "loneliness_pity": -20,   # Одиночество / жалость к себе
-    "news_overload": -15,     # Новостной мусор / триггеры извне
-    "coding_frustration": -10, # Ступор / фрустрация в задачах
-    "sleep_disrupt": -10,     # Сбой режима / долгий утренний сон
-    # Старые ключи для обратной совместимости
+    "micro_slip": -30,
+    "loneliness_pity": -20,
+    "news_overload": -15,
+    "coding_frustration": -10,
+    "sleep_disrupt": -10,
     "Кофеин-триггер (тревога)": -10,
     "Сбой сна (долгий/поздний)": -10,
     "Боль в спине / Остеохондроз": -15,
@@ -98,7 +96,6 @@ class CbtRecord(db.Model):
     automatic_thought = db.Column(db.Text, nullable=False)
     rational_response = db.Column(db.Text, nullable=False)
     date = db.Column(db.String(50), nullable=False)
-    # Новые телесные маркеры для хирургической точности анализа
     bad_sleep = db.Column(db.Boolean, default=False)
     back_pain = db.Column(db.Boolean, default=False)
     isolation = db.Column(db.Boolean, default=False)
@@ -149,6 +146,25 @@ class DailyGoal(db.Model):
 
 with app.app_context():
     db.create_all()
+    # Автоматическое добавление недостающих колонок для старых баз данных
+    try:
+        with db.engine.connect() as conn:
+            conn.execute(db.text("ALTER TABLE cbt_record ADD COLUMN bad_sleep BOOLEAN DEFAULT 0"))
+            conn.commit()
+    except Exception:
+        pass
+    try:
+        with db.engine.connect() as conn:
+            conn.execute(db.text("ALTER TABLE cbt_record ADD COLUMN back_pain BOOLEAN DEFAULT 0"))
+            conn.commit()
+    except Exception:
+        pass
+    try:
+        with db.engine.connect() as conn:
+            conn.execute(db.text("ALTER TABLE cbt_record ADD COLUMN isolation BOOLEAN DEFAULT 0"))
+            conn.commit()
+    except Exception:
+        pass
 
 print("✅ База данных готова:", DB_PATH)
 
@@ -488,7 +504,6 @@ def api_cbt():
     thought = (data.get("automatic_thought") or "").strip()
     response = (data.get("rational_response") or "").strip()
     
-    # Читаем физические маркеры чек-листа
     bad_sleep = bool(data.get("bad_sleep", False))
     back_pain = bool(data.get("back_pain", False))
     isolation = bool(data.get("isolation", False))
