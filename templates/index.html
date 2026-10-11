@@ -721,8 +721,66 @@ function switchTab(tabName) {
     }
 }
 
-/* ===================== БАЗОВЫЕ СЕТЕВЫЕ ХЕЛПЕРЫ ===================== */
-async function api(path,body){const opts=body===undefined?{method:'GET',cache:'no-store'}:{method:'POST',cache:'no-store',headers:{'Content-Type':'application/json'},body:JSON.stringify(body||{})};const res=await fetch(path,opts);if(!res.ok)throw new Error('Ошибка сервера '+res.status);return res.json();}
+/* ===================== СЕТЕВОЙ СЛОЙ С АВТОПОВТОРОМ ===================== */
+// Паузы между попытками, мс. Первая попытка — сразу.
+const RETRY_DELAYS = [0, 1500, 4000];
+
+function netErrorMessage(err){
+    const msg = String((err && err.message) || err || '');
+    if (msg.indexOf('401') !== -1) {
+        return 'Неверный логин или пароль. Обнови страницу и введи данные заново.';
+    }
+    if (msg.indexOf('includes credentials') !== -1 || msg.indexOf('URL that includes') !== -1) {
+        return 'В адресной строке остались логин и пароль. Убери их из адреса — их нужно вводить только в окошке браузера.';
+    }
+    if (msg.indexOf('Failed to fetch') !== -1 || msg.indexOf('NetworkError') !== -1 || msg.indexOf('Load failed') !== -1) {
+        return 'Сервер не ответил. Чаще всего это перезапуск контейнера — подожди пару секунд и нажми «Повторить». Данные не потеряны.';
+    }
+    if (msg.indexOf('Ошибка сервера') !== -1) {
+        return 'Сервер вернул ошибку. ' + msg;
+    }
+    return 'Неизвестная ошибка: ' + (msg || 'без описания');
+}
+
+// Повторяем ТОЛЬКО безопасные случаи: сетевой обрыв и 5xx.
+// 401/403/404 повторять бессмысленно — ответ уже пришёл.
+async function apiFetch(path, opts, attempts){
+    const tries = attempts || RETRY_DELAYS.length;
+    let lastErr = null;
+    for (let i = 0; i < tries; i++) {
+        if (i > 0) {
+            await new Promise(r => setTimeout(r, RETRY_DELAYS[Math.min(i, RETRY_DELAYS.length - 1)]));
+        }
+        let res = null;
+        try {
+            res = await fetch(path, opts);
+        } catch (netErr) {
+            // Запрос не ушёл вообще (обрыв, перезапуск контейнера) — есть смысл повторить.
+            lastErr = netErr;
+            continue;
+        }
+        if (res.ok) return res;
+        const httpErr = new Error('Ошибка сервера ' + res.status);
+        if (res.status >= 500) {
+            // Сервер сам сломался — возможно, временно. Повторяем.
+            lastErr = httpErr;
+            continue;
+        }
+        // 4xx: ответ получен, повтор ничего не изменит (например, неверный пароль).
+        throw httpErr;
+    }
+    throw lastErr || new Error('Сеть недоступна');
+}
+
+async function api(path, body){
+    const isGet = (body === undefined);
+    const opts = isGet
+        ? {method: 'GET', cache: 'no-store'}
+        : {method: 'POST', cache: 'no-store', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body || {})};
+    // POST повторяем только один раз: слепой повтор мог бы задвоить запись.
+    const res = await apiFetch(path, opts, isGet ? RETRY_DELAYS.length : 1);
+    return res.json();
+}
 function applyState(payload){
     if(!payload)return;
     STATE=payload;
@@ -737,14 +795,31 @@ function applyState(payload){
     if(typeof STATE.life_goal==='undefined')STATE.life_goal=null;
     if(!STATE.storage)STATE.storage={persistent:false,dir:''};
 }
-async function loadState(){try{applyState(await api('/api/state'));renderAll();}catch(e){console.error(e);document.getElementById('loading-section').innerHTML='<p class="text-red-400 text-sm font-mono">Не удалось загрузить данные: '+escapeHtml(e.message)+'</p>';toast('Не удалось загрузить данные',true);}}
+async function loadState(){
+    const box=document.getElementById('loading-section');
+    if(box)box.innerHTML='<p class="text-gray-400 text-sm font-mono">Инициализация...</p>';
+    try{
+        applyState(await api('/api/state'));
+        renderAll();
+    }catch(e){
+        console.error(e);
+        const hint=netErrorMessage(e);
+        if(box)box.innerHTML=
+            '<div class="max-w-md mx-auto text-center">'+
+            '<p class="text-red-400 text-sm font-bold mb-3">Не удалось загрузить данные</p>'+
+            '<p class="text-gray-400 text-xs leading-relaxed mb-6">'+escapeHtml(hint)+'</p>'+
+            '<button type="button" onclick="loadState()" class="px-6 py-3 bmw-btn text-white font-bold rounded-xl text-sm">\uD83D\uDD04 Повторить</button>'+
+            '</div>';
+        toast('Не удалось загрузить данные',true);
+    }
+}
 async function send(path,body){
     if(busy)return false;
     busy=true;
     try{const res=await api(path,body);
         if(res && typeof res.state!=='undefined'){applyState(res.state);}else{applyState(res);}
         renderAll();return res;
-    }catch(e){console.error(e);toast('Ошибка сохранения',true);return false;}
+    }catch(e){console.error(e);toast(netErrorMessage(e),true);return false;}
     finally{busy=false;}
 }
 function toast(text,isError){const box=document.getElementById('toast-box');const el=document.createElement('div');el.className='toast px-5 py-4 rounded-xl text-sm font-semibold border '+(isError?'bg-red-950/95 border-red-500 text-red-100':'bg-bmwCard/95 border-blue-500 text-gray-100');el.innerText=text;box.appendChild(el);setTimeout(()=>el.remove(),3000);}
@@ -1115,7 +1190,7 @@ function calRenderWeekdays(){const wrap=document.getElementById('cal-weekdays');
 function calRenderStats(){const marks=STATE.marks||{};let streak=0,best=0,wins=0;let current=new Date();for(let i=0;i<365;i++){const key=keyOf(current);const m=marks[key];if(m&&m.status==='win'){streak++;wins++;best=Math.max(best,streak);}else if(m&&m.status==='slip'){best=Math.max(best,streak);streak=0;}current.setDate(current.getDate()-1);}const pct=wins>0?Math.round((wins/365)*100):0;document.getElementById('cal-stat-streak').innerText=streak;document.getElementById('cal-stat-best').innerText=best;document.getElementById('cal-stat-wins').innerText=wins;document.getElementById('cal-stat-pct').innerText=pct+'%';}
 function calRenderGrid(){const grid=document.getElementById('cal-grid');const label=document.getElementById('cal-month-label');if(!grid)return;const marks=STATE.marks||{};const tKey=todayKey();if(label)label.innerText=CAL_MONTHS[calViewMonth]+' '+calViewYear;const first=new Date(calViewYear,calViewMonth,1);const daysInMonth=new Date(calViewYear,calViewMonth+1,0).getDate();const offset=first.getDay()===0?6:first.getDay()-1;let html='';for(let i=0;i<offset;i++)html+='<div></div>';for(let d=1;d<=daysInMonth;d++){const cur=new Date(calViewYear,calViewMonth,d);const key=keyOf(cur);const mark=marks[key]||null;const isSlip=mark&&mark.status==='slip';let cls=mark&&mark.status==='win'?'bg-[#3B82F6] text-white':(isSlip?'bg-[#7F1D1D] text-red-200':'bg-bmwDeep text-gray-300');if(key===tKey)cls+=' border-2 border-blue-500';const dot=isSlip?'<span class="block w-[5px] h-[5px] rounded-full bg-red-300 mt-[2px]"></span>':'';html+=`<button type="button" onclick="openDayModal('${key}')" class="aspect-square rounded-xl border border-bmwBorder ${cls} text-sm font-bold flex flex-col items-center justify-center hover:border-blue-400 transition-all">${d}${dot}</button>`;}grid.innerHTML=html;}
 
-async function openDayModal(key){currentModalDay=key;const modal=document.getElementById('day-modal');modal.classList.remove('hidden');document.getElementById('modal-day-title').innerText=key;document.getElementById('modal-day-status').innerText='Загрузка дневника...';document.getElementById('modal-goals-list').innerHTML='Загрузка...';document.getElementById('modal-balance-view').innerHTML='Загрузка...';document.getElementById('modal-workouts-wrapper').classList.add('hidden');try{const res=await fetch(`/api/day-details?day=${key}`);const data=await res.json();if(!data.ok)return;let statusText='⚪ День внесен в сетку';if(data.status==='win')statusText='🟢 Победа (Чистый день)';else if(data.status==='slip')statusText='🔴 Срыв / Тяжелый день';document.getElementById('modal-day-status').innerText=statusText;const slipBlock=document.getElementById('modal-slip-analysis');const slipContent=document.getElementById('modal-slip-content');if(data.slip_analysis&&data.status==='slip'){slipBlock.classList.remove('hidden');const sa=data.slip_analysis;let sh='';if(sa.trigger)sh+='<div><span class="text-gray-500 text-xs">Триггер:</span> '+escapeHtml(sa.trigger)+'</div>';if(sa.feelings)sh+='<div><span class="text-gray-500 text-xs">Чувства:</span> '+escapeHtml(sa.feelings)+'</div>';if(sa.prevention)sh+='<div><span class="text-gray-500 text-xs">Иначе:</span> '+escapeHtml(sa.prevention)+'</div>';slipContent.innerHTML=sh||'<span class="text-gray-500 text-xs">Разбор не заполнен</span>';}else{slipBlock.classList.add('hidden');}if(data.goals&&data.goals.length>0){document.getElementById('modal-goals-list').innerHTML=data.goals.map(g=>`<div class="flex items-center gap-2 text-sm"><input type="checkbox" ${g.completed?'checked':''} class="bmw-checkbox" disabled><span class="${g.completed?'line-through text-gray-500':'text-white'}">${escapeHtml(g.text)}</span></div>`).join('');}else{document.getElementById('modal-goals-list').innerHTML='<p class="text-gray-500 text-xs">Нет целей за этот день</p>';}if(data.balance&&(data.balance.boosters.length>0||data.balance.traps.length>0)){let balanceHtml='';if(data.balance.boosters.length>0){balanceHtml+='<div class="text-sm break-words"><span class="font-bold text-blue-400">🟢 Бустеры:</span> '+escapeHtml(data.balance.boosters.join(', '))+'</div>';}if(data.balance.traps.length>0){balanceHtml+='<div class="text-sm break-words"><span class="font-bold text-red-400">🔴 Ловушки:</span> '+escapeHtml(data.balance.traps.join(', '))+'</div>';}balanceHtml+='<div class="text-sm font-bold mt-2">Индекс: <span class="text-blue-400">'+data.balance.index+'</span></div>';document.getElementById('modal-balance-view').innerHTML=balanceHtml;}else{document.getElementById('modal-balance-view').innerHTML='<p class="text-gray-500 text-xs">Нет данных о балансе</p>';}if(data.workouts&&data.workouts.length>0){document.getElementById('modal-workouts-wrapper').classList.remove('hidden');document.getElementById('modal-workouts-list').innerHTML=data.workouts.map(w=>`<div class="text-sm break-words"><span class="text-amber-400 font-bold">${escapeHtml(w.workout_type)}</span>: ${escapeHtml(w.exercise_name)} (${escapeHtml(w.reps_data)})</div>`).join('');}}catch(e){console.error(e);toast('Ошибка загрузки дневника',true);}}
+async function openDayModal(key){currentModalDay=key;const modal=document.getElementById('day-modal');modal.classList.remove('hidden');document.getElementById('modal-day-title').innerText=key;document.getElementById('modal-day-status').innerText='Загрузка дневника...';document.getElementById('modal-goals-list').innerHTML='Загрузка...';document.getElementById('modal-balance-view').innerHTML='Загрузка...';document.getElementById('modal-workouts-wrapper').classList.add('hidden');try{const data=await api('/api/day-details?day='+encodeURIComponent(key));if(!data.ok)return;let statusText='⚪ День внесен в сетку';if(data.status==='win')statusText='🟢 Победа (Чистый день)';else if(data.status==='slip')statusText='🔴 Срыв / Тяжелый день';document.getElementById('modal-day-status').innerText=statusText;const slipBlock=document.getElementById('modal-slip-analysis');const slipContent=document.getElementById('modal-slip-content');if(data.slip_analysis&&data.status==='slip'){slipBlock.classList.remove('hidden');const sa=data.slip_analysis;let sh='';if(sa.trigger)sh+='<div><span class="text-gray-500 text-xs">Триггер:</span> '+escapeHtml(sa.trigger)+'</div>';if(sa.feelings)sh+='<div><span class="text-gray-500 text-xs">Чувства:</span> '+escapeHtml(sa.feelings)+'</div>';if(sa.prevention)sh+='<div><span class="text-gray-500 text-xs">Иначе:</span> '+escapeHtml(sa.prevention)+'</div>';slipContent.innerHTML=sh||'<span class="text-gray-500 text-xs">Разбор не заполнен</span>';}else{slipBlock.classList.add('hidden');}if(data.goals&&data.goals.length>0){document.getElementById('modal-goals-list').innerHTML=data.goals.map(g=>`<div class="flex items-center gap-2 text-sm"><input type="checkbox" ${g.completed?'checked':''} class="bmw-checkbox" disabled><span class="${g.completed?'line-through text-gray-500':'text-white'}">${escapeHtml(g.text)}</span></div>`).join('');}else{document.getElementById('modal-goals-list').innerHTML='<p class="text-gray-500 text-xs">Нет целей за этот день</p>';}if(data.balance&&(data.balance.boosters.length>0||data.balance.traps.length>0)){let balanceHtml='';if(data.balance.boosters.length>0){balanceHtml+='<div class="text-sm break-words"><span class="font-bold text-blue-400">🟢 Бустеры:</span> '+escapeHtml(data.balance.boosters.join(', '))+'</div>';}if(data.balance.traps.length>0){balanceHtml+='<div class="text-sm break-words"><span class="font-bold text-red-400">🔴 Ловушки:</span> '+escapeHtml(data.balance.traps.join(', '))+'</div>';}balanceHtml+='<div class="text-sm font-bold mt-2">Индекс: <span class="text-blue-400">'+data.balance.index+'</span></div>';document.getElementById('modal-balance-view').innerHTML=balanceHtml;}else{document.getElementById('modal-balance-view').innerHTML='<p class="text-gray-500 text-xs">Нет данных о балансе</p>';}if(data.workouts&&data.workouts.length>0){document.getElementById('modal-workouts-wrapper').classList.remove('hidden');document.getElementById('modal-workouts-list').innerHTML=data.workouts.map(w=>`<div class="text-sm break-words"><span class="text-amber-400 font-bold">${escapeHtml(w.workout_type)}</span>: ${escapeHtml(w.exercise_name)} (${escapeHtml(w.reps_data)})</div>`).join('');}}catch(e){console.error(e);toast('Ошибка загрузки дневника',true);}}
 function closeDayModal(){document.getElementById('day-modal').classList.add('hidden');}
 function toggleDayStatusModal(){if(!currentModalDay)return;const mark=STATE.marks[currentModalDay];const status=!mark||mark.status!=='win'?'win':'slip';send('/api/mark',{day:currentModalDay,status:status,note:mark?mark.note:''}).then(()=>{toast(status==='win'?'✓ День отмечен как победа':'✗ День отмечен как срыв');openDayModal(currentModalDay);});}
 function calShiftMonth(delta){calViewMonth+=delta;if(calViewMonth>11){calViewMonth=0;calViewYear++;}if(calViewMonth<0){calViewMonth=11;calViewYear--;}calRenderGrid();}
