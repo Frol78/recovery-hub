@@ -90,8 +90,8 @@ FORECAST_META = {
          "text": "Счётчик чистого времени уходит в ноль. Всё, что наработал днями, стирается за одну секунду."},
         {"icon": "🪞", "title": "Удар по самооценке",
          "text": "Стыд, торг, обесценивание себя. Ты снова тот, кто не держит слово даже перед самим собой."},
-        {"icon": "🎯", "title": "Откат от целей",
-         "text": "Девушка, целостность, сила духа — не абстракция. Каждый срыв отодвигает это назад на дни и недели."},
+        {"icon": "🎯", "title": "Крадёт дни у цели",
+         "text": "Счётчик пути не обнулится — цель остаётся твоей опорой. Но время срыва не вернуть: день, отданный зависимости, не вложен в себя. Счётчик идёт, а ты топчешься."},
     ],
     "strength_gains": [
         {"icon": "🛡️", "title": "Связь слабеет",
@@ -937,7 +937,19 @@ def api_life_goal():
     if "started_at" in data and data.get("started_at"):
         goal.started_at = str(data.get("started_at"))[:100]
     elif not goal.started_at:
-        goal.started_at = datetime.now().isoformat()
+        # Первый раз создаём цель. Если человек уже в завязке (в онбординге указал
+        # чистые дни), цель стартует с той же точки, а не с нуля. Иначе два счётчика
+        # расходятся: таймер показывает 40 дней, а путь к цели — 0.
+        profile = get_profile()
+        inherited = None
+        if profile and profile.start_time:
+            try:
+                candidate = datetime.fromisoformat(profile.start_time)
+                if candidate <= datetime.now():
+                    inherited = candidate.isoformat()
+            except (ValueError, TypeError):
+                inherited = None
+        goal.started_at = inherited or datetime.now().isoformat()
 
     goal.updated_at = datetime.now().isoformat()
     db.session.commit()
