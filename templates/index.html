@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>New You — Трансформация и контроль [ВЕРСИЯ 2.1]</title>
+<title>New You — Трансформация и контроль [ВЕРСИЯ 2.2]</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
@@ -83,7 +83,6 @@ body {
 .slip-btn:hover{border-color:rgba(239,68,68,.7);box-shadow:0 4px 20px rgba(239,68,68,.2);color:#fca5a5;transform:translateY(-1px);}
 .slip-btn:active{transform:translateY(0);}
 
-/* Стили для вкладок */
 .tab-btn {
     background: #111115;
     border: 1px solid #22222A;
@@ -322,18 +321,19 @@ body {
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <div class="bg-bmwDeep p-6 rounded-xl border border-blue-500/30 space-y-3">
                             <h3 class="text-xs font-bold text-blue-400 uppercase mb-4">🟢 Бустеры и ресурс</h3>
-                            <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-booster="sleep" class="bmw-checkbox"> Здоровый сон (режим в норме)</label>
-                            <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-booster="coding" class="bmw-checkbox"> Продуктивный кодинг</label>
-                            <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-booster="sport" class="bmw-checkbox"> Спорт / Тело / Йога</label>
-                            <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-booster="nocofer" class="bmw-checkbox"> Чистый день без кофе</label>
+                            <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-booster="physics_action" class="bmw-checkbox"> Экстренная физика (турник / улица)</label>
+                            <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-booster="cbt_written" class="bmw-checkbox"> Написал полноценный АМРО</label>
+                            <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-booster="clean_victory" class="bmw-checkbox"> Победил тягу без просмотра</label>
+                            <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-booster="coding_flow" class="bmw-checkbox"> Продуктивный кодинг (поток)</label>
+                            <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-booster="body_care" class="bmw-checkbox"> Забота о теле, спина, йога</label>
                         </div>
                         <div class="bg-bmwDeep p-6 rounded-xl border border-red-500/30 space-y-3">
                             <h3 class="text-xs font-bold text-red-400 uppercase mb-4">🔴 Ловушки и Триггеры</h3>
-                            <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-trap="coffee" class="bmw-checkbox bmw-checkbox-red"> Кофеин-триггер (тревога)</label>
-                            <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-trap="bad_sleep" class="bmw-checkbox bmw-checkbox-red"> Сбой сна (долгий/поздний)</label>
-                            <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-trap="back_pain" class="bmw-checkbox bmw-checkbox-red"> Боль в спине / Остеохондроз</label>
-                            <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-trap="pity" class="bmw-checkbox bmw-checkbox-red"> Жалость к себе</label>
-                            <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-trap="procr" class="bmw-checkbox bmw-checkbox-red"> Тупняк за ноутом / Прокрастинация</label>
+                            <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-trap="micro_slip" class="bmw-checkbox bmw-checkbox-red"> «Просто поглазеть» (микро-залипание)</label>
+                            <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-trap="loneliness_pity" class="bmw-checkbox bmw-checkbox-red"> Одиночество / Жалость к себе</label>
+                            <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-trap="news_overload" class="bmw-checkbox bmw-checkbox-red"> Новостной мусор / Инфошторм</label>
+                            <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-trap="coding_frustration" class="bmw-checkbox bmw-checkbox-red"> Ступор / Фрустрация в кодинге</label>
+                            <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" data-trap="sleep_disrupt" class="bmw-checkbox bmw-checkbox-red"> Сбой режима / Долгий утренний сон</label>
                         </div>
                     </div>
                     <button onclick="saveDailyBalance()" class="w-full py-5 bmw-btn text-white font-bold rounded-xl">🛡️ Зафиксировать баланс дня</button>
@@ -445,7 +445,6 @@ const SOS_ACTIONS = [
   {title:"🚶 Разрыв шаблона",desc:"Холодная вода на лицо на 30 секунд.",widget:`<div class="text-sm text-blue-300 font-bold">💧 Сбей химию мозга водой.</div>`}
 ];
 
-// Управление вкладками
 function switchTab(tabName) {
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -456,7 +455,6 @@ function switchTab(tabName) {
     if (targetContent) targetContent.classList.add('active');
     if (targetBtn) targetBtn.classList.add('active');
     
-    // Перерисовываем график если открыли телеметрию (чтобы Chart.js не ломал размеры)
     if(tabName === 'telemetry') {
         renderBalance();
     }
