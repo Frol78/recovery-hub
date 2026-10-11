@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>New You — Трансформация и контроль [ВЕРСИЯ 2.2]</title>
+<title>New You — Трансформация и контроль [ВЕРСИЯ 2.3]</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
@@ -349,13 +349,23 @@ body {
         <div id="tab-cbt" class="tab-content space-y-8">
             <div id="cbt-section-card" class="spotlight-card bg-bmwDark p-8 sm:p-10 rounded-2xl bmw-border-glow">
                 <h2 class="text-xl font-bold text-white mb-2">🧠 КПТ: Разбор мыслей</h2>
-                <p class="text-sm text-gray-400 mb-6">Поймай автоматическую мысль, зафиксируй лог и дай рациональный отпор.</p>
+                <p class="text-sm text-gray-400 mb-6">Сначала зафиксируй физический контекст, затем поймай мысль и дай отпор.</p>
                 <form onsubmit="addCbtRecord(event)" class="space-y-5">
-                    <input type="text" id="cbt-cat" required placeholder="Категория..." class="w-full px-5 py-4 bg-bmwDeep border border-bmwBorder rounded-xl text-white">
+                    
+                    <!-- Чек-лист телесного контекста (Хирургическая точность) -->
+                    <div class="bg-bmwDeep p-5 rounded-xl border border-blue-500/30 space-y-3">
+                        <h3 class="text-xs font-bold text-blue-400 uppercase mb-2">⚡ Чек-лист тела перед анализом:</h3>
+                        <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" id="cbt-bad-sleep" class="bmw-checkbox bmw-checkbox-red"> Сбит режим / Мало спал</label>
+                        <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" id="cbt-back-pain" class="bmw-checkbox bmw-checkbox-red"> Защемило спину / Напряжение в теле</label>
+                        <label class="flex items-center gap-3 cursor-pointer text-sm"><input type="checkbox" id="cbt-isolation" class="bmw-checkbox bmw-checkbox-red"> Сижу один / Одиночество</label>
+                    </div>
+
+                    <input type="text" id="cbt-cat" required placeholder="Категория (напр. Тяга / Торг)..." class="w-full px-5 py-4 bg-bmwDeep border border-bmwBorder rounded-xl text-white">
                     <textarea id="cbt-thought" rows="3" required placeholder="Автоматическая мысль..." class="w-full px-5 py-4 bg-bmwDeep border border-bmwBorder rounded-xl text-white resize-none"></textarea>
-                    <textarea id="cbt-resp" rows="3" required placeholder="Рациональный ответ..." class="w-full px-5 py-4 bg-bmwDeep border border-bmwBorder rounded-xl text-white resize-none"></textarea>
+                    <textarea id="cbt-resp" rows="3" required placeholder="Рациональный ответ / Физическое действие..." class="w-full px-5 py-4 bg-bmwDeep border border-bmwBorder rounded-xl text-white resize-none"></textarea>
                     <button type="submit" class="w-full py-5 bmw-btn text-white font-bold rounded-xl">🛡️ Сохранить лог</button>
                 </form>
+
                 <div class="mt-8 pt-8 border-t border-bmwBorder">
                     <h3 class="text-base font-bold text-blue-400 mb-2">📥 Импорт заметок с улицы (Google Docs)</h3>
                     <p class="text-xs text-gray-400 mb-4">Скопируй свои заметки с телефона, вставь сюда — и они автоматически сохранятся в КПТ-архив с категорией «Улица»!</p>
@@ -482,7 +492,34 @@ function closeSlipModal(){document.getElementById('slip-modal').classList.add('h
 async function confirmSlip(){const trigger=document.getElementById('slip-trigger').value.trim();const feelings=document.getElementById('slip-feelings').value.trim();const prevention=document.getElementById('slip-prevention').value.trim();closeSlipModal();const ok=await send('/api/slip',{trigger,feelings,prevention});if(ok)toast('↺ Срыв зафиксирован. Таймер пошёл заново.');}
 function renderGoals(){const goals=STATE.daily_goals||[];const statusContainer=document.getElementById('goals-status-container');const listView=document.getElementById('goals-list-view');if(goals.length>0){statusContainer.classList.remove('hidden');listView.innerHTML=goals.map((g,idx)=>`<div class="flex items-center justify-between bg-bmwDeep p-4 rounded-xl border border-bmwBorder text-sm"><label class="flex items-center gap-3 cursor-pointer select-none"><input type="checkbox" ${g.completed?'checked':''} onchange="toggleGoal(${g.id})" class="bmw-checkbox"><span class="${g.completed?'line-through text-gray-500':'text-white font-medium'}">${escapeHtml(g.text)}</span></label><span class="text-[10px] text-gray-500 uppercase font-bold">Цель #${idx+1}</span></div>`).join('');}else{statusContainer.classList.add('hidden');}}
 async function saveDailyBalance(){const boosters=Array.from(document.querySelectorAll('[data-booster]:checked')).map(i=>i.dataset.booster);const traps=Array.from(document.querySelectorAll('[data-trap]:checked')).map(i=>i.dataset.trap);await send('/api/balance',{day:todayKey(),boosters,traps});toast('Баланс дня и телеметрия зафиксированы.');}
-async function addCbtRecord(e){e.preventDefault();await send('/api/cbt',{category:document.getElementById('cbt-cat').value,automatic_thought:document.getElementById('cbt-thought').value,rational_response:document.getElementById('cbt-resp').value});document.getElementById('cbt-cat').value='';document.getElementById('cbt-thought').value='';document.getElementById('cbt-resp').value='';toast('Лог КПТ сохранён.');}
+
+async function addCbtRecord(e){
+    e.preventDefault();
+    const category = document.getElementById('cbt-cat').value;
+    const thought = document.getElementById('cbt-thought').value;
+    const response = document.getElementById('cbt-resp').value;
+    const badSleep = document.getElementById('cbt-bad-sleep').checked;
+    const backPain = document.getElementById('cbt-back-pain').checked;
+    const isolation = document.getElementById('cbt-isolation').checked;
+
+    await send('/api/cbt', {
+        category,
+        automatic_thought: thought,
+        rational_response: response,
+        bad_sleep: badSleep,
+        back_pain: backPain,
+        isolation: isolation
+    });
+
+    document.getElementById('cbt-cat').value = '';
+    document.getElementById('cbt-thought').value = '';
+    document.getElementById('cbt-resp').value = '';
+    document.getElementById('cbt-bad-sleep').checked = false;
+    document.getElementById('cbt-back-pain').checked = false;
+    document.getElementById('cbt-isolation').checked = false;
+    toast('Лог КПТ сохранён.');
+}
+
 async function importStreetThoughts(e){e.preventDefault();const text=document.getElementById('street-thoughts-input').value.trim();if(!text)return;await send('/api/cbt/import',{text:text});document.getElementById('street-thoughts-input').value='';toast('🚀 Заметки успешно загружены в КПТ-архив!');}
 async function addLetter(e){e.preventDefault();await send('/api/letter',{title:document.getElementById('letter-title').value,content:document.getElementById('letter-content').value});document.getElementById('letter-title').value='';document.getElementById('letter-content').value='';toast('Письмо запечатано.');}
 async function saveBoard(){const content=document.getElementById('strategy-board-textarea').value;await send('/api/board',{content});toast('💾 Доска стратегии сохранена!');}
@@ -517,7 +554,33 @@ function renderProfile(){
 
 function renderStorageBadge(){const badge=document.getElementById('storage-badge');const warn=document.getElementById('storage-warning');if(STATE.storage&&STATE.storage.persistent){badge.innerText='● защищено';badge.className='text-xs font-bold text-emerald-400';warn.classList.add('hidden');}else{badge.innerText='● не защищено';badge.className='text-xs font-bold text-red-400';warn.classList.remove('hidden');document.getElementById('storage-warning-path').innerText=(STATE.storage&&STATE.storage.dir)||'—';}}
 function renderBoard(){const ta=document.getElementById('strategy-board-textarea');if(ta&&document.activeElement!==ta){ta.value=STATE.board_content||'';}}
-function renderCbt(){const container=document.getElementById('cbt-records-container');const list=document.getElementById('cbt-list');const count=document.getElementById('cbt-count');if(!STATE.cbt_records.length){container.classList.add('hidden');return;}container.classList.remove('hidden');count.innerText='('+STATE.cbt_records.length+')';list.innerHTML=STATE.cbt_records.map(r=>`<div class="bg-bmwDeep p-5 rounded-xl border-l-4 border-blue-500 border border-bmwBorder text-sm"><div class="flex justify-between items-center text-blue-400 mb-2 font-semibold"><span>${escapeHtml(r.category)}</span><span class="text-gray-400 text-xs">${escapeHtml(r.date)}</span></div><p class="text-red-400 mb-1"><strong>Мысль:</strong> ${escapeHtml(r.automatic_thought)}</p><p class="text-emerald-400"><strong>Ответ:</strong> ${escapeHtml(r.rational_response)}</p></div>`).join('');}
+
+function renderCbt(){
+    const container=document.getElementById('cbt-records-container');
+    const list=document.getElementById('cbt-list');
+    const count=document.getElementById('cbt-count');
+    if(!STATE.cbt_records.length){container.classList.add('hidden');return;}
+    container.classList.remove('hidden');
+    count.innerText='('+STATE.cbt_records.length+')';
+    list.innerHTML=STATE.cbt_records.map(r=>{
+        let physicalTags = [];
+        if(r.bad_sleep) physicalTags.push('🔴 Сбит сон');
+        if(r.back_pain) physicalTags.push('🔴 Боль в спине');
+        if(r.isolation) physicalTags.push('🔴 Одиночество');
+        const tagsHtml = physicalTags.length > 0 ? `<div class="flex gap-2 mb-2 text-[10px] uppercase font-bold text-red-400">${physicalTags.join(' · ')}</div>` : '';
+        
+        return `<div class="bg-bmwDeep p-5 rounded-xl border-l-4 border-blue-500 border border-bmwBorder text-sm">
+            <div class="flex justify-between items-center text-blue-400 mb-2 font-semibold">
+                <span>${escapeHtml(r.category)}</span>
+                <span class="text-gray-400 text-xs">${escapeHtml(r.date)}</span>
+            </div>
+            ${tagsHtml}
+            <p class="text-red-400 mb-1"><strong>Мысль:</strong> ${escapeHtml(r.automatic_thought)}</p>
+            <p class="text-emerald-400"><strong>Ответ:</strong> ${escapeHtml(r.rational_response)}</p>
+        </div>`;
+    }).join('');
+}
+
 function renderLetters(){const container=document.getElementById('letters-container');const list=document.getElementById('letters-list');if(!STATE.letters.length){container.classList.add('hidden');return;}container.classList.remove('hidden');list.innerHTML=STATE.letters.map(l=>`<div class="bg-bmwDeep p-5 rounded-xl border-l-4 border-blue-500 border border-bmwBorder text-sm"><div class="flex justify-between items-center text-blue-400 mb-2 font-semibold"><span>${escapeHtml(l.title)}</span><span class="text-gray-400 text-xs">${escapeHtml(l.date)}</span></div><p class="text-gray-200 whitespace-pre-wrap">${escapeHtml(l.content)}</p></div>`).join('');}
 function renderWorkouts(){const container=document.getElementById('workouts-container');const list=document.getElementById('workouts-list');const count=document.getElementById('workouts-count');const workouts=STATE.workouts||[];if(workouts.length===0){container.classList.add('hidden');return;}container.classList.remove('hidden');count.innerText='('+workouts.length+')';list.innerHTML=workouts.map(w=>`<div class="bg-bmwDeep p-5 rounded-xl border-l-4 border-blue-500 border border-bmwBorder text-sm flex justify-between items-center gap-3"><div><div class="text-blue-400 font-semibold mb-1">${escapeHtml(w.workout_type)} · <span class="text-white">${escapeHtml(w.exercise_name)}</span></div><div class="text-gray-300 text-xs">${escapeHtml(w.reps_data)} <span class="text-gray-500 ml-2">(${escapeHtml(w.date)})</span></div></div><button type="button" onclick="deleteWorkout(${w.id})" class="text-red-400 hover:text-red-300 font-bold px-3 py-1 bg-bmwCard rounded-lg border border-bmwBorder text-xs shrink-0">Удалить</button></div>`).join('');}
 function escapeHtml(value){return String(value==null?'':value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
